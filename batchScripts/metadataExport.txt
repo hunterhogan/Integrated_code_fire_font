@@ -1,0 +1,10 @@
+PUSHD %pathWorkbenchFonts%
+
+ttx IntegratedCode火简化字Bold.ttf -t name -t OS/2 -t head
+ttx IntegratedCode火简化字SemiBold.ttf -t name -t OS/2 -t head
+ttx IntegratedCode火简化字Light.ttf -t name -t OS/2 -t head
+ttx IntegratedCode火简化字Medium.ttf -t name -t OS/2 -t head
+ttx IntegratedCode火简化字Retina.ttf -t name -t OS/2 -t head
+ttx IntegratedCode火简化字Regular.ttf -t name -t OS/2 -t head
+
+POPD

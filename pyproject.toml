@@ -1,0 +1,20 @@
+[project]
+name = "Integrated_Code_Fire"
+version = "0.0.1"
+description = "Integrated Code 火 is a code-centric font combining an up-to-date [Fira Code](https://github.com/tonsky/FiraCode) compile with a modified [Source Han Mono](https://github.com/adobe-fonts/source-han-mono) compile."
+readme = "README.md"
+authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
+license = { 'text' = "CC-BY-NC-4.0" }
+urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/Integrated_Code_Fire", Issues = "https://github.com/hunterhogan/Integrated_Code_Fire/issues", Repository = "https://github.com/hunterhogan/Integrated_Code_Fire" }
+
+requires-python = ">=3.14"
+dependencies = [
+    "afdko>=4.0.3",
+    "fonttools>=4.61.1",
+    "hunterMakesPy>=0.3.4",
+    "urllib3>=2.6.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.28,<0.10.0"]
+build-backend = "uv_build"

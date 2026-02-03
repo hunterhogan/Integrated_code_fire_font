@@ -1,0 +1,10 @@
+PUSHD %pathWorkbenchFonts%
+
+ttx -m IntegratedCode火简化字Bold.ttf IntegratedCode火简化字Bold.ttx
+ttx -m IntegratedCode火简化字Light.ttf IntegratedCode火简化字Light.ttx
+ttx -m IntegratedCode火简化字Medium.ttf IntegratedCode火简化字Medium.ttx
+ttx -m IntegratedCode火简化字Regular.ttf IntegratedCode火简化字Regular.ttx
+ttx -m IntegratedCode火简化字Retina.ttf IntegratedCode火简化字Retina.ttx
+ttx -m IntegratedCode火简化字SemiBold.ttf IntegratedCode火简化字SemiBold.ttx
+
+POPD

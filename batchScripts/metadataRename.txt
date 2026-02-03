@@ -1,0 +1,10 @@
+PUSHD %pathWorkbenchFonts%
+
+MOVE /Y IntegratedCode火简化字Bold#1.ttf IntegratedCode火简化字Bold.ttf
+MOVE /Y IntegratedCode火简化字Light#1.ttf IntegratedCode火简化字Light.ttf
+MOVE /Y IntegratedCode火简化字Medium#1.ttf IntegratedCode火简化字Medium.ttf
+MOVE /Y IntegratedCode火简化字Regular#1.ttf IntegratedCode火简化字Regular.ttf
+MOVE /Y IntegratedCode火简化字Retina#1.ttf IntegratedCode火简化字Retina.ttf
+MOVE /Y IntegratedCode火简化字SemiBold#1.ttf IntegratedCode火简化字SemiBold.ttf
+
+POPD
