@@ -140,3 +140,8 @@ A tentative list of font collections and names:
 
 - Adobe writing "and/or" in their trademark notice is stupid.
 - The Mozilla Corporation has probably abandoned the Fira Mono trademark.
+
+## My recovery
+
+[![Static Badge](https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat)](https://HunterThinks.com/support)
+[![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UC3Gx7kz61009NbhpRtPP7tw)](https://www.youtube.com/@HunterHogan)
