@@ -2,9 +2,13 @@
 
 Integrated Code 火 is a code-centric font combining an up-to-date [Fira Code](https://github.com/tonsky/FiraCode) compile with a modified [Source Han Mono](https://github.com/adobe-fonts/source-han-mono) compile. The Source™ Han glyphs are exactly twice the width of Fira Code glyphs, and the Source Han characters are slightly more spread out than you would expect to see in normal text.
 
+（机器翻译） Integrated Code 火是一款以代码为核心的字体，融合了最新的[Fira Code](https://github.com/tonsky/FiraCode)字形与改良版[Source Han Mono](https://github.com/adobe-fonts/source-han-mono)字形。Source™ Han字符的宽度恰好是Fira Code字符的两倍，且Source Han字符的间距比常规文本中常见的略微宽松。
+
 ## Download
 
 Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest). The source code archives do not contain font files.
+
+从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译好的字体。源代码存档中不包含字体文件。
 
 ## Why?
 
