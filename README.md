@@ -67,31 +67,20 @@ uv sync
 
 ## 简化字
 
-At this time, all automated steps use Windows batch files. 🙁
+At this time, almost all automated steps use Windows batch files. 🙁 Reminder: In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
 
 1. Run workbenchInitializeVariables.cmd. (Repeat as needed.)
 2. Run workbenchCopyInputFonts.cmd.
 3. Run SourceHanMonoSCConvertTOttf.cmd. (Expect `WARNING: Dropping glyph names, they do not fit in 'post' table.`)
 4. Run SourceHanMonoSCSubset.cmd.
 5. Run SourceHanMonoSCScale.cmd.
-6. In the fontforge GUI, manually for each file:
-   1. Open SourceHanMono file.
-   2. Select all defined glyphs.
-   3. Set both bearings: increment both bearings by 200.
-   4. Merge with corresponding Fira Code file.
-   5. Generate fonts as TTF.
-   6. Ensure each filename is correct.
-      1. See "File names" below.
-      2. In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
+6. Run mergeFonts.py.
 7. Run workbenchDeleteInputFonts.cmd.
-8. Copy-paste metadataExport.txt.
-9. Manually edit the .ttx files, especially to add non-ASCII characters to names.
-10. Copy-paste metadataMerge.txt.
-11. Copy-paste metadataRename.txt.
-12. Copy-paste checkForErrors.txt.
-13. Run checkForErrorsDelete.cmd.
-14. Run releaseMoveCompiledFonts.cmd.
-15. Run workbenchDeleteAll.cmd. Expect a confirmation that you want to delete everything.
+8. Run writeMetadata.py.
+9. Copy-paste checkForErrors.txt.
+10. Run checkForErrorsDelete.cmd.
+11. Run releaseMoveCompiledFonts.cmd.
+12. Run workbenchDeleteAll.cmd. Expect a confirmation that you want to delete everything.
 
 ### File names
 

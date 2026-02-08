@@ -5,6 +5,7 @@ Carrois
 cidfont
 cidfontinfo
 Cmap
+Codepoint
 desubroutinize
 DSIG
 Edenspiekermann
@@ -14,6 +15,9 @@ fontmake
 fonttools
 gftools
 glyf
+glyphslib
+Hangugeo
+Hanja
 Hasklig
 HATTORI
 hhea
@@ -42,6 +46,7 @@ sfnt
 sfntedit
 statmake
 Subsetter
+Subtable
 ttfautohint
 unicodes
 Unihan

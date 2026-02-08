@@ -1,4 +1,4 @@
-"""Download."""
+"""Download: not in use."""
 from hunterMakesPy.filesystemToolkit import makeDirsSafely
 from Integrated_Code_Fire import URLSourceHanMono
 from Integrated_Code_Fire.unpackDownload import pathFilenameSourceHanMono

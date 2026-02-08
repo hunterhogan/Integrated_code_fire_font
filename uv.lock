@@ -1,6 +1,10 @@
 version = 1
 revision = 3
 requires-python = ">=3.14"
+resolution-markers = [
+    "implementation_name == 'cpython'",
+    "implementation_name != 'cpython'",
+]
 
 [[package]]
 name = "afdko"
@@ -22,6 +26,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/25/8697db80b1ec9e9b01d19fa52543709d88162fcaf9766027d34b63e6520e/afdko-4.0.3-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:378b6820dd64fadf0b7a6e8332e47fb707148b706b1c934593f773bddc14647f", size = 3072634, upload-time = "2025-12-05T00:36:31.228Z" },
     { url = "https://files.pythonhosted.org/packages/45/af/fefefc7349360ef02b216bfa670cd93edc7610a1c8f8be4bd59b4de5f15b/afdko-4.0.3-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:b397b7131449c473cb03c0f28d537ed05e91492d4942365d180ddf1ae04d092f", size = 5311733, upload-time = "2025-12-05T00:36:32.721Z" },
     { url = "https://files.pythonhosted.org/packages/a2/05/5f1f77e917387ad775b894bcbfef6a483a45d099a3e675a155dd0700eb65/afdko-4.0.3-py3-none-win_amd64.whl", hash = "sha256:ae53822368d09e6fd01d7773596c4fd97d68842926eb046cf4704afa6c886536", size = 4636775, upload-time = "2025-12-05T00:36:34.461Z" },
+]
+
+[[package]]
+name = "attrs"
+version = "25.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/5c/685e6633917e101e5dcb62b9dd76946cbb57c26e133bae9e0cd36033c0a9/attrs-25.4.0.tar.gz", hash = "sha256:16d5969b87f0859ef33a48b35d55ac1be6e42ae49d5e853b597db70c35c57e11", size = 934251, upload-time = "2025-10-06T13:54:44.725Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3a/2a/7cc015f5b9f5db42b7d48157e23356022889fc354a2813c15934b7cb5c0e/attrs-25.4.0-py3-none-any.whl", hash = "sha256:adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373", size = 67615, upload-time = "2025-10-06T13:54:43.17Z" },
 ]
 
 [[package]]
@@ -117,6 +130,22 @@ wheels = [
 ]
 
 [[package]]
+name = "cffsubr"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fonttools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/57/09/5987a51eeb193c700f48984502c4e7de863b2e55f3b91b66543d6f7b3b58/cffsubr-0.4.0.tar.gz", hash = "sha256:2c321b6807bd95856d921ed9dce8506495cf49fc7a89a63cb942e8bece13addd", size = 17944613, upload-time = "2025-12-05T11:26:23.001Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/b8/9250c0e579620662cfee36ac56d0fe8c55b76f8a7556ac31d64cd4dbb8b0/cffsubr-0.4.0-py3-none-macosx_10_9_universal2.whl", hash = "sha256:7f325042ff5c32eaac08f72696ffb71c0d394b086244dca72acc98314e6bb5ca", size = 732381, upload-time = "2025-12-05T11:26:16.253Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/7a/c3e9e648ffd3a6cc78d4fda4106ac8bb1731bdb4f028b7aeabfe60bf6345/cffsubr-0.4.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:1d5efde2e7c206d39051a1f0f566baafacb3c5426c80cd745f9ae54e148b0733", size = 1058704, upload-time = "2025-12-05T11:26:17.913Z" },
+    { url = "https://files.pythonhosted.org/packages/01/ae/455cae8777d7d91fd6f18c0793376211c66d9abd4bf90bd8378967d4ca75/cffsubr-0.4.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:4e1788e503cfd12c00820ba8a61b55090b8380d359d5be538e57f96f477983a5", size = 1094971, upload-time = "2025-12-05T11:26:19.267Z" },
+    { url = "https://files.pythonhosted.org/packages/36/be/0344e972fd5fb615533556f128a8956075602a2244ade7b89fac7fbb6e29/cffsubr-0.4.0-py3-none-win32.whl", hash = "sha256:67bdedb0b0567a185e9e76505ffc0330366d6d3d2a15feb4f85382afa0316352", size = 794691, upload-time = "2025-12-05T11:26:20.351Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/72/a6963693af9af7fcfdda63a641c73408ea771dda09a1c3a6b997146511e1/cffsubr-0.4.0-py3-none-win_amd64.whl", hash = "sha256:d80dc418b8babacd7c68a7cfca6d67fb2949671c80d95783e8f025c68ff683c6", size = 966138, upload-time = "2025-12-05T11:26:21.435Z" },
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.4.4"
 source = { registry = "https://pypi.org/simple" }
@@ -151,6 +180,23 @@ wheels = [
 ]
 
 [[package]]
+name = "compreffor"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fonttools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/67/77/57ce491ad29073f4b8cfa6226d8b7cba310327d71a7e7db4e2e000b08ed8/compreffor-0.6.0.tar.gz", hash = "sha256:7ea034a50c59cc78732f1480040eac2bb36f826ce2eb607c3029b5d38ab11ba8", size = 108687, upload-time = "2025-12-01T14:12:08.657Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/84/b11ed409eb98b96afb5f8bdb76ce35f0e197aeeac37fd461e0f1204a869b/compreffor-0.6.0-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:1310236492d2a75743a883f93d147382794ccfd8248633cae5c06311176656f2", size = 134398, upload-time = "2025-12-01T14:11:58.6Z" },
+    { url = "https://files.pythonhosted.org/packages/74/6a/8cd972bfa62486c82f26b3fbc2e2676af5850a5dbd36587ab706fdb4a9a8/compreffor-0.6.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:792da3dfcec299077484c3fc0779d28082faa4039462f7f7154d700cbc42a3be", size = 82459, upload-time = "2025-12-01T14:11:59.702Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/96/f0776b8d84251fc86954ba6a7cdb137030e9b3484b1aecb542f206dea3ed/compreffor-0.6.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:42dfa8cafb3e76593e47e0d37ce3c9d70225bd79cdbb6865bd2b45727cfe8dea", size = 617295, upload-time = "2025-12-01T14:12:01.002Z" },
+    { url = "https://files.pythonhosted.org/packages/2d/8b/ea84d8c4881537a6206af4befbdd30ff697dca2426820aa51377fc559394/compreffor-0.6.0-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:300eaf583a8a73f79eb71a1e06684adb5e3dbc3cc5c29beb2cb3cf848d3ae3d7", size = 583992, upload-time = "2025-12-01T14:12:02.567Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/6b/aeb573b4a84ba01113d80d5fe9a15a546e2df821ced5b7b24fec73ff67c1/compreffor-0.6.0-cp314-cp314-win32.whl", hash = "sha256:6161db868c4a2b89b5360de8a6b8eb31741179c03a440f19635ca3954d5b41d9", size = 63916, upload-time = "2025-12-01T14:12:03.786Z" },
+    { url = "https://files.pythonhosted.org/packages/49/eb/23110e30392fbf7ae6d43315569dcae6e706d3bb7621d2bd2a66faf1109e/compreffor-0.6.0-cp314-cp314-win_amd64.whl", hash = "sha256:9bdd04264eebeae58d722b4cf4cf22661ba906cc09beca52f5a81b4440e7c7f1", size = 69695, upload-time = "2025-12-01T14:12:04.817Z" },
+]
+
+[[package]]
 name = "defcon"
 version = "0.12.2"
 source = { registry = "https://pypi.org/simple" }
@@ -171,15 +217,28 @@ pens = [
 ]
 
 [[package]]
+name = "fontmake"
+version = "3.11.1"
+source = { git = "https://github.com/googlefonts/fontmake.git#e0b8b4313cccc841c99ca9b4e32c8b520b8cd09c" }
+dependencies = [
+    { name = "fontmath" },
+    { name = "fonttools", extra = ["lxml"], marker = "implementation_name == 'cpython'" },
+    { name = "fonttools", extra = ["unicode"] },
+    { name = "glyphslib" },
+    { name = "ufo2ft", extra = ["compreffor"] },
+    { name = "ufolib2" },
+]
+
+[[package]]
 name = "fontmath"
-version = "0.9.4"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fonttools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0d/ee/c23438eb01ee4b43beb79c148088589661a3eb1c6549ec82baebea059c99/fontmath-0.9.4.zip", hash = "sha256:1fd9190c9d784e1305c3c49771b91d910f246a4b7c44ede219c99a07ed7aeda4", size = 39399, upload-time = "2024-07-24T16:36:12.744Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/a5/9abc6de47d7fe4bb7ec7bd3bf67aceb7fcdf7164083d7dfb1e1beb5b0f39/fontmath-0.10.0.tar.gz", hash = "sha256:7b0b39336d83d7fc03fb9dc3c662ef7d26b2c15355a34c643d1cfbd03f89fb74", size = 31075, upload-time = "2026-02-03T16:15:24.628Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/2b/a70e202f2d314a3ebbaad02d6471cb6dcf5fa796f744f969f37a2ed038d9/fontMath-0.9.4-py2.py3-none-any.whl", hash = "sha256:ccb7a55709530520f112ebfbf5f5aa6be8c63e5baecab7a26c18a146e000a498", size = 32280, upload-time = "2024-07-24T16:36:11.098Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/90/e5a24e71f4ce52ffe0cb01183b680b35755d168eefdf4dd18bb7f9e16968/fontmath-0.10.0-py2.py3-none-any.whl", hash = "sha256:d7042cd07dadcb8fc1da6f2635cee7112d1c5b2043e5ad43ed3da3a9083d614d", size = 32373, upload-time = "2026-02-03T16:15:23.15Z" },
 ]
 
 [[package]]
@@ -248,8 +307,18 @@ woff = [
 ]
 
 [[package]]
+name = "glyphslib"
+version = "6.12.7.dev13+gbcf3fb49e"
+source = { git = "https://github.com/googlefonts/glyphsLib.git#bcf3fb49ec28bc4e5ee1f7e282fe534edec04aca" }
+dependencies = [
+    { name = "fonttools", extra = ["unicode"] },
+    { name = "openstep-plist" },
+    { name = "ufolib2" },
+]
+
+[[package]]
 name = "huntermakespy"
-version = "0.3.4"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autoflake" },
@@ -258,9 +327,9 @@ dependencies = [
     { name = "more-itertools" },
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/52/d2/8ee0e020dee09eaf5a895dd5a5efe1e5824868049bf1d10d41e31c9080be/huntermakespy-0.3.4.tar.gz", hash = "sha256:0e41abe7b37a193a071833f81d25d1eae84b02d630745da68762908f13f2b31b", size = 41161, upload-time = "2026-01-18T23:45:32.06Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/61/6f321d2b1882794636123fb359ca0b8266e731307f13d673c32665c420a0/huntermakespy-0.4.0.tar.gz", hash = "sha256:edae4ef00c5c43727a4367135cf147e03da8168be1e6b8943bc5683135d80032", size = 42327, upload-time = "2026-02-04T22:44:04.009Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/32/07b3cd64edbd54a1d40b3a8332dd8a354caed51a504786455518be742b53/huntermakespy-0.3.4-py3-none-any.whl", hash = "sha256:f42b3cfd7667bc40395126d3b675df41aedd1315ad1cccb57589a68d63963cb4", size = 44630, upload-time = "2026-01-18T23:45:30.451Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/33/38adc87910e062de7290d0e94eadeac8ef79f45cf3b6a7f745b75ad74620/huntermakespy-0.4.0-py3-none-any.whl", hash = "sha256:e23cf7fd66a9028ca83224ab1786ed423592c0b1773e0ec5cd18fb4d4fc6ed48", size = 46144, upload-time = "2026-02-04T22:44:02.412Z" },
 ]
 
 [[package]]
@@ -269,7 +338,9 @@ version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "afdko" },
+    { name = "fontmake" },
     { name = "fonttools" },
+    { name = "glyphslib" },
     { name = "huntermakespy" },
     { name = "urllib3" },
 ]
@@ -277,7 +348,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "afdko", specifier = ">=4.0.3" },
+    { name = "fontmake", git = "https://github.com/googlefonts/fontmake.git" },
     { name = "fonttools", specifier = ">=4.61.1" },
+    { name = "glyphslib", git = "https://github.com/googlefonts/glyphsLib.git" },
     { name = "huntermakespy", specifier = ">=0.3.4" },
     { name = "urllib3", specifier = ">=2.6.3" },
 ]
@@ -388,6 +461,28 @@ wheels = [
 ]
 
 [[package]]
+name = "openstep-plist"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/f5/30677439203828d586055b93d6f2616ac68dda976af7722932767b0e9a0a/openstep_plist-0.5.1.tar.gz", hash = "sha256:0068304d12cec0fe132c4f9d2077c71bfa4ff43904994fd2a2ca97d5a076338e", size = 324594, upload-time = "2025-10-08T16:14:22.685Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/92/9c/f0e1f5919f70b26297e6eee8d53eee90a259e6c97caae8d9e93f8207617b/openstep_plist-0.5.1-cp314-cp314-macosx_10_13_universal2.whl", hash = "sha256:2e162c6bc8ce6a74aa8cffed6ea4c6eaf9d1691634f41fa60f9fdafb5f5cc50d", size = 282017, upload-time = "2025-10-08T16:13:34.182Z" },
+    { url = "https://files.pythonhosted.org/packages/5a/65/33b0e5a0834e2fd5b34f147e95ab19b77cbcec8ee447b0689af2fba5cafe/openstep_plist-0.5.1-cp314-cp314-macosx_10_13_x86_64.whl", hash = "sha256:3e234e96fd964616c4ff4a73e0259ffec02dceea79e9b196479efa333dc743a5", size = 147579, upload-time = "2025-10-08T16:13:35.872Z" },
+    { url = "https://files.pythonhosted.org/packages/42/d7/0fd54b3e52e58818142556da47f24602aacc0472f84c54620eb29a8dd8cb/openstep_plist-0.5.1-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0bd1e8131cde0c7ebba913491215bce17062a058f40f72e8492c7367efd0f453", size = 887110, upload-time = "2025-10-08T16:13:37.253Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/91/07c18ea7e987a32bf0f7bfd2d7d785bfc433f4ddc720e61eaac5ad87d178/openstep_plist-0.5.1-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7d6b3be0ee364238f928edf0c63f42c886a5d884172526912793a6e20ea6dc1e", size = 890035, upload-time = "2025-10-08T16:13:38.736Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/5b/7dba704f0fc906b87b15f001d77d8d62f6f07205c191fa77d657c04afc40/openstep_plist-0.5.1-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:05e75b8ec0bb31594f06db0706c7bc660aa09d64bb44bb4ab3a6c3d027abf329", size = 1843567, upload-time = "2025-10-08T16:13:40.207Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/59/6cd9845d41ba741c3244c41396b0b893a51b0f17fb8e7043c39e46d7d1b9/openstep_plist-0.5.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:92eab472c11e0bef1ed2f979dc2462ccfb4421b7fd75a1d16d138348146d049d", size = 1913919, upload-time = "2025-10-08T16:13:41.679Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/cd/31827a1bd70d3990506262fad6b0a90ea37e550cea56c8ab4e68b5b50d92/openstep_plist-0.5.1-cp314-cp314-win_amd64.whl", hash = "sha256:d73c03100587b65371b88f1d43bda712450e3e77570eacc4597206ecfb4a400b", size = 136360, upload-time = "2025-10-08T16:13:43.284Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/9e/c09cc37674cac62ef988e9ae191d6d663084060845a8ae084177eec245ab/openstep_plist-0.5.1-cp314-cp314t-macosx_10_13_universal2.whl", hash = "sha256:a18b5c20b44b5cd5e0b2a2686059b4051c57f38138e18a72054733be1b1e4022", size = 301726, upload-time = "2025-10-08T16:13:44.611Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/7d/123d9d50bdecfe4477d7c1be9fb4ad3b572672607dfba3ca3f7ff060939b/openstep_plist-0.5.1-cp314-cp314t-macosx_10_13_x86_64.whl", hash = "sha256:3ef35e0a708679660969cf014e3b327850b5995070aadca57f6f7da1b17fe154", size = 156022, upload-time = "2025-10-08T16:13:45.897Z" },
+    { url = "https://files.pythonhosted.org/packages/ac/c9/c2e332c1c056e9a6cff029df1cf5581cb24313f7946490bd485874346fe3/openstep_plist-0.5.1-cp314-cp314t-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c67c06cebf03dc5727b36ac7f791df9208fe92cd0411b0c313018be50cf46e29", size = 984809, upload-time = "2025-10-08T16:13:47.297Z" },
+    { url = "https://files.pythonhosted.org/packages/62/74/ebbeb7b997084a011f69155bd45c4862951e45f4359b3a4a842cb1660341/openstep_plist-0.5.1-cp314-cp314t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:68f8519126cdaf0a1265a67423bb17ffb310b0c7689441edee62336bc28f9465", size = 968807, upload-time = "2025-10-08T16:13:48.966Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/7d/6fe2abb94c531dccd125619a01cc4dac27af2664f40a4fbdb2702459ad0a/openstep_plist-0.5.1-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:abd5aacc7b7b8ecc4fe6a5b334cbc328ac2a90101d7f9e1ac778f47aaf4202aa", size = 1924419, upload-time = "2025-10-08T16:13:51.136Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/57/91868221e9cda093ff5c96606dda9c34061e23899c00252bac24bd94e5fa/openstep_plist-0.5.1-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:0d8b66ed0ae0183415ae583b9511d53002f99952bbc3674f95d3b48d35c14674", size = 1986187, upload-time = "2025-10-08T16:13:53.423Z" },
+    { url = "https://files.pythonhosted.org/packages/88/7e/c5a97331829da4ebc3c2018c1764193f24b32106ca894c765ade3c2b1cac/openstep_plist-0.5.1-cp314-cp314t-win_amd64.whl", hash = "sha256:dd2c52cbb15151deed3bc27093cce6c6cc6f61d965788b0b2ef733e376fb5e16", size = 155260, upload-time = "2025-10-08T16:13:54.859Z" },
+]
+
+[[package]]
 name = "pyclipper"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -425,14 +520,47 @@ wheels = [
 
 [[package]]
 name = "tqdm"
-version = "4.67.2"
+version = "4.67.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/27/89/4b0001b2dab8df0a5ee2787dcbe771de75ded01f18f1f8d53dedeea2882b/tqdm-4.67.2.tar.gz", hash = "sha256:649aac53964b2cb8dec76a14b405a4c0d13612cb8933aae547dd144eacc99653", size = 169514, upload-time = "2026-01-30T23:12:06.555Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/a9/6ba95a270c6f1fbcd8dac228323f2777d886cb206987444e4bce66338dd4/tqdm-4.67.3.tar.gz", hash = "sha256:7d825f03f89244ef73f1d4ce193cb1774a8179fd96f31d7e1dcde62092b960bb", size = 169598, upload-time = "2026-02-03T17:35:53.048Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f5/e2/31eac96de2915cf20ccaed0225035db149dfb9165a9ed28d4b252ef3f7f7/tqdm-4.67.2-py3-none-any.whl", hash = "sha256:9a12abcbbff58b6036b2167d9d3853042b9d436fe7330f06ae047867f2f8e0a7", size = 78354, upload-time = "2026-01-30T23:12:04.368Z" },
+    { url = "https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl", hash = "sha256:ee1e4c0e59148062281c49d80b25b67771a127c85fc9676d3be5f243206826bf", size = 78374, upload-time = "2026-02-03T17:35:50.982Z" },
+]
+
+[[package]]
+name = "ufo2ft"
+version = "3.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "booleanoperations" },
+    { name = "cffsubr" },
+    { name = "fontmath" },
+    { name = "fonttools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/dd/e012f600a8cbbe89ba94388a8a2f2d78409f42c082aba8a0c01e433f6b2f/ufo2ft-3.7.0.tar.gz", hash = "sha256:e467db380d42774d4a6016a13879987d76f921c5d62cc3cc78960da019f1e80e", size = 444724, upload-time = "2025-12-16T17:21:37.232Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ae/3d/47178f95dc9131fc3bf512a1a465915ff90b40c871b1633a1f243bec57f4/ufo2ft-3.7.0-py3-none-any.whl", hash = "sha256:c5a4ea03e8c6af8aabaeda597460ef73bb7df0cabc1abfb7cff389a7da7f672e", size = 165026, upload-time = "2025-12-16T17:21:35.783Z" },
+]
+
+[package.optional-dependencies]
+compreffor = [
+    { name = "compreffor" },
+]
+
+[[package]]
+name = "ufolib2"
+version = "0.18.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "fonttools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f7/32/4df1cf042ec48d0179d011067ba76051bb2f8462a5477bb33127f9391b41/ufolib2-0.18.1.tar.gz", hash = "sha256:7de0efcc361c573f2537ee7ceabdb3bc64b19b61304cfa25e828caa7db8ae1a4", size = 97870, upload-time = "2025-07-10T11:40:43.824Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/e3/53c4bd16a3b8a57e2d8840a31bb8dfe2a94f2e5e09f21ca5557521394bbe/ufolib2-0.18.1-py3-none-any.whl", hash = "sha256:d9d46da19880c09a2e7a25facabe8f30e5847236af0b21721442313d1e037db3", size = 53034, upload-time = "2025-07-10T11:40:42.426Z" },
 ]
 
 [[package]]
