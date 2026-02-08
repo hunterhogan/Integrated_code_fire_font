@@ -1,7 +1,5 @@
 @PUSHD %pathWorkbenchFonts%
 
-del I*.ttx
-
 START "ttx Bold"     CMD /C "ttx IntegratedCode火简化字Bold.ttf && ttx IntegratedCode火简化字Bold.ttx & TITLE I'm done & PAUSE"
 START "ttx Light"    CMD /C "ttx IntegratedCode火简化字Light.ttf && ttx IntegratedCode火简化字Light.ttx & TITLE I'm done & PAUSE"
 START "ttx Medium"   CMD /C "ttx IntegratedCode火简化字Medium.ttf && ttx IntegratedCode火简化字Medium.ttx & TITLE I'm done & PAUSE"

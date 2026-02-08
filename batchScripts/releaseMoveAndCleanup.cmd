@@ -1,3 +1,10 @@
+@PUSHD %pathWorkbenchFonts%
+
+del I*.ttx
+del I*#?.ttf
+
+@POPD
+
 @ECHO OFF
 
 SET pathDestination="%pathRoot%\fonts"
@@ -9,3 +16,19 @@ SET filename=IntegratedCode.zip
 PUSHD %pathDestination%
 7z a "%filename%" "%filenameMask%" -mx=9
 POPD
+
+@ECHO ON
+
+@PUSHD %pathWorkbenchFonts%
+
+del *.*
+
+cd ..
+
+RMDIR %pathWorkbenchFonts%
+
+cd ..
+
+RMDIR %pathWorkbench%
+
+@POPD
