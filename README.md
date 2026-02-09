@@ -65,13 +65,11 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 uv sync
 ```
 
+Reminder: In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
+
 ## 简化字
 
-The batch files organize calls to the Python scripts. Reminder: In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
-
-1. Run workbenchInitialize.cmd.
-2. Run workbenchMergeFonts.cmd.
-3. Run releaseMoveAndCleanup.cmd.
+Run go.py.
 
 ### File names
 
@@ -87,18 +85,19 @@ IntegratedCode火简化字Regular.ttf
 ## The future?
 
 1. You contribute to the project?
-2. Improve automation.
-3. Weights:
+2. Improve configuration management.
+3. Improve and generalize flow.
+4. Weights:
    1. Fira Code has six different weights.
    2. Source Han Mono has seven different weights.
    3. Monospaced Noto Sans CJK has two different weights.
    4. Replace English-language weight names with weight values. "Regular", for example, may become "400".
-4. Investigate: some monospaced glyphs in Noto Sans CJK are updated replacements for the glyphs in Source Han Mono.
-5. Improve font file "packaging", such as:
+5. Investigate: some monospaced glyphs in Noto Sans CJK are updated replacements for the glyphs in Source Han Mono.
+6. Improve font file "packaging", such as:
    1. One file instead of six.
    2. Smaller total size.
-6. Create and use a [Vendor ID](https://learn.microsoft.com/en-us/typography/vendors/register).
-7. Create versions for other languages and writing systems.
+7. Create and use a [Vendor ID](https://learn.microsoft.com/en-us/typography/vendors/register).
+8. Create versions for other languages and writing systems.
    1. If this project were to have a well-designed process for compiling a code-centric font with Latin and simplified Chinese glyphs, it would be *relatively* easy to expand the process to some other languages and writing systems.
    2. There seem to be tens of thousands of compatible glyphs in Source Han Mono, Source Han Code JP, and Noto Sans CJK.
    3. I strongly oppose forcing all writing systems to use Latin characters as the name of the writing system.

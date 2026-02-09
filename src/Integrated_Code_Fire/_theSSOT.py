@@ -6,30 +6,11 @@ from pathlib import Path
 settingsPackage = PackageSettings('Integrated_Code_Fire')
 
 pathWorkbenchHARDCODED: Path = Path(settingsPackage.pathPackage.parent.parent, 'workbench').resolve()
-pathWorkbenchFontsHARDCODED: Path = Path(pathWorkbenchHARDCODED, 'fonts').resolve()
-pathWorkbench: Path = pathWorkbenchHARDCODED
-pathWorkbenchFonts: Path = pathWorkbenchFontsHARDCODED
+pathAssetsHARDCODED: Path = Path(settingsPackage.pathPackage.parent.parent, 'assets').resolve()
+pathSourceHanMonoSCHARDCODED: Path = Path(settingsPackage.pathPackage.parent.parent, 'SourceHanMonoSC').resolve()
 
 fontFamilyHARDCODED: str = 'Integrated Code 火'
 fontLocale简化字HARDCODED: str = '简化字'
-
-fontFamily: str = fontFamilyHARDCODED
-fontLocale简化字: str = fontLocale简化字HARDCODED
-
-fontFamilyLocale: str = ' '.join((fontFamily, fontLocale简化字))  # noqa: FLY002
-filenameFontFamilyLocale: str = fontFamilyLocale.replace(' ', '')
-achVendID: str = '1INT'
-
-dictionaryWeights: dict[str, WeightIn] = {
-	'Light': WeightIn('Light', 'Light'),
-	'Regular': WeightIn('Regular', 'Regular'),
-	'Retina': WeightIn('Retina', 'Normal'),
-	'Medium': WeightIn('Medium', 'Medium'),
-	'SemiBold': WeightIn('SemiBold', 'Bold'),
-	'Bold': WeightIn('Bold', 'Heavy'),
-}
-
-unicodeSC: tuple[str, ...] = ('3000-303F', '3400-4DBF', '4E00-9FFF', 'F900-FAFF')
 
 subsetOptionsHARDCODED = subset.Options(
 	glyph_names = True,
@@ -42,12 +23,28 @@ subsetOptionsHARDCODED = subset.Options(
 	symbol_cmap = True,
 	layout_features='*',
 )
-subsetOptions: subset.Options = subsetOptionsHARDCODED
-
 fontUnitsPerEmTargetHARDCODED: int = 2000
+
+dictionaryWeights: dict[str, WeightIn] = {
+	'Light': WeightIn('Light', 'Light'),
+	'Regular': WeightIn('Regular', 'Regular'),
+	'Retina': WeightIn('Retina', 'Normal'),
+	'Medium': WeightIn('Medium', 'Medium'),
+	'SemiBold': WeightIn('SemiBold', 'Bold'),
+	'Bold': WeightIn('Bold', 'Heavy'),
+}
+
+fontFamily: str = fontFamilyHARDCODED
+fontLocale简化字: str = fontLocale简化字HARDCODED
+fontFamilyLocale: str = ' '.join((fontFamily, fontLocale简化字))  # noqa: FLY002
+filenameFontFamilyLocale: str = fontFamilyLocale.replace(' ', '')
+
+pathAssets: Path = pathAssetsHARDCODED
+pathSourceHanMonoSC: Path = pathSourceHanMonoSCHARDCODED
+pathWorkbench: Path = pathWorkbenchHARDCODED
+pathWorkbenchFonts: Path = pathWorkbench / 'fonts'
+
+achVendID: str = '1INT'
 fontUnitsPerEmTarget: int = fontUnitsPerEmTargetHARDCODED
-
-# Latest Fira Code releases:
-# https://github.com/hunterhogan/FiraCode/releases/download/6.900HH/Fira_Code_v6.900HH.zip
-# https://github.com/hunterhogan/FiraCode/releases/latest
-
+subsetOptions: subset.Options = subsetOptionsHARDCODED
+unicodeSC: tuple[str, ...] = ('3000-303F', '3400-4DBF', '4E00-9FFF', 'F900-FAFF')

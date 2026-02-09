@@ -1,11 +1,13 @@
 ADBO
 afdko
+arcname
 bopomofo
 Carrois
 cidfont
 cidfontinfo
 Cmap
 Codepoint
+compresslevel
 desubroutinize
 DSIG
 Edenspiekermann
@@ -43,6 +45,7 @@ recalc
 Ryoko
 Sandoll
 Sarasa
+SCHARDCODED
 sfnt
 sfntedit
 statmake

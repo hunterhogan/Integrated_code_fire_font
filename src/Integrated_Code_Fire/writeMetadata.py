@@ -1,4 +1,43 @@
-# ruff: noqa: D100, D103
+"""You can use this module to write OpenType name metadata into built `.ttf` files.
+
+(AI generated docstring)
+
+This module updates each built `.ttf` font file in `pathWorkbenchFonts` by
+setting `TTFont['head'].fontRevision`, `TTFont['OS/2'].achVendID`, and selected
+name records in `TTFont['name']`. The name record values are produced by
+`getMetadataByFontWeight`.
+
+Contents
+--------
+Variables
+	fontVersion
+		Font revision value written into the `head` table.
+	fontVersionHARDCODED
+		Hard-coded value used to initialize `fontVersion`.
+	langID
+		Name record language identifier used by `updateFontFile`.
+	platEncID
+		Name record platform encoding identifier used by `updateFontFile`.
+	platformID
+		Name record platform identifier used by `updateFontFile`.
+
+Functions
+	getMetadataByFontWeight
+		Build the name record value mapping for a specific `weight`.
+	updateFontFile
+		Update one `.ttf` font file in place.
+	writeMetadata
+		Update all built `.ttf` font files in `pathWorkbenchFonts`.
+
+References
+----------
+[1] fontTools `TTFont` documentation.
+	https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
+[2] Integrated_Code_Fire.go.go
+	Internal package reference.
+
+"""
+
 from fontTools.ttLib import TTFont
 from Integrated_Code_Fire import achVendID, filenameFontFamilyLocale, fontFamilyLocale, pathWorkbenchFonts
 from typing import TYPE_CHECKING
@@ -10,6 +49,32 @@ fontVersionHARDCODED: float = 0.002
 fontVersion: float = fontVersionHARDCODED
 
 def getMetadataByFontWeight(weight: str) -> dict[int, str]:
+	"""You can build a name record mapping for a given `weight`.
+
+	(AI generated docstring)
+
+	This function returns a `dict[int, str]` that maps a TrueType name record
+	identifier to a name record value. The returned mapping is used by
+	`updateFontFile` to update `TTFont['name']`.
+
+	Parameters
+	----------
+	weight : str
+		Font weight suffix derived from the `.ttf` filename stem.
+
+	Returns
+	-------
+	dictionaryNameIDToNameRecordValue : dict[int, str]
+		Mapping from name record identifier to name record value.
+
+	References
+	----------
+	[1] fontTools `TTFont` documentation.
+		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
+	[2] Integrated_Code_Fire.writeMetadata.updateFontFile
+		Internal package reference.
+
+	"""
 	return {
 		0: 'Copyright 2026 Hunter Hogan (https://www.patreon.com/integrated), with Reserved Font Name "Integrated."',
 		1: fontFamilyLocale,
@@ -35,6 +100,55 @@ platEncID: int = 1
 langID: int = 0x0409
 
 def updateFontFile(pathFilenameFont: Path) -> None:
+	"""You can update a `.ttf` font file in place.
+
+	(AI generated docstring)
+
+	This function derives `weight` from `pathFilenameFont.stem` by removing the
+	prefix `filenameFontFamilyLocale`. This function uses
+	`getMetadataByFontWeight(weight)` to populate a name record mapping.
+
+	This function opens `pathFilenameFont` with `TTFont` and writes these values.
+
+	* `TTFont['head'].fontRevision` is set to `fontVersion`.
+	* `TTFont['OS/2'].achVendID` is set to `achVendID`.
+	* Each name record in the mapping is applied by removing and setting a name
+		record using `platformID`, `platEncID`, and `langID`.
+
+	Parameters
+	----------
+	pathFilenameFont : Path
+		Path to the `.ttf` font file to update.
+
+	Returns
+	-------
+	resultNone : None
+		This function returns `None`.
+
+	Raises
+	------
+	OSError
+		Raised if `TTFont.save` fails to write `pathFilenameFont`.
+	Exception
+		Raised if `fontTools` fails to parse or update `pathFilenameFont`.
+
+	Examples
+	--------
+	This function is invoked by `writeMetadata`.
+
+	>>> from Integrated_Code_Fire.writeMetadata import writeMetadata
+	>>> writeMetadata()
+
+	References
+	----------
+	[1] fontTools `TTFont` documentation.
+		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
+	[2] Integrated_Code_Fire.writeMetadata.getMetadataByFontWeight
+		Internal package reference.
+	[3] Integrated_Code_Fire.writeMetadata.writeMetadata
+		Internal package reference.
+
+	"""
 	weight: str = pathFilenameFont.stem.removeprefix(filenameFontFamilyLocale)
 	dictionaryNameIDToNameRecordValue: dict[int, str] = getMetadataByFontWeight(weight)
 	with TTFont(pathFilenameFont) as fontBase:
@@ -46,7 +160,36 @@ def updateFontFile(pathFilenameFont: Path) -> None:
 		fontBase.save(pathFilenameFont)
 
 def writeMetadata() -> None:
-	set(map(updateFontFile, pathWorkbenchFonts.glob(f'{filenameFontFamilyLocale}*.ttf')))
+	"""You can update metadata for each built `.ttf` file in `pathWorkbenchFonts`.
 
-if __name__ == '__main__':
-	writeMetadata()
+	(AI generated docstring)
+
+	This function calls `updateFontFile` for each `.ttf` file matched by
+	`pathWorkbenchFonts.glob(f'{filenameFontFamilyLocale}*.ttf')`.
+
+	Returns
+	-------
+	resultNone : None
+		This function returns `None`.
+
+	Raises
+	------
+	Exception
+		Raised if `updateFontFile` fails for any matched `.ttf` file.
+
+	Examples
+	--------
+	This function is invoked by `Integrated_Code_Fire.go.go`.
+
+	>>> from Integrated_Code_Fire.go import go
+	>>> go()
+
+	References
+	----------
+	[1] Integrated_Code_Fire.go.go
+		Internal package reference.
+	[2] Integrated_Code_Fire.writeMetadata.updateFontFile
+		Internal package reference.
+
+	"""
+	set(map(updateFontFile, pathWorkbenchFonts.glob(f'{filenameFontFamilyLocale}*.ttf')))

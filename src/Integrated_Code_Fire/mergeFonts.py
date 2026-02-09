@@ -317,6 +317,3 @@ def mergeFonts() -> None:
 		fontBase.save(pathWorkbenchFonts / f"{filenameFontFamilyLocale}{weightName}.ttf")
 		fontBase.close()
 		fontSourceHanMono.close()
-
-if __name__ == '__main__':
-	mergeFonts()
