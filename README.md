@@ -67,13 +67,12 @@ uv sync
 
 ## 简化字
 
-At this time, almost all automated steps use Windows batch files. 🙁 Reminder: In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
+The batch files organize calls to the Python scripts. Reminder: In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
 
-1. Run workbenchInitializeVariables.cmd. (Repeat as needed.)
-2. Run workbenchPrepareSourceHanMonoSC.cmd. (Expect `WARNING: Dropping glyph names, they do not fit in 'post' table.`)
-3. Run workbenchMergeFonts.cmd.
-4. Copy-paste checkForErrors.txt.
-5. Run releaseMoveAndCleanup.cmd.
+1. Run workbenchInitialize.cmd.
+2. Run workbenchMergeFonts.cmd.
+3. Copy-paste checkForErrors.txt.
+4. Run releaseMoveAndCleanup.cmd.
 
 ### File names
 

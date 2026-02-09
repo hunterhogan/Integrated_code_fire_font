@@ -26,6 +26,7 @@ hotconv
 Iosevka
 JANG
 KANG
+loca
 Lunde
 makeotf
 makeotfexe
@@ -51,5 +52,6 @@ ttfautohint
 unicodes
 Unihan
 Upem
+VORG
 yeon
 zopfli
