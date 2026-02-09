@@ -9,13 +9,14 @@ SET pathRoot=%CD%
 SET pathWorkbench=%pathRoot%\workbench
 SET pathWorkbenchFonts=%pathWorkbench%\fonts
 
-SET pathRoot & SET pathWorkbench
-
+@REM I compiled these on my local system. I've not had luck when downloading from the official repo.
 SET pathSource=%pathRoot%\SourceHanMonoSC
 SET filenameMask=*SC*.otf
 ROBOCOPY %pathSource% %pathWorkbenchFonts% %filenameMask% /NS /NC /NDL /NJH /NJS
 
-SET pathSource="%pathRoot%\Fira_Code_v6.99\ttf\Fira Code"
-SET filenameMask=*.ttf
-ROBOCOPY %pathSource% %pathWorkbenchFonts% %filenameMask% /NS /NC /NDL /NJH /NJS
+SET filenameZIP=FiraCode.zip
+SET URL=https://github.com/hunterhogan/FiraCode/releases/download/6.900HH/Fira_Code_v6.900HH.zip
+CALL curl -o %pathWorkbench%\%filenameZIP% -L %URL%
 
+SET zipPathInternal=ttf\Fira Code
+CALL 7z e -aoa "-o%pathWorkbenchFonts%" "%pathWorkbench%\%filenameZIP%" "%zipPathInternal%\*"

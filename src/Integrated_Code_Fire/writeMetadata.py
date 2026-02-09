@@ -14,7 +14,7 @@ def getMetadataByFontWeight(weight: str) -> dict[int, str]:
 		0: 'Copyright 2026 Hunter Hogan (https://www.patreon.com/integrated), with Reserved Font Name "Integrated."',
 		1: fontFamilyLocale,
 		2: weight,
-		3: f"{fontVersion};{filenameFontFamilyLocale}{weight}",
+		3: f"{fontVersion};{achVendID};{filenameFontFamilyLocale}{weight}",
 		4: f"{fontFamilyLocale}{weight}",
 		5: f"Version {fontVersion}",
 		6: f"{filenameFontFamilyLocale}{weight}",

@@ -71,8 +71,7 @@ The batch files organize calls to the Python scripts. Reminder: In file and font
 
 1. Run workbenchInitialize.cmd.
 2. Run workbenchMergeFonts.cmd.
-3. Copy-paste checkForErrors.txt.
-4. Run releaseMoveAndCleanup.cmd.
+3. Run releaseMoveAndCleanup.cmd.
 
 ### File names
 

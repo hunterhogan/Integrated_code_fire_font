@@ -18,7 +18,7 @@ fontLocale简化字: str = fontLocale简化字HARDCODED
 
 fontFamilyLocale: str = ' '.join((fontFamily, fontLocale简化字))  # noqa: FLY002
 filenameFontFamilyLocale: str = fontFamilyLocale.replace(' ', '')
-achVendID: str = '    '
+achVendID: str = '1INT'
 
 dictionaryWeights: dict[str, WeightIn] = {
 	'Light': WeightIn('Light', 'Light'),
@@ -46,3 +46,8 @@ subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 fontUnitsPerEmTargetHARDCODED: int = 2000
 fontUnitsPerEmTarget: int = fontUnitsPerEmTargetHARDCODED
+
+# Latest Fira Code releases:
+# https://github.com/hunterhogan/FiraCode/releases/download/6.900HH/Fira_Code_v6.900HH.zip
+# https://github.com/hunterhogan/FiraCode/releases/latest
+
