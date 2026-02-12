@@ -30,94 +30,14 @@ References
 	Internal package reference.
 
 """
-
-from Integrated_Code_Fire import pathWorkbench, pathWorkbenchFonts
-from Integrated_Code_Fire.getFontInput import getFiraCode, getSourceHanMonoSC
-from Integrated_Code_Fire.makeAssets import makeAssets
+from Integrated_Code_Fire import pathWorkbenchSourceHanMono
+from Integrated_Code_Fire.foundry import smithyCastsFiraCode, smithyCastsSourceHanMono
+from Integrated_Code_Fire.logistics import cleanWorkbench, removeWorkbench, valetCopiesFilesToWorkbenchFonts
 from Integrated_Code_Fire.mergeFonts import mergeFonts
+from Integrated_Code_Fire.shipping import makeAssets
 from Integrated_Code_Fire.writeMetadata import writeMetadata
 
-def cleanWorkbench() -> None:
-	"""You can remove source font input files from `pathWorkbenchFonts`.
-
-	(AI generated docstring)
-
-	This function deletes each `Path` in `pathWorkbenchFonts` that matches the
-	glob pattern `'FiraCode*.ttf'` and deletes each `Path` in `pathWorkbenchFonts`
-	that matches the glob pattern `'SourceHanMonoSC*.otf'`.
-
-	Returns
-	-------
-	resultNone : None
-		This function returns `None`.
-
-	Raises
-	------
-	OSError
-		Raised if a filesystem operation fails while deleting files.
-
-	Examples
-	--------
-	This function is invoked by `go`.
-
-	>>> from Integrated_Code_Fire.go import go
-	>>> go()
-
-	References
-	----------
-	[1] Integrated_Code_Fire.go.go
-		Internal package reference.
-
-	"""
-	for pathFilename in pathWorkbenchFonts.glob('FiraCode*.ttf'):
-		pathFilename.unlink()
-
-	for pathFilename in pathWorkbenchFonts.glob('SourceHanMonoSC*.otf'):
-		pathFilename.unlink()
-
-def removeWorkbench() -> None:
-	"""You can remove `pathWorkbenchFonts` and `pathWorkbench`.
-
-	(AI generated docstring)
-
-	This function deletes each file in `pathWorkbenchFonts`, removes the
-	`pathWorkbenchFonts` directory, deletes each file in `pathWorkbench`, and
-	removes the `pathWorkbench` directory.
-
-	Returns
-	-------
-	resultNone : None
-		This function returns `None`.
-
-	Raises
-	------
-	OSError
-		Raised if a filesystem operation fails while deleting files or directories.
-
-	Examples
-	--------
-	This function is invoked by `go`.
-
-	>>> from Integrated_Code_Fire.go import go
-	>>> go()
-
-	References
-	----------
-	[1] Integrated_Code_Fire.go.go
-		Internal package reference.
-
-	"""
-	for pathFilename in pathWorkbenchFonts.iterdir():
-		pathFilename.unlink()
-
-	pathWorkbenchFonts.rmdir()
-
-	for pathFilename in pathWorkbench.iterdir():
-		pathFilename.unlink()
-
-	pathWorkbench.rmdir()
-
-def go() -> None:
+def go(workersMaximum: int = 1) -> None:
 	"""You can run the end-to-end font build assembly line.
 
 	(AI generated docstring)
@@ -156,8 +76,9 @@ def go() -> None:
 		Internal package reference.
 
 	"""
-	getFiraCode()
-	getSourceHanMonoSC()
+	smithyCastsFiraCode()
+	smithyCastsSourceHanMono(workersMaximum)
+	valetCopiesFilesToWorkbenchFonts(pathWorkbenchSourceHanMono, 'Simplified_Chinese*.otf')
 	mergeFonts()
 	cleanWorkbench()
 	writeMetadata()
@@ -165,4 +86,4 @@ def go() -> None:
 	removeWorkbench()
 
 if __name__ == '__main__':
-	go()
+	go(14)

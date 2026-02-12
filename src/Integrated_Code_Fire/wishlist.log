@@ -1,0 +1,22 @@
+makeotf [Warning] Could not find an Adobe CMAP Mac encoding mapping file. If you want a Mac cmap subtable, please specify the Mac CMAP encoding file with the '-cm' option.
+makeotf [Note] setting the USE_TYPO_METRICS OS/2 fsSelection bit 7 from fontinfo keyword.
+makeotf [Note] setting the WEIGHT_WIDTH_SLOPE_ONLY OS/2 fsSelection bit 8 from fontinfo keyword.
+makeotf [Note] setting the OBLIQUE OS/2 fsSelection bit 9 from fontinfo keyword.
+makeotf [Note] adding the style Bold from fontinfo keyword.
+makeotf [Note] adding the style Italic from fontinfo keyword.
+WARNING: Macintosh Adobe CMap not seen
+
+WARNING: cmap{plat=1,script=2,lang=0}: empty encoding # "script=N", where N is an integer.
+
+   NOTE: cmap{plat=0,script=5,lang=0}: Number of default Unicode Variation Sequence values 10 # The very last integer varies.
+   NOTE: cmap{plat=0,script=5,lang=0}: Number of non-default UVS values 1469 # The very last integer varies.
+
+makeotfexe processing font <SourceHanMonoHC-ExtraLight>
+Built release mode font 'C:\apps\Integrated_Code_Fire\workbench\SourceHanMono\Hong_Kong.ExtraLight.SourceHanMono.otf' Revision 1.002
+
+# For the two lines above: The name changes.
+# It might be smart:
+# 1) to confirm that the raw number of "Built release" lines == "makeotfexe processing" lines.
+# 2) to confirm that the number of "Built release" lines == the number of expected fonts.
+
+# If an output message doesn't match one of the above, I want to see it.

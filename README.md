@@ -46,7 +46,7 @@ The website "[Programming Fonts](https://www.programmingfonts.org/)" has preview
 ## The past
 
 1. Mozilla founds FirefoxOS and ["Fira" font](https://github.com/mozilla/Fira) family for FirefoxOS fonts.
-2. [Nikita Prokopov](https://twitter.com/nikitonsky) pursues programming perfection: forming [Fira Code](https://github.com/tonsky/FiraCode) from Fira Mono™.
+2. [Nikita Prokopov](https://twitter.com/nikitonsky) pursues programming perfection: forging [Fira Code](https://github.com/tonsky/FiraCode) from Fira Mono™.
 3. Adobe creates [Source Sans Pro](https://github.com/adobe-fonts/source-sans).
 4. Adobe makes [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) based on Source Sans Pro.
 5. Adobe and Google make a font together. Adobe calls it [Source Han Sans](https://github.com/adobe-fonts/source-han-sans), and [Google Fonts](https://fonts.google.com/noto/fonts) calls it [Noto Sans CJK](https://github.com/notofonts/noto-cjk).
@@ -65,7 +65,10 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 uv sync
 ```
 
-Reminder: In file and font names, avoid using - (hyphen), – (en dash), — (em dash), or similar characters next to ideographs and Hangul: they can be ambiguous due to 一 (an ideograph representing "1").
+### Tips to make life easier
+
+1. In the names of files and fonts, to avoid confusion, don't use these characters as separators: - (hyphen), – (en dash), — (em dash), or similar characters. For some readers, they can be ambiguous due to 一, which is an ideograph representing "1".
+2. When preparing files, only make changes in the "workbench" directory. Never change files in directories with glyph and metadata information unless you intend the change to be permanent and universal.
 
 ## 简化字
 
@@ -82,6 +85,47 @@ IntegratedCode火简化字Retina.ttf
 IntegratedCode火简化字Regular.ttf
 ```
 
+## New Plan: Integrated Code--pan-CJK
+
+### Option A. Consecutive compiles
+
+1. Start with Source Han Mono. At maximum glyph count.
+   1. All python.
+   2. ☑️makeotf: All 70 versions.
+   3. Figure out how to modify the glyph/metadata files
+      1. 2000 em per unit
+      2. Both bearings increased by 200
+      3. Remove CIDs that Fira Code will provide.
+   4. Steps in "COMMANDS.txt" that are not implemented and I don't know if I can/should skip them:
+      1. `tx`
+      2. `sfntedit -a` per file
+      3. `sfntedit -x` for all weights of straight Japanese and `sfntedit -a` for the other nine options.
+      4. `otf2otc -o` with the 10 files from the previous step to make the superOTC.
+2. Get ~2600 glyphs from Fira Code.
+   1. ☑️All python.
+   2. Fira Code uses GID, not CID--whatever that means.
+   3. Determine if there are glyphs I should remove from Fira Code.
+   4. Overwrite most or all of the corresponding glyphs.
+   5. A couple of code-points seem to be in the CJK section.
+   6. If Fira Code + Source Han Mono has too many glyphs, I will need to remove some--probably from Source Han Mono.
+   7. Remove features such as Docker and the plethora of options.
+3. ❓Merge the fonts before the next step?
+4. Compile one pan-CJK superOTC.
+   1. I _think_ it is easier to start with the limited-glyph, pan-CJK superOTC, then make language/region-specific files that have glyphs not in the pan-CJK. But I don't really know how this process works, and I'm probably wrong.
+   2. The compile-engine for Source Han Mono is automated to make one pan-CJK superOTC.
+   3. Organize and standardize files and filenames in SourceHanMono and SourceHanMono\Resources.
+   4. All python.
+5. Compile language-specific OTC.
+    1. I think it should be easy to adapt the Source Han Mono code to make per-language OTC.
+6. Add updated and/or additional JP glyphs from Source Han Code JP.
+    1. Source Han Code JP was updated after the last Source Han Mono, but IDK what was updated--the changes might not be JP.
+    2. Source Han Mono couldn't fit all pan-CLK glyphs: Source Han Code JP may have some JP glyphs not in Source Han Mono.
+7. Add updated and/or additional CJK from Noto Sans Mono.
+    1. Source/Noto Han Sans/Serif have updated, but only Noto has a mono variant.
+    2. The mono variant only has two weights and no variable version: I think that is a barrier.
+    3. Overwrite existing versions with updated versions for the superOTC.
+    4. Add new glyphs per language.
+
 ## The future?
 
 1. You contribute to the project?
@@ -93,14 +137,16 @@ IntegratedCode火简化字Regular.ttf
    3. Monospaced Noto Sans CJK has two different weights.
    4. Replace English-language weight names with weight values. "Regular", for example, may become "400".
 5. Investigate: some monospaced glyphs in Noto Sans CJK are updated replacements for the glyphs in Source Han Mono.
-6. Improve font file "packaging", such as:
+6. Investigate: some monospaced glyphs in Source Han Code JP are updated replacements for the glyphs in Source Han Mono.
+7. Improve font file "packaging", such as:
    1. One file instead of six.
    2. Smaller total size.
-7. Create and use a [Vendor ID](https://learn.microsoft.com/en-us/typography/vendors/register).
-8. Create versions for other languages and writing systems.
-   1. If this project were to have a well-designed process for compiling a code-centric font with Latin and simplified Chinese glyphs, it would be *relatively* easy to expand the process to some other languages and writing systems.
+8. Create and use a [Vendor ID](https://learn.microsoft.com/en-us/typography/vendors/register).
+9. Create versions for other languages and writing systems.
+   1. If this project were to have a well-designed process for compiling a code-centric font with Latin and simplified Chinese glyphs, it would be _relatively_ easy to expand the process to some other languages and writing systems.
    2. There seem to be tens of thousands of compatible glyphs in Source Han Mono, Source Han Code JP, and Noto Sans CJK.
    3. I strongly oppose forcing all writing systems to use Latin characters as the name of the writing system.
+10. Create one file: updated pan-CJK with Fira Code.
 
 ### Potential font collections
 

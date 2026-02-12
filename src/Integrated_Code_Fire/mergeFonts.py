@@ -40,7 +40,7 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import newTable, TTFont
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import (
-	dictionaryWeights, filenameFontFamilyLocale, fontUnitsPerEmTarget, pathWorkbenchFonts, subsetOptions, unicodeSC)
+	dictionaryWeights, filenameFontFamilyLocale, fontUnitsPerEm, pathWorkbenchFonts, subsetOptions, unicodeSC)
 from typing import TYPE_CHECKING
 import fontTools.ttLib.scaleUpem
 
@@ -84,78 +84,71 @@ def _glyphSetConvertsCubicToQuadratic(glyphSet: _TTGlyphSet, maximumErrorUnitsPe
 		dictionaryGlyphNameToGlyph[glyphName] = penTrueTypeGlyph.glyph()
 	return dictionaryGlyphNameToGlyph
 
-def _fontSourceHanMonoUpdatesHorizontalMetrics(fontSourceHanMono: TTFont, tableGlyf: table__g_l_y_f) -> None:
+def _updatesHorizontalMetrics(ttFont: TTFont, tableGlyf: table__g_l_y_f) -> None:
 	for glyphName, glyphObject in tableGlyf.glyphs.items():
 		if hasattr(glyphObject, 'xMin'):
-			fontSourceHanMono['hmtx'][glyphName] = (
-				fontSourceHanMono['hmtx'][glyphName][advanceWidth],
-				glyphObject.xMin,
-			)
+			ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][advanceWidth], glyphObject.xMin)
 
-def _fontSourceHanMonoConvertsOpenTypeToTrueTypeFont(fontSourceHanMono: TTFont) -> None:
-	glyphOrder: list[str] = fontSourceHanMono.getGlyphOrder()
+def _convertOpenTypeToTrueType(ttFont: TTFont) -> None:
+	glyphOrder: list[str] = ttFont.getGlyphOrder()
 
-	fontSourceHanMono['loca'] = newTable('loca')
-	fontSourceHanMono['glyf'] = newTable('glyf')
-	fontSourceHanMono['glyf'].glyphOrder = glyphOrder
-	fontSourceHanMono['glyf'].glyphs = _glyphSetConvertsCubicToQuadratic(
-		fontSourceHanMono.getGlyphSet(),
-		maximumErrorUnitsPerEm,
-		reverseContourDirection = reverseContourDirection,
-	)
-	del fontSourceHanMono['CFF ']
-	if 'VORG' in fontSourceHanMono:
-		del fontSourceHanMono['VORG']
-	fontSourceHanMono['glyf'].compile(fontSourceHanMono)
-	_fontSourceHanMonoUpdatesHorizontalMetrics(fontSourceHanMono, fontSourceHanMono['glyf'])
+	ttFont['loca'] = newTable('loca')
+	ttFont['glyf'] = newTable('glyf')
+	ttFont['glyf'].glyphOrder = glyphOrder
+	ttFont['glyf'].glyphs = _glyphSetConvertsCubicToQuadratic(ttFont.getGlyphSet(), maximumErrorUnitsPerEm, reverseContourDirection = reverseContourDirection)
+	del ttFont['CFF ']
+	if 'VORG' in ttFont:
+		del ttFont['VORG']
+	ttFont['glyf'].compile(ttFont)
+	_updatesHorizontalMetrics(ttFont, ttFont['glyf'])
 
-	fontSourceHanMono['maxp'] = newTable('maxp')
-	fontSourceHanMono['maxp'].tableVersion = 0x00010000
-	fontSourceHanMono['maxp'].maxZones = 1  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxTwilightPoints = 0  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxStorage = 0  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxFunctionDefs = 0  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxInstructionDefs = 0  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxStackElements = 0  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxSizeOfInstructions = 0  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['maxp'].maxComponentElements = max(
+	ttFont['maxp'] = newTable('maxp')
+	ttFont['maxp'].tableVersion = 0x00010000
+	ttFont['maxp'].maxZones = 1  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxTwilightPoints = 0  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxStorage = 0  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxFunctionDefs = 0  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxInstructionDefs = 0  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxStackElements = 0  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxSizeOfInstructions = 0  # ty:ignore[unresolved-attribute]
+	ttFont['maxp'].maxComponentElements = max(
 		(
 			len(glyphObject.components)
 			for glyphObject in filter(
 				lambda glyphObject: hasattr(glyphObject, 'components'),
-				fontSourceHanMono['glyf'].glyphs.values(),
+				ttFont['glyf'].glyphs.values(),
 			)
 		),
 		default = 0,
 	)
-	fontSourceHanMono['maxp'].compile(fontSourceHanMono)
+	ttFont['maxp'].compile(ttFont)
 
-	fontSourceHanMono['post'].formatType = postTableFormat  # ty:ignore[unresolved-attribute]
-	fontSourceHanMono['post'].extraNames = list[str]()
-	fontSourceHanMono['post'].mapping = dict[str, int]()
-	fontSourceHanMono['post'].glyphOrder = glyphOrder
+	ttFont['post'].formatType = postTableFormat  # ty:ignore[unresolved-attribute]
+	ttFont['post'].extraNames = list[str]()
+	ttFont['post'].mapping = dict[str, int]()
+	ttFont['post'].glyphOrder = glyphOrder
 	try:
-		fontSourceHanMono['post'].compile(fontSourceHanMono)
+		ttFont['post'].compile(ttFont)
 	except OverflowError:
-		fontSourceHanMono['post'].formatType = 3  # ty:ignore[unresolved-attribute]
-		fontSourceHanMono['post'].compile(fontSourceHanMono)
+		ttFont['post'].formatType = 3  # ty:ignore[unresolved-attribute]
+		ttFont['post'].compile(ttFont)
 
-	fontSourceHanMono.sfntVersion = "\000\001\000\000"
+	ttFont.sfntVersion = "\000\001\000\000"
 
-def _fontSubsetsToUnicodeRanges(fontToSubset: TTFont, listUnicodeCodepoint: list[int], subsetOptionsForFont: subset.Options) -> None:
-	subsetter = subset.Subsetter(options=subsetOptionsForFont)
-	subsetter.populate(unicodes=listUnicodeCodepoint)
+def _subsetsByUnicodeRanges(fontToSubset: TTFont, unicodeRanges: list[int], subsetOptions: subset.Options) -> None:
+	subsetter = subset.Subsetter(options=subsetOptions)
+	subsetter.populate(unicodes=unicodeRanges)
 	subsetter.subset(fontToSubset)
 
-def _sourceHanMonoBuildsPreparedFont(pathFilenameSourceHanMonoOpenType: Path, listUnicodeCodepoint: list[int]) -> TTFont:
-	fontSourceHanMono: TTFont = TTFont(pathFilenameSourceHanMonoOpenType)
-	_fontSourceHanMonoConvertsOpenTypeToTrueTypeFont(fontSourceHanMono)
-	_fontSubsetsToUnicodeRanges(fontSourceHanMono, listUnicodeCodepoint, deepcopy(subsetOptions))
-	fontTools.ttLib.scaleUpem.scale_upem(fontSourceHanMono, fontUnitsPerEmTarget)
-	applyBearingIncrementToFont(fontSourceHanMono, bearingIncrement)
-	return fontSourceHanMono
+def _sourceHanMonoBuildsPreparedFont(pathFilename: Path, listUnicodeCodepoint: list[int]) -> TTFont:
+	ttFont: TTFont = TTFont(pathFilename)
+	_convertOpenTypeToTrueType(ttFont)
+	_subsetsByUnicodeRanges(ttFont, listUnicodeCodepoint, deepcopy(subsetOptions))
+	fontTools.ttLib.scaleUpem.scale_upem(ttFont, fontUnitsPerEm)
+	applyBearingIncrementToFont(ttFont, bearingIncrement)
+	return ttFont
 
-def applyBearingIncrementToFont(fontSourceHanMono: TTFont, bearingIncrement: int) -> None:
+def applyBearingIncrementToFont(ttFont: TTFont, bearingIncrement: int) -> None:
 	"""You can apply a horizontal bearing increment to every glyph outline and metric in a `TTFont` object.
 
 	(AI generated docstring)
@@ -189,22 +182,20 @@ def applyBearingIncrementToFont(fontSourceHanMono: TTFont, bearingIncrement: int
 	[1] fontTools - TTFont, glyph and hmtx table behavior
 		https://fonttools.readthedocs.io/en/latest/
 	"""
-	glyphOrder: list[str] = fontSourceHanMono.getGlyphOrder()
+	glyphOrder: list[str] = ttFont.getGlyphOrder()
 
 	for glyphName in glyphOrder:
-		glyph: Glyph = fontSourceHanMono['glyf'][glyphName]
+		glyph: Glyph = ttFont['glyf'][glyphName]
 		if glyph.isComposite():
 			for component in glyph.components:
 				component.x += bearingIncrement
-			glyph.recalcBounds(fontSourceHanMono['glyf'])
+			glyph.recalcBounds(ttFont['glyf'])
 		elif glyph.numberOfContours != 0:
 			glyph.coordinates.translate((bearingIncrement, 0))
-			glyph.recalcBounds(fontSourceHanMono['glyf'])
+			glyph.recalcBounds(ttFont['glyf'])
 
-		fontSourceHanMono['hmtx'][glyphName] = (
-			fontSourceHanMono['hmtx'][glyphName][advanceWidth] + bearingIncrement * 2,
-			fontSourceHanMono['hmtx'][glyphName][leftSideBearing] + bearingIncrement,
-		)
+		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][advanceWidth] + bearingIncrement * 2
+			, ttFont['hmtx'][glyphName][leftSideBearing] + bearingIncrement)
 
 def mergeSourceFontIntoBaseFont(fontBase: TTFont, fontSource: TTFont) -> None:
 	"""You can merge glyph outlines, horizontal metrics, and Unicode-to-glyph mappings from one `TTFont` into another.
@@ -311,7 +302,7 @@ def mergeFonts() -> None:
 	"""
 	listUnicodeCodepoint: list[int] = subset.parse_unicodes(','.join(unicodeSC))
 	for weightName, weightValues in dictionaryWeights.items():
-		fontSourceHanMono: TTFont = _sourceHanMonoBuildsPreparedFont(pathWorkbenchFonts / f"SourceHanMonoSC-{weightValues.SourceHanMono}.otf"  , listUnicodeCodepoint)
+		fontSourceHanMono: TTFont = _sourceHanMonoBuildsPreparedFont(pathWorkbenchFonts / f"Simplified_Chinese.{weightValues.SourceHanMono}.SourceHanMono.otf", listUnicodeCodepoint)
 		fontBase: TTFont = TTFont(pathWorkbenchFonts / f"FiraCode-{weightValues.FiraCode}.ttf")
 		mergeSourceFontIntoBaseFont(fontBase, fontSourceHanMono)
 		fontBase.save(pathWorkbenchFonts / f"{filenameFontFamilyLocale}{weightName}.ttf")
