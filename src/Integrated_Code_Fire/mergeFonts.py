@@ -40,7 +40,8 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import newTable, TTFont
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import (
-	dictionaryWeights, filenameFontFamilyLocale, fontUnitsPerEm, pathWorkbenchFonts, subsetOptions, unicodeSC)
+	advanceWidth, bearingIncrement, dictionaryWeights, filenameFontFamilyLocale, fontUnitsPerEm, leftSideBearing,
+	maximumErrorUnitsPerEm, pathWorkbenchFonts, postTableFormat, reverseContourDirection, subsetOptions, unicodeSC)
 from typing import TYPE_CHECKING
 import fontTools.ttLib.scaleUpem
 
@@ -49,30 +50,6 @@ if TYPE_CHECKING:
 	from fontTools.ttLib.tables.O_S_2f_2 import table_O_S_2f_2
 	from fontTools.ttLib.ttGlyphSet import _TTGlyph, _TTGlyphSet
 	from pathlib import Path
-
-advanceWidth: int = 0
-leftSideBearing: int = 1
-
-bearingIncrement: int = 200
-"""Horizontal increment in font units added to left bearings and advance
-widths when integrating Source Han glyphs.
-
-(AI generated docstring)
-
-The `bearingIncrement` value is used by `applyBearingIncrementToFont` to
-translate glyph coordinates and to increase left side bearings and advance
-widths so that merged CJK glyphs have an appropriate visual offset when
-combined with Latin monospace glyphs.
-
-References
-----------
-[1] fontTools - Read the Docs
-	https://fonttools.readthedocs.io/en/latest/
-"""
-
-maximumErrorUnitsPerEm: float = 1.0
-postTableFormat: float = 2.0
-reverseContourDirection: bool = True
 
 def _glyphSetConvertsCubicToQuadratic(glyphSet: _TTGlyphSet, maximumErrorUnitsPerEm: float, *, reverseContourDirection: bool) -> dict[str, Glyph]:
 	dictionaryGlyphNameToGlyph: dict[str, Glyph] = {}

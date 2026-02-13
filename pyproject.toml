@@ -16,7 +16,7 @@ dependencies = [
     "gftools>=0.9.99",
     "glyphslib[colr,ufo-normalization]>=6.12.6",
     "hunterMakesPy>=0.4.0",
-    "urllib3>=2.6.3",
+    "pyright>=1.1.408",
 ]
 
 [build-system]
@@ -25,3 +25,10 @@ build-backend = "uv_build"
 
 [tool.uv.sources]
 afdko-python-modules = { git = "https://github.com/adobe-type-tools/python-modules" }
+
+[dependency-groups]
+dev = [
+    "brotli-stubs>=1.1.0",
+    "lxml-stubs>=0.5.1",
+    "pycparser-stubs>=0.0.1",
+]

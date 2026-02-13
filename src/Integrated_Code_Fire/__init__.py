@@ -4,9 +4,12 @@ from Integrated_Code_Fire._theTypes import WeightIn as WeightIn
 
 # isort: split
 from Integrated_Code_Fire._theSSOT import (
-	achVendID as achVendID, dictionaryWeights as dictionaryWeights, filenameFontFamilyLocale as filenameFontFamilyLocale,
-	fontFamilyLocale as fontFamilyLocale, fontUnitsPerEm as fontUnitsPerEm, pathAssets as pathAssets,
+	achVendID as achVendID, advanceWidth as advanceWidth, bearingIncrement as bearingIncrement,
+	dictionaryWeights as dictionaryWeights, filenameFontFamilyLocale as filenameFontFamilyLocale,
+	fontFamilyLocale as fontFamilyLocale, fontUnitsPerEm as fontUnitsPerEm, leftSideBearing as leftSideBearing,
+	maximumErrorUnitsPerEm as maximumErrorUnitsPerEm, pathAssets as pathAssets,
 	pathFilenameFiraCodeGlyphs as pathFilenameFiraCodeGlyphs, pathRootCompiled as pathRootCompiled,
 	pathWorkbench as pathWorkbench, pathWorkbenchFonts as pathWorkbenchFonts,
-	pathWorkbenchSourceHanMono as pathWorkbenchSourceHanMono, settingsPackage as settingsPackage,
-	subsetOptions as subsetOptions, unicodeSC as unicodeSC)
+	pathWorkbenchSourceHanMono as pathWorkbenchSourceHanMono, postTableFormat as postTableFormat,
+	reverseContourDirection as reverseContourDirection, settingsPackage as settingsPackage, subsetOptions as subsetOptions,
+	unicodeSC as unicodeSC)

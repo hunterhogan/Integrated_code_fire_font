@@ -31,7 +31,7 @@ References
 
 """
 from Integrated_Code_Fire import pathWorkbenchSourceHanMono
-from Integrated_Code_Fire.foundry import smithyCastsFiraCode, smithyCastsSourceHanMono
+from Integrated_Code_Fire.foundry import smithyCastsFiraCode, smithyCastsFontFamily
 from Integrated_Code_Fire.logistics import cleanWorkbench, removeWorkbench, valetCopiesFilesToWorkbenchFonts
 from Integrated_Code_Fire.mergeFonts import mergeFonts
 from Integrated_Code_Fire.shipping import makeAssets
@@ -77,7 +77,8 @@ def go(workersMaximum: int = 1) -> None:
 
 	"""
 	smithyCastsFiraCode()
-	smithyCastsSourceHanMono(workersMaximum)
+	fontFamily: str = 'SourceHanMono'
+	smithyCastsFontFamily(fontFamily, workersMaximum)
 	valetCopiesFilesToWorkbenchFonts(pathWorkbenchSourceHanMono, 'Simplified_Chinese*.otf')
 	mergeFonts()
 	cleanWorkbench()

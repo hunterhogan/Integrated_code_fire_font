@@ -1,24 +1,62 @@
 # Integrated Code 火
 
-Integrated Code 火 is a code-centric font combining an up-to-date [Fira Code](https://github.com/tonsky/FiraCode) compile with a modified [Source Han Mono](https://github.com/adobe-fonts/source-han-mono) compile. The Source™ Han glyphs are exactly twice the width of Fira Code glyphs, and the Source Han characters are slightly more spread out than you would expect to see in normal text.
+Integrated Code 火 is a code-centric font combining [Fira Code](https://github.com/tonsky/FiraCode) and [Source Han Mono](https://github.com/adobe-fonts/source-han-mono). The duospaced Source™ Han Mono glyphs are twice the width of the monospaced Fira Code glyphs, so you can have consistent alignment.
 
-（机器翻译） Integrated Code 火是一款以代码为核心的字体，融合了最新的[Fira Code](https://github.com/tonsky/FiraCode)字形与改良版[Source Han Mono](https://github.com/adobe-fonts/source-han-mono)字形。Source™ Han字符的宽度恰好是Fira Code字符的两倍，且Source Han字符的间距比常规文本中常见的略微宽松。
+（机器翻译） Integrated Code 火是一款以代码为核心设计的字体，融合了[Fira Code](https://github.com/tonsky/FiraCode)与[Source Han Mono](https://github.com/adobe-fonts/source-han-mono)的特性。其双倍间距的Source™ Han Mono字符宽度是等宽Fira Code字符的两倍，从而实现统一的代码对齐效果。
 
 ## Download
 
-Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest). The source code archives do not contain font files.
+Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest). The compiled fonts are not in the repository source code.
 
-从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译好的字体。源代码存档中不包含字体文件。
+从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译后的字体。编译后的字体不在仓库源代码中。
 
 ## Why?
 
-1. I used the Fira Code font when programming.
-2. I sometimes use simplified Chinese ideograms as identifiers or other labels.
-3. Because of the width mismatch between Fira Code and the ideograms, the vertical alignment of my code was wonky.
-4. I mistakenly believed it would be easy to scale another font and glue it to Fira Code.
-5. I'm tenacious.
+You want a Western and Han mono-/duospaced programming font with ligatures and consistent alignment.
 
-## Comparison of weight names
+## Some alternative programming fonts
+
+The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
+
+### With only Western glyphs
+
+- [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
+- As of 2026 February 13, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
+
+### With CJK / Han / Unihan glyphs
+
+- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
+- [Maple Mono](https://github.com/subframe7536/maple-font)
+- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
+
+## Font genealogy
+
+| "Fira"                                                  | "Source"                                                          |     | "Source Han"                                                            |     | "Noto"                                                      |
+| ------------------------------------------------------- | ----------------------------------------------------------------- | --- | ----------------------------------------------------------------------- | --- | ----------------------------------------------------------- |
+| [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ↔️  | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
+| ⬇️                                                      | ⬇️                                                                |     | ⬇️                                                                      |     | ⬇️                                                          |
+| [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | ➡️  | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
+| ⬇️                                                      |                                                                   | ↘️  | ⬇️                                                                      |     |                                                             |
+| [Fira Code HH](https://github.com/hunterhogan/FiraCode) |                                                                   |     | [Source Han Mono](https://github.com/adobe-fonts/source-han-mono)       |     |                                                             |
+
+               ↘️                      ↙️
+                   Integrated Code 火
+
+## Working with the files in the repository
+
+The repository is optimized to work with [Visual Studio Code](https://code.visualstudio.com/), but that is not required.
+
+1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) or fork the repository. ([Visual Studio Code instructions.](https://code.visualstudio.com/docs/sourcecontrol/repos-remotes))
+2. Install the Python packages in a virtual environment with ["uv"](https://docs.astral.sh/uv/); from the folder with the repository, run:
+
+    uv sync
+
+### Tips to make life easier
+
+1. In the names of files and fonts, to avoid confusion, don't use these characters as separators: - (hyphen), – (en dash), — (em dash), or similar characters. For some readers, they can be ambiguous due to 一, which is an ideograph representing "1".
+2. When preparing files, only make changes in the "workbench" directory. Never change files in directories with glyph and metadata information unless you intend the change to be permanent and universal.
+
+### Comparison of weight names
 
 | Integrated Code 火 | Fira Code | Source Han Mono |
 | ------------------ | --------- | --------------- |
@@ -30,66 +68,13 @@ Download the compiled fonts from the [latest release](https://github.com/hunterh
 | SemiBold           | SemiBold  | Bold            |
 | Bold               | Bold      | Heavy           |
 
-## Some alternative fonts
-
-[Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font; based on [Fira Mono](https://github.com/bBoxType/FiraSans).
-
-Some fonts with CJK / Han / Unihan glyphs:
-
-- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
-- [Maple Mono](https://github.com/subframe7536/maple-font)
-- [Source Han Mono](https://github.com/adobe-fonts/source-han-mono)
-- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
-
-The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
-
-## The past
-
-1. Mozilla founds FirefoxOS and ["Fira" font](https://github.com/mozilla/Fira) family for FirefoxOS fonts.
-2. [Nikita Prokopov](https://twitter.com/nikitonsky) pursues programming perfection: forging [Fira Code](https://github.com/tonsky/FiraCode) from Fira Mono™.
-3. Adobe creates [Source Sans Pro](https://github.com/adobe-fonts/source-sans).
-4. Adobe makes [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) based on Source Sans Pro.
-5. Adobe and Google make a font together. Adobe calls it [Source Han Sans](https://github.com/adobe-fonts/source-han-sans), and [Google Fonts](https://fonts.google.com/noto/fonts) calls it [Noto Sans CJK](https://github.com/notofonts/noto-cjk).
-6. Google creates a monospace version in two weights of [Noto Sans CJK](https://github.com/notofonts/noto-cjk), but it can be difficult to find.
-7. Masataka Hattori and Adobe create [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp) from Source Han Sans and Source Code Pro.
-8. Ken Lunde and Adobe create [Source Han Mono](https://github.com/adobe-fonts/source-han-mono) from Source Han Sans, Source Code Pro, and Source Han Code JP.
-
-## Working with the files in the repository
-
-The repository is optimized to work with [Visual Studio Code](https://code.visualstudio.com/), but that is not required.
-
-1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) or fork the repository. ([Visual Studio Code instructions.](https://code.visualstudio.com/docs/sourcecontrol/repos-remotes))
-2. Install the Python packages in a virtual environment with ["uv"](https://docs.astral.sh/uv/); from the folder with the repository, run:
-
-```sh
-uv sync
-```
-
-### Tips to make life easier
-
-1. In the names of files and fonts, to avoid confusion, don't use these characters as separators: - (hyphen), – (en dash), — (em dash), or similar characters. For some readers, they can be ambiguous due to 一, which is an ideograph representing "1".
-2. When preparing files, only make changes in the "workbench" directory. Never change files in directories with glyph and metadata information unless you intend the change to be permanent and universal.
-
 ## 简化字
 
 Run go.py.
 
-### File names
-
-```sh
-IntegratedCode火简化字Bold.ttf
-IntegratedCode火简化字SemiBold.ttf
-IntegratedCode火简化字Light.ttf
-IntegratedCode火简化字Medium.ttf
-IntegratedCode火简化字Retina.ttf
-IntegratedCode火简化字Regular.ttf
-```
-
 ## New Plan: Integrated Code--pan-CJK
 
-### Option A. Consecutive compiles
-
-1. Start with Source Han Mono. At maximum glyph count.
+1. Compile Source Han Mono. At maximum glyph count.
    1. All python.
    2. ☑️makeotf: All 70 versions.
    3. Figure out how to modify the glyph/metadata files
@@ -101,19 +86,18 @@ IntegratedCode火简化字Regular.ttf
       2. `sfntedit -a` per file
       3. `sfntedit -x` for all weights of straight Japanese and `sfntedit -a` for the other nine options.
       4. `otf2otc -o` with the 10 files from the previous step to make the superOTC.
-2. Get ~2600 glyphs from Fira Code.
+2. Compile Fira Code.
    1. ☑️All python.
-   2. Fira Code uses GID, not CID--whatever that means.
-   3. Determine if there are glyphs I should remove from Fira Code.
-   4. Overwrite most or all of the corresponding glyphs.
+   2. ~2600 glyphs.
+   3. Fira Code uses GID, not CID--whatever that means.
+   4. Determine if there are glyphs I should remove from Fira Code.
    5. A couple of code-points seem to be in the CJK section.
    6. If Fira Code + Source Han Mono has too many glyphs, I will need to remove some--probably from Source Han Mono.
-   7. Remove features such as Docker and the plethora of options.
-3. ❓Merge the fonts before the next step?
+3. ❓"Merge" the fonts before the next step?
 4. Compile one pan-CJK superOTC.
    1. I _think_ it is easier to start with the limited-glyph, pan-CJK superOTC, then make language/region-specific files that have glyphs not in the pan-CJK. But I don't really know how this process works, and I'm probably wrong.
    2. The compile-engine for Source Han Mono is automated to make one pan-CJK superOTC.
-   3. Organize and standardize files and filenames in SourceHanMono and SourceHanMono\Resources.
+   3. ☑️Organize and standardize files and filenames in SourceHanMono and SourceHanMono\Resources.
    4. All python.
 5. Compile language-specific OTC.
     1. I think it should be easy to adapt the Source Han Mono code to make per-language OTC.

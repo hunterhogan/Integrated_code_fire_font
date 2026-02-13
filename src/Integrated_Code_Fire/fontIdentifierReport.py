@@ -260,7 +260,7 @@ def _invertsBestCmap(bestCmap: dict[int, str] | None) -> dict[str, list[int]]:
 
 	return dictionaryGlyphNameToUnicodeScalarValue
 
-def buildFontIdentifierReport( pathFont: Path , dictionaryGlyphNameToSourceHanMonoCid: dict[str, int] ) -> FontIdentifierReport:
+def buildFontIdentifierReport(pathFont: Path , dictionaryGlyphNameToSourceHanMonoCid: dict[str, int]) -> FontIdentifierReport:
 	"""You can create a FontIdentifierReport for the font file at pathFont.
 
 	The function opens the file with fontTools.TTFont, reads glyph order and the
@@ -439,7 +439,7 @@ def _defaultGlobPatterns() -> list[str]:
 		, r'workbench/**/*.woff2'
 	]
 
-def writeReportsForFontPaths( listFontPath: Sequence[Path] , pathOutputDirectory: Path , dictionaryGlyphNameToSourceHanMonoCid: dict[str, int] ) -> None:
+def writeReportsForFontPaths(listFontPath: Sequence[Path] , pathOutputDirectory: Path , dictionaryGlyphNameToSourceHanMonoCid: dict[str, int]) -> None:
 	"""You can write CSV and JSON reports for each font in listFontPath.
 
 	The function calls buildFontIdentifierReport for each entry and emits two
