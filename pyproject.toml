@@ -13,7 +13,6 @@ dependencies = [
     "defcon[lxml,pens]>=0.12.2",
     "fontmake[all]>=3.11.1",
     "fonttools>=4.61.1",
-    "gftools>=0.9.99",
     "glyphslib[colr,ufo-normalization]>=6.12.6",
     "hunterMakesPy>=0.4.0",
     "more-itertools>=10.8.0",
