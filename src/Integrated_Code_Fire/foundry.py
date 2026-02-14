@@ -35,7 +35,8 @@ References
 """
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
-from Integrated_Code_Fire import pathFilenameFiraCodeGlyphs, pathWorkbench, pathWorkbenchFonts, settingsPackage
+from Integrated_Code_Fire import (
+	lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, pathRoot, pathWorkbench, pathWorkbenchFonts)
 from itertools import product as CartesianProduct
 from multiprocessing import Pool
 from typing import Literal, TYPE_CHECKING
@@ -284,19 +285,19 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 		Internal package reference.
 
 	"""
-	pathRoot: Path = settingsPackage.pathPackage.parent.parent / fontFamily
+	pathFontFamily: Path = pathRoot / fontFamily
 	pathCompiled: Path = pathWorkbench / fontFamily
 	pathCompiled.mkdir(parents=True, exist_ok=True)
 
 	afdko_makeotf([
-		'-f', str((pathRoot / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfont', 'ps'])))
-		, '-ff', str((pathRoot / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'features'])))
-		, '-fi', str((pathRoot / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfontinfo'])))
-		, '-cs', _getCharacterSet(locale)
-		, '-ch', str((pathRoot / 'metadata') / '.'.join(filter(truthy, [locale, style, fontFamily, 'UTF32', 'H'])))
-		, '-ci', str((pathRoot / 'metadata') / '.'.join(filter(truthy, [locale, style, fontFamily, 'sequences', 'txt'])))
+		'-f', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfont', 'ps'])))
+		, '-ff', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'features'])))
+		, '-fi', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfontinfo'])))
+		, '-cs', lookupAFDKOCharacterSet[locale]
+		, '-ch', str((pathFontFamily / 'metadata') / '.'.join(filter(truthy, [locale, style, fontFamily, 'UTF32', 'H'])))
+		, '-ci', str((pathFontFamily / 'metadata') / '.'.join(filter(truthy, [locale, style, fontFamily, 'sequences', 'txt'])))
 		, '-omitMacNames'
-		, '-mf', str((pathRoot / 'metadata') / 'FontMenuNameDB')
+		, '-mf', str((pathFontFamily / 'metadata') / 'FontMenuNameDB')
 		, '-r'
 		, '-nS'
 		, '-omitDSIG'
@@ -305,45 +306,8 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 		, '-o', str(pathCompiled / '.'.join(filter(truthy, [locale, style, weight, fontFamily, 'otf'])))
 	])
 
-def _getCharacterSet(locale: str) -> str:
-	"""I use this shared lookup to map locale identifiers to AFDKO character set identifiers.
-
-	(AI generated docstring)
-
-	I use this function to provide the `-cs` (character set) argument for AFDKO
-	`makeotf` [1] when compiling Source Han Mono fonts. The function maps each
-	locale identifier to the corresponding Adobe CID character set identifier:
-	`'Hong_Kong'` and `'Taiwan'` use Adobe-CNS1 (`'2'`), `'Japan'` uses
-	Adobe-Japan1 (`'1'`), `'Korea'` uses Adobe-Korea1 (`'3'`), and
-	`'Simplified_Chinese'` uses Adobe-GB1 (`'25'`).
-
-	Parameters
-	----------
-	locale : str
-		Font locale, one of `'Hong_Kong'`, `'Japan'`, `'Korea'`,
-		`'Simplified_Chinese'`, or `'Taiwan'`.
-
-	Returns
-	-------
-	characterSetIdentifier : str
-		Adobe CID character set identifier for AFDKO `makeotf` [1].
-
-	Raises
-	------
-	KeyError
-		Raised if `locale` is not one of the five supported locale identifiers.
-
-	References
-	----------
-	[1] AFDKO makeotf - Read the Docs
-		https://adobe-type-tools.github.io/afdko/AFDKO-Overview.html#makeotf
-	[2] Adobe CID character sets - Adobe Type
-		https://github.com/adobe-type-tools/cmap-resources
-
-	"""
-	return {'Hong_Kong': '2', 'Japan': '1', 'Korea': '3', 'Simplified_Chinese': '25', 'Taiwan': '2'}[locale]
-
 if __name__ == '__main__':
 	smithyCastsFiraCode()
 	smithyCastsFontFamily('SourceHanMono', 14)
+	smithyCastsFontFamily('FrankenFont', 14)
 

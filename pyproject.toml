@@ -16,7 +16,8 @@ dependencies = [
     "gftools>=0.9.99",
     "glyphslib[colr,ufo-normalization]>=6.12.6",
     "hunterMakesPy>=0.4.0",
-    "pyright>=1.1.408",
+    "more-itertools>=10.8.0",
+    "tqdm>=4.67.3",
 ]
 
 [build-system]

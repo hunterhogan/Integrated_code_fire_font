@@ -25,10 +25,22 @@ References
 	https://docs.python.org/3/library/shutil.html#shutil.copy2
 
 """
-from Integrated_Code_Fire import pathWorkbench, pathWorkbenchFonts
-from Integrated_Code_Fire._theSSOT import pathWorkbenchSourceHanMono
+from Integrated_Code_Fire import pathRoot, pathWorkbench, pathWorkbenchFonts, pathWorkbenchSourceHanMono
 from pathlib import Path, PurePath
+from typing import TYPE_CHECKING
 import shutil
+
+if TYPE_CHECKING:
+	from collections.abc import Sequence
+
+def librarianGetsUnicode() -> Sequence[str]:  # noqa: D103
+	qq = 'SourceHanMono'
+	ww = 'Simplified_Chinese.UTF32.map'
+	pathFilename: Path = pathRoot / qq / 'metadata' / ww
+	rr = pathFilename.read_text(encoding='utf-8')
+	# return [line[11:None] for line in rr.splitlines()]  # noqa: ERA001
+	return ['0x' + line[1:9] for line in rr.splitlines()]
+
 
 def valetCopiesFilesToWorkbenchFonts(pathRoot: PurePath, theGlob: str = '*.*') -> None:
 	"""You can create `pathWorkbenchFonts` and copy files matching `theGlob` from `pathRoot` into `pathWorkbenchFonts`.
@@ -170,3 +182,7 @@ def cleanWorkbench() -> None:
 
 	for pathFilename in pathWorkbenchFonts.glob('*SourceHanMono*.otf'):
 		pathFilename.unlink()
+
+if __name__ == '__main__':
+	zz = librarianGetsUnicode()
+	print(zz[0:50])  # noqa: T201

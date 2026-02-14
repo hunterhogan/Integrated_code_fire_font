@@ -55,6 +55,9 @@ hsbw
 Iosevka
 JANG
 KANG
+keepends
+layercontents
+Layercontents
 loca
 Lunde
 lxml
@@ -63,6 +66,8 @@ makeotfexe
 Masataka
 maxp
 maxs
+metainfo
+Metainfo
 naddn
 nadds
 namerecord
@@ -81,6 +86,7 @@ PPEM
 processedglyphs
 Prokopov
 pyclipper
+pycparser
 rasterizers
 recalc
 Ryoko

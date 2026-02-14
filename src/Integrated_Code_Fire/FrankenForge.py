@@ -1,175 +1,120 @@
-# ruff: noqa: D100, D103, S105, TC003
-# pyright: reportUnknownArgumentType=false, reportUnknownVariableType=false, reportUnknownMemberType=false
-from fontTools.misc import eexec
+# ruff: noqa: D100, D103
 from fontTools.misc.psCharStrings import T1CharString
-from Integrated_Code_Fire import (
-	bearingIncrement as bearingIncrementDefault, fontUnitsPerEm as fontUnitsPerEmDefault, settingsPackage)
+from hunterMakesPy import raiseIfNone
+from Integrated_Code_Fire import bearingIncrement, fontUnitsPerEm, pathRoot
+from more_itertools import loops
+from multiprocessing import Pool
 from pathlib import Path
-from typing import cast
-import re
+from tqdm import tqdm
+import fontTools.misc.eexec
+import re as regex
 import shutil
 
-regularExpressionBeginData: re.Pattern[bytes] = re.compile(rb'%%BeginData:\s*\d+\s+Binary Bytes')
-regularExpressionFontMatrix: re.Pattern[bytes] = re.compile(rb'/FontMatrix\s+\[([^\]]+)\]\s+def')
-regularExpressionLenIv: re.Pattern[bytes] = re.compile(rb'/lenIV\s+(-?\d+)', flags=re.IGNORECASE)
-regularExpressionStartData: re.Pattern[bytes] = re.compile(rb'\(Binary\)\s+(\d+)\s+StartData')
+regexBeginData: regex.Pattern[bytes] = regex.compile(rb'%%BeginData:\s*\d+\s+Binary Bytes')
+regexFontMatrix: regex.Pattern[bytes] = regex.compile(rb'/FontMatrix\s+\[([^\]]+)\]\s+def')
+regexLenIV: regex.Pattern[bytes] = regex.compile(rb'/lenIV\s+(-?\d+)', flags=regex.IGNORECASE)
+regexOpenTypeMetricLine: regex.Pattern[str] = regex.compile(r'^(\s*)([A-Za-z][A-Za-z0-9/]*)\s+(-?\d+)(\s*;.*)$')
+regexStartData: regex.Pattern[bytes] = regex.compile(rb'\(Binary\)\s+(\d+)\s+StartData')
 
+setOpenTypeMetricNameHhea: set[str] = {'Ascender', 'Descender', 'LineGap'}
+setOpenTypeMetricNameOS2: set[str] = {'TypoAscender', 'TypoDescender', 'TypoLineGap', 'XHeight', 'CapHeight', 'winAscent', 'winDescent'}
 
-def forgesFrankenFontFromSourceHanMono(
-	pathRootSourceHanMono: Path | None = None
-	, pathRootFrankenFont: Path | None = None
-	, fontUnitsPerEmTarget: int = fontUnitsPerEmDefault
-	, bearingIncrement: int = bearingIncrementDefault
-) -> None:
-	pathRootRepository: Path = settingsPackage.pathPackage.parent.parent
-	pathRootSource: Path = pathRootSourceHanMono if pathRootSourceHanMono is not None else pathRootRepository / 'SourceHanMono'
-	pathRootTarget: Path = pathRootFrankenFont if pathRootFrankenFont is not None else pathRootRepository / 'FrankenFont'
+# TODO rename files so that `smithyCastsFontFamily` will work.
+def scientistCreatesFrankenFont(fontFamilyDonor: str = 'SourceHanMono', fontFamilyMonster: str = 'FrankenFont', workersMaximum: int = 1) -> None:
+	pathDonor: Path = pathRoot / fontFamilyDonor
+	pathMonster: Path = pathRoot / fontFamilyMonster
 
-	if not pathRootSource.exists():
-		raise FileNotFoundError(pathRootSource)
+	shutil.copytree(pathDonor, pathMonster, dirs_exist_ok=True)
 
-	if pathRootTarget.exists():
-		shutil.rmtree(pathRootTarget)
+	for pathFilename in (*Path(pathMonster, 'metadata').glob('*.txt'), *Path(pathMonster, 'metadata').glob('*.H')):
+		pathFilename: Path = pathFilename.with_stem(pathFilename.stem.replace(fontFamilyDonor, fontFamilyMonster))
 
-	listPathFilenameSource: list[Path] = sorted(pathPath for pathPath in pathRootSource.rglob('*') if pathPath.is_file())
-	if len(listPathFilenameSource) != 256:
-		message: str = f'I received {len(listPathFilenameSource) = }, but I need 256 source files.'
-		raise ValueError(message)
+	listPathFilenamesCIDFontPostScript: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfont.ps'))
+	listPathFilenamesOpenTypeFeature: list[Path] = sorted(pathMonster.glob('glyphs/*.features'))
 
-	for pathFilenameSource in listPathFilenameSource:
-		pathFilenameTarget: Path = pathRootTarget / pathFilenameSource.relative_to(pathRootSource)
-		pathFilenameTarget.parent.mkdir(parents=True, exist_ok=True)
-		if _thisIsCidFontPostScriptFile(pathFilenameSource):
-			forgesCidFontPostScriptFile(pathFilenameSource, pathFilenameTarget, fontUnitsPerEmTarget, bearingIncrement)
-		else:
-			shutil.copy2(pathFilenameSource, pathFilenameTarget)
+	with Pool(processes=workersMaximum) as concurrencyManager:
+		tqdm(concurrencyManager.map(forgerTransformsOpenTypeFeatureAtPathFilename, listPathFilenamesOpenTypeFeature), total=len(listPathFilenamesOpenTypeFeature), desc='Forging features')
+		tqdm(concurrencyManager.map(forgerTransformsCIDFontPostScriptAtPathFilename, listPathFilenamesCIDFontPostScript), total=len(listPathFilenamesCIDFontPostScript), desc='Forging CID fonts')
 
-	listPathFilenameTarget: list[Path] = sorted(pathPath for pathPath in pathRootTarget.rglob('*') if pathPath.is_file())
-	if len(listPathFilenameTarget) != len(listPathFilenameSource):
-		message: str = (
-			f'I received {len(listPathFilenameTarget) = }, '
-			f'but I need {len(listPathFilenameSource) = }.'
-		)
-		raise ValueError(message)
+#======== CID font PostScript transformations ========
 
-
-def forgesCidFontPostScriptFile(
-	pathFilenameSource: Path
-	, pathFilenameTarget: Path
-	, fontUnitsPerEmTarget: int
-	, bearingIncrement: int
-) -> None:
-	bytesFileSource: bytes = pathFilenameSource.read_bytes()
-	matchStartData = regularExpressionStartData.search(bytesFileSource)
-	if matchStartData is None:
-		message: str = f'I could not find StartData in {pathFilenameSource = }.'
-		raise ValueError(message)
+def forgerTransformsCIDFontPostScriptAtPathFilename(pathFilename: Path) -> None:
+	bytesPostScriptSource: bytes = pathFilename.read_bytes()
+	matchStartData: regex.Match[bytes] = raiseIfNone(regexStartData.search(bytesPostScriptSource))
 
 	lengthStartData: int = int(matchStartData.group(1))
 	offsetStartData: int = matchStartData.end() + 1
 	offsetEndData: int = offsetStartData + lengthStartData
-	if offsetEndData > len(bytesFileSource):
-		message: str = f'I received {offsetEndData = }, but I need a value less than or equal to {len(bytesFileSource) = }.'
+	if offsetEndData > len(bytesPostScriptSource):
+		message: str = f'I received {offsetEndData = }, but I need a value less than or equal to {len(bytesPostScriptSource) = }.'
 		raise ValueError(message)
 
-	bytesPrefix: bytes = bytesFileSource[:offsetStartData]
-	bytesStartData: bytes = bytesFileSource[offsetStartData:offsetEndData]
-	bytesSuffix: bytes = bytesFileSource[offsetEndData:]
+	bytesPrefix: bytes = bytesPostScriptSource[:offsetStartData]
+	bytesStartData: bytes = bytesPostScriptSource[offsetStartData:offsetEndData]
+	bytesSuffix: bytes = bytesPostScriptSource[offsetEndData:]
 
-	integerCidMapOffset: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'CIDMapOffset')
-	integerFdBytes: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'FDBytes')
-	integerGdBytes: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'GDBytes')
-	integerCidCount: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'CIDCount')
+	integerCIDMapOffset: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'CIDMapOffset')
+	integerFDBytes: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'FDBytes')
+	integerGDBytes: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'GDBytes')
+	integerCIDCount: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'CIDCount')
 
-	bytesPrefixTransformed: bytes = _updatesFontMatrixEntries(bytesPrefix, fontUnitsPerEmTarget)
-	bytesStartDataTransformed: bytes = _updatesCidStartDataBytes(
-		bytesPrefix
-		, bytesStartData
-		, integerCidMapOffset
-		, integerFdBytes
-		, integerGdBytes
-		, integerCidCount
-		, bearingIncrement
-	)
-	bytesFileTransformed: bytes = _rebuildsCidFontPostScriptFile(
-		bytesPrefixTransformed
-		, bytesSuffix
-		, bytesStartDataTransformed
-	)
+	bytesPrefixTransformed: bytes = _updatesFontMatrixEntries(bytesPrefix, fontUnitsPerEm)
+	bytesStartDataTransformed: bytes = _updatesCIDStartDataBytes( bytesPrefix , bytesStartData , integerCIDMapOffset , integerFDBytes , integerGDBytes , integerCIDCount , bearingIncrement )
+	bytesPostScriptTransformed: bytes = _rebuildsCIDFontPostScriptBytes( bytesPrefixTransformed , bytesSuffix , bytesStartDataTransformed )
 
-	pathFilenameTarget.write_bytes(bytesFileTransformed)
-
-
-def _thisIsCidFontPostScriptFile(pathFilename: Path) -> bool:
-	return len(pathFilename.parts) >= 2 and pathFilename.parts[-2] == 'glyphs' and pathFilename.name.endswith('.cidfont.ps')
-
+	pathFilename.write_bytes(bytesPostScriptTransformed)
 
 def _readsIntegerKeyFromPrefix(bytesPrefix: bytes, keyName: bytes) -> int:
-	matchKey = re.search(rb'/' + re.escape(keyName) + rb'\s+(-?\d+)', bytesPrefix)
-	if matchKey is None:
-		message: str = f'I could not find {keyName = } in the CID source prefix.'
-		raise ValueError(message)
+	matchKey: regex.Match[bytes] = raiseIfNone(regex.search(rb'/' + regex.escape(keyName) + rb'\s+(-?\d+)', bytesPrefix))
 	return int(matchKey.group(1))
 
-
 def _updatesFontMatrixEntries(bytesPrefix: bytes, fontUnitsPerEmTarget: int) -> bytes:
-	def replaceFontMatrix(matchFontMatrix: re.Match[bytes]) -> bytes:
+	def replaceFontMatrix(matchFontMatrix: regex.Match[bytes]) -> bytes:
+		bytesFontMatrixTransformed: bytes = matchFontMatrix.group(0)
 		listNumberAsString: list[bytes] = matchFontMatrix.group(1).split()
-		if len(listNumberAsString) != 6:
-			return matchFontMatrix.group(0)
+		if len(listNumberAsString) == 6:
+			listNumber: list[float] = [float(numberAsString) for numberAsString in listNumberAsString]
+			floatMaximumAbsoluteScale: float = max(abs(listNumber[0]), abs(listNumber[1]), abs(listNumber[2]), abs(listNumber[3]))
+			booleanScaleLooksValid: bool = floatMaximumAbsoluteScale != 0.0 and floatMaximumAbsoluteScale <= 0.01
+			if booleanScaleLooksValid:
+				integerFontUnitsPerEmSource: int = round(1.0 / floatMaximumAbsoluteScale)
+				if integerFontUnitsPerEmSource > 0:
+					floatScaleFactor: float = integerFontUnitsPerEmSource / fontUnitsPerEmTarget
+					listNumberScaled: list[float] = [number * floatScaleFactor for number in listNumber]
+					bytesNumberScaled: bytes = ' '.join(_formatsPostScriptNumber(number) for number in listNumberScaled).encode('ascii')
+					bytesFontMatrixTransformed = b'/FontMatrix [' + bytesNumberScaled + b'] def'
 
-		listNumber: list[float] = [float(numberAsString) for numberAsString in listNumberAsString]
-		floatMaximumAbsoluteScale: float = max(abs(listNumber[0]), abs(listNumber[1]), abs(listNumber[2]), abs(listNumber[3]))
-		if floatMaximumAbsoluteScale == 0.0 or floatMaximumAbsoluteScale > 0.01:
-			return matchFontMatrix.group(0)
+		return bytesFontMatrixTransformed
 
-		integerFontUnitsPerEmSource: int = round(1.0 / floatMaximumAbsoluteScale)
-		if integerFontUnitsPerEmSource <= 0:
-			return matchFontMatrix.group(0)
-
-		floatScaleFactor: float = integerFontUnitsPerEmSource / fontUnitsPerEmTarget
-		listNumberScaled: list[float] = [number * floatScaleFactor for number in listNumber]
-		bytesNumberScaled: bytes = ' '.join(_formatsPostScriptNumber(number) for number in listNumberScaled).encode('ascii')
-		return b'/FontMatrix [' + bytesNumberScaled + b'] def'
-
-	return regularExpressionFontMatrix.sub(replaceFontMatrix, bytesPrefix)
-
+	return regexFontMatrix.sub(replaceFontMatrix, bytesPrefix)
 
 def _formatsPostScriptNumber(number: float) -> str:
 	stringNumber: str = format(number, '.10f').rstrip('0').rstrip('.')
+	stringNumberFormatted: str = stringNumber
 	if stringNumber in {'', '-0'}:
-		return '0'
-	return stringNumber
+		stringNumberFormatted = '0'
+	return stringNumberFormatted
 
-
-def _updatesCidStartDataBytes(
-	bytesPrefix: bytes
-	, bytesStartData: bytes
-	, integerCidMapOffset: int
-	, integerFdBytes: int
-	, integerGdBytes: int
-	, integerCidCount: int
-	, bearingIncrement: int
-) -> bytes:
-	integerEntryCount: int = integerCidCount + 1
-	integerEntrySize: int = integerFdBytes + integerGdBytes
-	integerMapStart: int = integerCidMapOffset
+def _updatesCIDStartDataBytes(bytesPrefix: bytes, bytesStartData: bytes, integerCIDMapOffset: int, integerFDBytes: int, integerGDBytes: int, integerCIDCount: int, bearingIncrement: int) -> bytes:
+	integerEntryCount: int = integerCIDCount + 1
+	integerEntrySize: int = integerFDBytes + integerGDBytes
+	integerMapStart: int = integerCIDMapOffset
 	integerMapEnd: int = integerMapStart + integerEntryCount * integerEntrySize
 	if integerMapEnd > len(bytesStartData):
 		message: str = f'I received {integerMapEnd = }, but I need a value less than or equal to {len(bytesStartData) = }.'
 		raise ValueError(message)
 
-	listFdByEntry: list[int] = []
+	listFDByEntry: list[int] = []
 	listOffsetByEntry: list[int] = []
 	offsetMapRead: int = integerMapStart
-	for _indexEntry in range(integerEntryCount):
-		integerFd: int = 0
-		if integerFdBytes > 0:
-			integerFd = int.from_bytes(bytesStartData[offsetMapRead:offsetMapRead + integerFdBytes], 'big')
-			offsetMapRead += integerFdBytes
-		integerOffset: int = int.from_bytes(bytesStartData[offsetMapRead:offsetMapRead + integerGdBytes], 'big')
-		offsetMapRead += integerGdBytes
-		listFdByEntry.append(integerFd)
+	for _indexEntry in loops(integerEntryCount):
+		integerFD: int = 0
+		if integerFDBytes > 0:
+			integerFD = int.from_bytes(bytesStartData[offsetMapRead:offsetMapRead + integerFDBytes], 'big')
+			offsetMapRead += integerFDBytes
+		integerOffset: int = int.from_bytes(bytesStartData[offsetMapRead:offsetMapRead + integerGDBytes], 'big')
+		offsetMapRead += integerGDBytes
+		listFDByEntry.append(integerFD)
 		listOffsetByEntry.append(integerOffset)
 
 	integerGlyphDataStart: int = listOffsetByEntry[0]
@@ -183,34 +128,30 @@ def _updatesCidStartDataBytes(
 		)
 		raise ValueError(message)
 
-	listLenIvByFd: list[int] = _readsLenIvValuesByFd(bytesPrefix, max(listFdByEntry))
+	listLenIVByFD: list[int] = _readsLenIVValuesByFD(bytesPrefix, max(listFDByEntry))
 
-	bytearrayGlyphDataTransformed = bytearray()
+	bytearrayGlyphDataTransformed: bytearray = bytearray()
 	listOffsetByEntryTransformed: list[int] = []
 	integerOffsetCurrent: int = integerGlyphDataStart
-	for integerCid in range(integerCidCount):
+	for integerCID in range(integerCIDCount):
 		listOffsetByEntryTransformed.append(integerOffsetCurrent)
-		integerOffsetStart: int = listOffsetByEntry[integerCid]
-		integerOffsetEnd: int = listOffsetByEntry[integerCid + 1]
+		integerOffsetStart: int = listOffsetByEntry[integerCID]
+		integerOffsetEnd: int = listOffsetByEntry[integerCID + 1]
 		if integerOffsetStart != integerOffsetEnd:
-			integerFdCurrent: int = listFdByEntry[integerCid]
-			integerLenIv: int = listLenIvByFd[integerFdCurrent] if integerFdCurrent < len(listLenIvByFd) else 4
-			bytesCharstringTransformed: bytes = _updatesType1CharstringMetric(
-				bytesStartData[integerOffsetStart:integerOffsetEnd]
-				, bearingIncrement
-				, integerLenIv
-			)
+			integerFDCurrent: int = listFDByEntry[integerCID]
+			integerLenIV: int = listLenIVByFD[integerFDCurrent] if integerFDCurrent < len(listLenIVByFD) else 4
+			bytesCharstringTransformed: bytes = _updatesType1CharStringMetric( bytesStartData[integerOffsetStart:integerOffsetEnd] , bearingIncrement , integerLenIV )
 			bytearrayGlyphDataTransformed.extend(bytesCharstringTransformed)
 			integerOffsetCurrent += len(bytesCharstringTransformed)
 	listOffsetByEntryTransformed.append(integerOffsetCurrent)
 
-	bytearrayMapTransformed = bytearray()
+	bytearrayMapTransformed: bytearray = bytearray()
 	for indexEntry in range(integerEntryCount):
-		integerFd = listFdByEntry[indexEntry]
+		integerFD = listFDByEntry[indexEntry]
 		integerOffset = listOffsetByEntryTransformed[indexEntry]
-		if integerFdBytes > 0:
-			bytearrayMapTransformed.extend(integerFd.to_bytes(integerFdBytes, 'big'))
-		bytearrayMapTransformed.extend(integerOffset.to_bytes(integerGdBytes, 'big'))
+		if integerFDBytes > 0:
+			bytearrayMapTransformed.extend(integerFD.to_bytes(integerFDBytes, 'big'))
+		bytearrayMapTransformed.extend(integerOffset.to_bytes(integerGDBytes, 'big'))
 
 	return b''.join((
 		bytesStartData[:integerMapStart]
@@ -220,102 +161,94 @@ def _updatesCidStartDataBytes(
 		, bytesStartData[listOffsetByEntry[-1]:]
 	))
 
+def _readsLenIVValuesByFD(bytesPrefix: bytes, maximumFDIndex: int) -> list[int]:
+	listLenIVFromPrefix: list[int] = [int(matchLenIV.group(1)) for matchLenIV in regexLenIV.finditer(bytesPrefix)]
+	listLenIVByFD: list[int] = []
+	if not listLenIVFromPrefix:
+		listLenIVByFD = [4] * (maximumFDIndex + 1)
+	elif len(listLenIVFromPrefix) == 1:
+		listLenIVByFD = [listLenIVFromPrefix[0]] * (maximumFDIndex + 1)
+	else:
+		for indexFD in range(maximumFDIndex + 1):
+			if indexFD < len(listLenIVFromPrefix):
+				listLenIVByFD.append(listLenIVFromPrefix[indexFD])
+			else:
+				listLenIVByFD.append(listLenIVFromPrefix[-1])
+	return listLenIVByFD
 
-def _readsLenIvValuesByFd(bytesPrefix: bytes, maximumFdIndex: int) -> list[int]:
-	listLenIvFromFile: list[int] = [int(matchLenIv.group(1)) for matchLenIv in regularExpressionLenIv.finditer(bytesPrefix)]
-	if not listLenIvFromFile:
-		return [4] * (maximumFdIndex + 1)
-	if len(listLenIvFromFile) == 1:
-		return [listLenIvFromFile[0]] * (maximumFdIndex + 1)
-
-	listLenIvByFd: list[int] = []
-	for indexFd in range(maximumFdIndex + 1):
-		if indexFd < len(listLenIvFromFile):
-			listLenIvByFd.append(listLenIvFromFile[indexFd])
-		else:
-			listLenIvByFd.append(listLenIvFromFile[-1])
-	return listLenIvByFd
-
-
-def _updatesType1CharstringMetric(
-	bytesCharstringSource: bytes
-	, bearingIncrement: int
-	, integerLenIv: int
-) -> bytes:
+def _updatesType1CharStringMetric(bytesCharStringSource: bytes, bearingIncrement: int, integerLenIV: int) -> bytes:
 	bytesPrefixDecrypted: bytes = b''
-	bytesProgramSource: bytes = bytesCharstringSource
-	if integerLenIv != -1:
-		tupleDecrypted: tuple[bytes, int] = cast(tuple[bytes, int], eexec.decrypt(bytesCharstringSource, 4330))
+	bytesProgramSource: bytes = bytesCharStringSource
+	if integerLenIV != -1:
+		tupleDecrypted: tuple[bytes, int] = fontTools.misc.eexec.decrypt(bytesCharStringSource, 4330)
 		bytesDecrypted: bytes = tupleDecrypted[0]
-		if integerLenIv > len(bytesDecrypted):
-			message: str = f'I received {integerLenIv = }, but I need a value less than or equal to {len(bytesDecrypted) = }.'
+		if integerLenIV > len(bytesDecrypted):
+			message: str = f'I received {integerLenIV = }, but I need a value less than or equal to {len(bytesDecrypted) = }.'
 			raise ValueError(message)
-		bytesPrefixDecrypted = bytesDecrypted[:integerLenIv]
-		bytesProgramSource = bytesDecrypted[integerLenIv:]
+		bytesPrefixDecrypted = bytesDecrypted[:integerLenIV]
+		bytesProgramSource = bytesDecrypted[integerLenIV:]
 
-	charstring = T1CharString(bytecode=bytesProgramSource)
+	charstring: T1CharString = T1CharString(bytecode=bytesProgramSource)
 	charstring.decompile()
-	objectProgram = charstring.program
-	if not isinstance(objectProgram, list):
-		message: str = f'I received {objectProgram = }, but I need a list from T1CharString.program.'
-		raise TypeError(message)
-	listProgram: list[object] = cast(list[object], objectProgram)
+	listProgram: list[int | float | str | bytes] = raiseIfNone(charstring.program)
 	_updatesMetricOperands(listProgram, bearingIncrement)
 	charstring.program = listProgram
 	charstring.compile()
-	objectBytecode = charstring.bytecode
-	if not isinstance(objectBytecode, (bytes, bytearray)):
-		message: str = f'I received {objectBytecode = }, but I need bytes from T1CharString.bytecode.'
-		raise TypeError(message)
+	objectBytecode: bytes = raiseIfNone(charstring.bytecode)
 	bytesProgramTransformed: bytes = bytes(objectBytecode)
 
-	if integerLenIv == -1:
-		return bytesProgramTransformed
+	bytesCharstringTransformed: bytes = bytesProgramTransformed
+	if integerLenIV != -1:
+		bytesDecryptedTransformed: bytes = bytesPrefixDecrypted + bytesProgramTransformed
+		tupleEncrypted: tuple[bytes, int] = fontTools.misc.eexec.encrypt(bytesDecryptedTransformed, 4330)
+		bytesEncryptedTransformed: bytes = tupleEncrypted[0]
+		bytesCharstringTransformed = bytesEncryptedTransformed
 
-	bytesDecryptedTransformed: bytes = bytesPrefixDecrypted + bytesProgramTransformed
-	tupleEncrypted: tuple[bytes, int] = cast(tuple[bytes, int], eexec.encrypt(bytesDecryptedTransformed, 4330))
-	bytesEncryptedTransformed: bytes = tupleEncrypted[0]
-	return bytesEncryptedTransformed
+	return bytesCharstringTransformed
 
-
-def _updatesMetricOperands(listProgram: list[object], bearingIncrement: int) -> None:
-	for indexToken, token in enumerate(listProgram):
-		if token == 'hsbw':
-			if indexToken < 2 or not isinstance(listProgram[indexToken - 2], int) or not isinstance(listProgram[indexToken - 1], int):
-				message: str = f'I could not read expected integer operands for hsbw at {indexToken = }.'
+def _updatesMetricOperands(listProgram: list[int | float | str | bytes], bearingIncrement: int) -> None:
+	booleanMetricOperatorFound: bool = False
+	for indexTable, table in enumerate(listProgram):
+		if table == 'hsbw':
+			if indexTable < 2:
+				message: str = f'I could not read expected integer operands for hsbw at {indexTable = }.'
 				raise TypeError(message)
-			integerSideBearingBefore: int = cast(int, listProgram[indexToken - 2])
-			integerAdvanceWidthBefore: int = cast(int, listProgram[indexToken - 1])
-			listProgram[indexToken - 2] = integerSideBearingBefore + bearingIncrement
-			listProgram[indexToken - 1] = integerAdvanceWidthBefore + bearingIncrement * 2
-			return
-
-		if token == 'sbw':
-			if (
-				indexToken < 4
-				or not isinstance(listProgram[indexToken - 4], int)
-				or not isinstance(listProgram[indexToken - 2], int)
-			):
-				message: str = f'I could not read expected integer operands for sbw at {indexToken = }.'
+			valueSideBearing: int | float | str | bytes = listProgram[indexTable - 2]
+			valueAdvanceWidth: int | float | str | bytes = listProgram[indexTable - 1]
+			if not isinstance(valueSideBearing, int) or not isinstance(valueAdvanceWidth, int):
+				message: str = f'I could not read expected integer operands for hsbw at {indexTable = }.'
 				raise TypeError(message)
-			integerSideBearingBefore: int = cast(int, listProgram[indexToken - 4])
-			integerAdvanceWidthBefore: int = cast(int, listProgram[indexToken - 2])
-			listProgram[indexToken - 4] = integerSideBearingBefore + bearingIncrement
-			listProgram[indexToken - 2] = integerAdvanceWidthBefore + bearingIncrement * 2
-			return
+			integerSideBearingBefore: int = valueSideBearing
+			integerAdvanceWidthBefore: int = valueAdvanceWidth
+			listProgram[indexTable - 2] = integerSideBearingBefore + bearingIncrement
+			listProgram[indexTable - 1] = integerAdvanceWidthBefore + bearingIncrement * 2
+			booleanMetricOperatorFound = True
+			break
 
-	message: str = 'I could not find hsbw or sbw in the Type 1 charstring program.'
-	raise ValueError(message)
+		if table == 'sbw':
+			if indexTable < 4:
+				message: str = f'I could not read expected integer operands for sbw at {indexTable = }.'
+				raise TypeError(message)
+			valueSideBearing: int | float | str | bytes = listProgram[indexTable - 4]
+			valueAdvanceWidth: int | float | str | bytes = listProgram[indexTable - 2]
+			if not isinstance(valueSideBearing, int) or not isinstance(valueAdvanceWidth, int):
+				message: str = f'I could not read expected integer operands for sbw at {indexTable = }.'
+				raise TypeError(message)
+			integerSideBearingBefore: int = valueSideBearing
+			integerAdvanceWidthBefore: int = valueAdvanceWidth
+			listProgram[indexTable - 4] = integerSideBearingBefore + bearingIncrement
+			listProgram[indexTable - 2] = integerAdvanceWidthBefore + bearingIncrement * 2
+			booleanMetricOperatorFound = True
+			break
 
+	if not booleanMetricOperatorFound:
+		message: str = 'I could not find hsbw or sbw in the Type 1 charstring program.'
+		raise ValueError(message)
 
-def _rebuildsCidFontPostScriptFile(
-	bytesPrefix: bytes
-	, bytesSuffix: bytes
-	, bytesStartDataTransformed: bytes
-) -> bytes:
+def _rebuildsCIDFontPostScriptBytes(bytesPrefix: bytes, bytesSuffix: bytes, bytesStartDataTransformed: bytes) -> bytes:
 	integerStartDataLength: int = len(bytesStartDataTransformed)
 	bytesStartDataToken: bytes = f'(Binary) {integerStartDataLength} StartData'.encode('ascii')
-	bytesPrefixUpdated: bytes = regularExpressionStartData.sub(bytesStartDataToken, bytesPrefix, count=1)
+	bytesPrefixUpdated: bytes = regexStartData.sub(bytesStartDataToken, bytesPrefix, count=1)
 
 	integerLineEndingLength: int = 0
 	if bytesSuffix.startswith(b'\r\n'):
@@ -325,6 +258,104 @@ def _rebuildsCidFontPostScriptFile(
 
 	integerBeginDataLength: int = len(bytesStartDataToken) + 1 + integerStartDataLength + integerLineEndingLength
 	bytesBeginDataToken: bytes = f'%%BeginData: {integerBeginDataLength} Binary Bytes'.encode('ascii')
-	bytesPrefixUpdated = regularExpressionBeginData.sub(bytesBeginDataToken, bytesPrefixUpdated, count=1)
+	bytesPrefixUpdated = regexBeginData.sub(bytesBeginDataToken, bytesPrefixUpdated, count=1)
 
 	return b''.join((bytesPrefixUpdated, bytesStartDataTransformed, bytesSuffix))
+
+#======== OpenType feature file transformations ========
+
+def forgerTransformsOpenTypeFeatureAtPathFilename(pathFilename: Path) -> None:
+	bytesFeatureSource: bytes = pathFilename.read_bytes()
+	stringFeatureSource: str = bytesFeatureSource.decode('utf-8')
+	stringFeatureTransformed: str = _updatesOpenTypeFeatureMetricOverrides(stringFeatureSource, fontUnitsPerEm)
+	bytesFeatureTransformed: bytes = stringFeatureTransformed.encode('utf-8')
+	pathFilename.write_bytes(bytesFeatureTransformed)
+
+def _updatesOpenTypeFeatureMetricOverrides(stringFeatureSource: str, fontUnitsPerEmTarget: int) -> str:
+	integerSourceUnitsPerEm: int = _readsSourceUnitsPerEmFromOpenTypeFeature(stringFeatureSource)
+	floatScaleFactor: float = 1.0
+	if integerSourceUnitsPerEm > 0:
+		floatScaleFactor = fontUnitsPerEmTarget / integerSourceUnitsPerEm
+
+	stringFeatureTransformed: str = stringFeatureSource
+	if floatScaleFactor != 1.0:
+		stringFeatureTransformed = _scalesFeatureTableMetricValues(stringFeatureTransformed, 'hhea', setOpenTypeMetricNameHhea, floatScaleFactor)
+		stringFeatureTransformed = _scalesFeatureTableMetricValues(stringFeatureTransformed, 'OS/2', setOpenTypeMetricNameOS2, floatScaleFactor)
+
+	return stringFeatureTransformed
+
+def _readsSourceUnitsPerEmFromOpenTypeFeature(stringFeatureSource: str) -> int:
+	integerUnitsPerEm: int = 0
+
+	integerTypoAscender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'OS/2', 'TypoAscender')
+	integerTypoDescender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'OS/2', 'TypoDescender')
+	integerTypoLineGap: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'OS/2', 'TypoLineGap')
+	if integerTypoAscender is not None and integerTypoDescender is not None and integerTypoLineGap is not None:
+		integerUnitsPerEm = integerTypoAscender - integerTypoDescender + integerTypoLineGap
+
+	if integerUnitsPerEm <= 0:
+		hheaAscender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'hhea', 'Ascender')
+		hheaDescender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'hhea', 'Descender')
+		hheaLineGap: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'hhea', 'LineGap')
+		if hheaAscender is not None and hheaDescender is not None and hheaLineGap is not None:
+			integerUnitsPerEm = hheaAscender - hheaDescender + hheaLineGap
+
+	return integerUnitsPerEm
+
+def _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource: str, stringTableName: str, stringMetricName: str) -> int | None:
+	matchTable: regex.Match[str] | None = regex.compile(
+		rf'(?ms)table\s+{regex.escape(stringTableName)}\s*\{{(.*?)\}}\s*{regex.escape(stringTableName)};'
+	).search(stringFeatureSource)
+
+	integerMetricValue: int | None = None
+	if matchTable is not None:
+		stringTableContent: str = matchTable.group(1)
+		matchMetric: regex.Match[str] | None = regex.compile(
+			rf'(?m)^\s*{regex.escape(stringMetricName)}\s+(-?\d+)\s*;'
+		).search(stringTableContent)
+		if matchMetric is not None:
+			integerMetricValue = int(matchMetric.group(1))
+
+	return integerMetricValue
+
+def _scalesFeatureTableMetricValues(stringFeatureSource: str, stringTableName: str, setMetricName: set[str], floatScaleFactor: float) -> str:
+
+	listStringSection: list[str] = []
+	integerOffsetCurrent: int = 0
+	for matchTable in regex.compile(
+		rf'(?ms)(table\s+{regex.escape(stringTableName)}\s*\{{)(.*?)(\}}\s*{regex.escape(stringTableName)};)'
+	).finditer(stringFeatureSource):
+		stringTableContentSource: str = matchTable.group(2)
+		stringTableContentTransformed: str = _scalesOpenTypeMetricLines(stringTableContentSource, setMetricName, floatScaleFactor)
+		listStringSection.append(stringFeatureSource[integerOffsetCurrent:matchTable.start()])
+		listStringSection.append(matchTable.group(1))
+		listStringSection.append(stringTableContentTransformed)
+		listStringSection.append(matchTable.group(3))
+		integerOffsetCurrent = matchTable.end()
+
+	listStringSection.append(stringFeatureSource[integerOffsetCurrent:])
+	stringFeatureTransformed: str = ''.join(listStringSection)
+	return stringFeatureTransformed
+
+def _scalesOpenTypeMetricLines(stringTableContentSource: str, setMetricName: set[str], floatScaleFactor: float) -> str:
+	listStringLineSource: list[str] = stringTableContentSource.splitlines(keepends=True)
+	listStringLineTransformed: list[str] = []
+
+	for stringLineSource in listStringLineSource:
+		stringLineTransformed: str = stringLineSource
+		matchMetricLine: regex.Match[str] | None = regexOpenTypeMetricLine.match(stringLineSource)
+		if matchMetricLine is not None:
+			stringMetricName: str = matchMetricLine.group(2)
+			if stringMetricName in setMetricName:
+				integerMetricValueSource: int = int(matchMetricLine.group(3))
+				integerMetricValueTransformed: int = round(integerMetricValueSource * floatScaleFactor)
+				stringLineTransformed = (
+					f'{matchMetricLine.group(1)}{stringMetricName} {integerMetricValueTransformed}{matchMetricLine.group(4)}'
+				)
+		listStringLineTransformed.append(stringLineTransformed)
+
+	stringTableContentTransformed: str = ''.join(listStringLineTransformed)
+	return stringTableContentTransformed
+
+if __name__ == '__main__':
+	scientistCreatesFrankenFont(workersMaximum=14)

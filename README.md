@@ -4,7 +4,7 @@ Integrated Code 火 is a code-centric font combining [Fira Code](https://github.
 
 （机器翻译） Integrated Code 火是一款以代码为核心设计的字体，融合了[Fira Code](https://github.com/tonsky/FiraCode)与[Source Han Mono](https://github.com/adobe-fonts/source-han-mono)的特性。其双倍间距的Source™ Han Mono字符宽度是等宽Fira Code字符的两倍，从而实现统一的代码对齐效果。
 
-## Download
+## Download Integrated Code 火 简化字
 
 Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest). The compiled fonts are not in the repository source code.
 
@@ -71,44 +71,6 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 ## 简化字
 
 Run go.py.
-
-## New Plan: Integrated Code--pan-CJK
-
-1. Compile Source Han Mono. At maximum glyph count.
-   1. All python.
-   2. ☑️makeotf: All 70 versions.
-   3. Figure out how to modify the glyph/metadata files
-      1. 2000 em per unit
-      2. Both bearings increased by 200
-      3. Remove CIDs that Fira Code will provide.
-   4. Steps in "COMMANDS.txt" that are not implemented and I don't know if I can/should skip them:
-      1. `tx`
-      2. `sfntedit -a` per file
-      3. `sfntedit -x` for all weights of straight Japanese and `sfntedit -a` for the other nine options.
-      4. `otf2otc -o` with the 10 files from the previous step to make the superOTC.
-2. Compile Fira Code.
-   1. ☑️All python.
-   2. ~2600 glyphs.
-   3. Fira Code uses GID, not CID--whatever that means.
-   4. Determine if there are glyphs I should remove from Fira Code.
-   5. A couple of code-points seem to be in the CJK section.
-   6. If Fira Code + Source Han Mono has too many glyphs, I will need to remove some--probably from Source Han Mono.
-3. ❓"Merge" the fonts before the next step?
-4. Compile one pan-CJK superOTC.
-   1. I _think_ it is easier to start with the limited-glyph, pan-CJK superOTC, then make language/region-specific files that have glyphs not in the pan-CJK. But I don't really know how this process works, and I'm probably wrong.
-   2. The compile-engine for Source Han Mono is automated to make one pan-CJK superOTC.
-   3. ☑️Organize and standardize files and filenames in SourceHanMono and SourceHanMono\Resources.
-   4. All python.
-5. Compile language-specific OTC.
-    1. I think it should be easy to adapt the Source Han Mono code to make per-language OTC.
-6. Add updated and/or additional JP glyphs from Source Han Code JP.
-    1. Source Han Code JP was updated after the last Source Han Mono, but IDK what was updated--the changes might not be JP.
-    2. Source Han Mono couldn't fit all pan-CLK glyphs: Source Han Code JP may have some JP glyphs not in Source Han Mono.
-7. Add updated and/or additional CJK from Noto Sans Mono.
-    1. Source/Noto Han Sans/Serif have updated, but only Noto has a mono variant.
-    2. The mono variant only has two weights and no variable version: I think that is a barrier.
-    3. Overwrite existing versions with updated versions for the superOTC.
-    4. Add new glyphs per language.
 
 ## The future?
 

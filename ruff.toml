@@ -40,11 +40,11 @@ ignore = [
   "W292",
 ]
 select = ["ALL"]
-task-tags = ["NOTE", "TODO"]
+task-tags = ["DEVELOPMENT", "NOTE", "TODO"]
 
 [lint.flake8-import-conventions]
-aliases = { numpy = "numpy", pandas = "pandas" }
-banned-aliases = { numpy = ["np"], pandas = ["pd"] }
+aliases = { numpy = "numpy", pandas = "pandas", "re" = "regex" }
+banned-aliases = { numpy = ["np"], pandas = ["pd"], regex=["re"] }
 
 [lint.per-file-ignores]
 "__init__.py" = ["PLC0414"]
