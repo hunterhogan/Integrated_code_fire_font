@@ -41,10 +41,7 @@ table head {
 } head;
 
 table hhea {
-  Ascender 1175;
-  Descender -284;
-  LineGap 0;
-} hhea;
+  Ascender 2350;  Descender -568;  LineGap 0;} hhea;
 
 table name {
   nameid 0 "\00A9 2014\20132019 Adobe (http://www.adobe.com/), with Reserved Font Name \2018Source\2019.";
@@ -326,19 +323,12 @@ table GDEF {
 } GDEF;
 
 table OS/2 {
-  TypoAscender 880;
-  TypoDescender -120;
-  TypoLineGap 0;
-  XHeight 541;
-  CapHeight 729;
-  WeightClass 500;
+  TypoAscender 1760;  TypoDescender -240;  TypoLineGap 0;  XHeight 1082;  CapHeight 1458;  WeightClass 500;
   WidthClass 5;
   Panose 2 11 6 0 0 0 0 0 0 0;
   FSType 0;
   Vendor "ADBO";
-  winAscent 1175;
-  winDescent 284;
-} OS/2;
+  winAscent 2350;  winDescent 568;} OS/2;
 
 feature aalt {
   feature fwid;
