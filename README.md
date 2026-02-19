@@ -68,9 +68,23 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 | SemiBold           | SemiBold  | Bold            |
 | Bold               | Bold      | Heavy           |
 
-## 简化字
+### 简化字
 
 Run go.py.
+
+### Make Source Han Mono Comprehensive TTC file
+
+I followed the instructions seven-year-old instructions in the Source Han Mono repository as closely as possible, which should hypothetically produce the same file in their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger than the release file, and I can't figure out if my is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
+
+1. Run `foundry.smithyCastsFontFamily('SourceHanMono')`.
+2. Run makeTTCSuper.cmd.
+
+### Make Five Source Han Mono Locale TTC files
+
+Based on the out-of-date instructions in the Source Han Mono repository, this process produces one TTC file for each of the five locales in Source Han Mono. The files seem to work, and they are far smaller than the comprehensive TTC file.
+
+1. Run `foundry.smithyCastsFontFamily('SourceHanMono')`.
+2. Run makeTTCLocale.cmd.
 
 ## The future?
 
@@ -87,12 +101,11 @@ Run go.py.
 7. Improve font file "packaging", such as:
    1. One file instead of six.
    2. Smaller total size.
-8. Create and use a [Vendor ID](https://learn.microsoft.com/en-us/typography/vendors/register).
-9. Create versions for other languages and writing systems.
+8. Create versions for other languages and writing systems.
    1. If this project were to have a well-designed process for compiling a code-centric font with Latin and simplified Chinese glyphs, it would be _relatively_ easy to expand the process to some other languages and writing systems.
    2. There seem to be tens of thousands of compatible glyphs in Source Han Mono, Source Han Code JP, and Noto Sans CJK.
    3. I strongly oppose forcing all writing systems to use Latin characters as the name of the writing system.
-10. Create one file: updated pan-CJK with Fira Code.
+9. Create one file: updated pan-CJK with Fira Code.
 
 ### Potential font collections
 

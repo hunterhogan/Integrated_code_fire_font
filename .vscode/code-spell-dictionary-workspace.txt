@@ -16,8 +16,10 @@ charstrings
 checkoutlinesufo
 cidfont
 cidfontinfo
+cids
 Cmap
 Codepoint
+codepoints
 colr
 compreffor
 compresslevel
@@ -35,6 +37,8 @@ fontmake
 fonttools
 fontv
 Franken
+fullwidth
+Fullwidth
 GDEF
 gflanguages
 gfsubsets

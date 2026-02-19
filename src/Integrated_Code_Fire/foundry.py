@@ -307,7 +307,7 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 	])
 
 if __name__ == '__main__':
-	smithyCastsFiraCode()
+	# smithyCastsFiraCode()
 	smithyCastsFontFamily('SourceHanMono', 14)
-	smithyCastsFontFamily('FrankenFont', 14)
+	# smithyCastsFontFamily('FrankenFont', 14)
 

@@ -1,3 +1,5 @@
+Filter output of makeotf.exe to remove the following lines:
+
 makeotf [Warning] Could not find an Adobe CMAP Mac encoding mapping file. If you want a Mac cmap subtable, please specify the Mac CMAP encoding file with the '-cm' option.
 makeotf [Note] setting the USE_TYPO_METRICS OS/2 fsSelection bit 7 from fontinfo keyword.
 makeotf [Note] setting the WEIGHT_WIDTH_SLOPE_ONLY OS/2 fsSelection bit 8 from fontinfo keyword.

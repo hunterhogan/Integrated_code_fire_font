@@ -60,7 +60,7 @@ pathAssets: Path = pathRoot / 'assets'
 pathWorkbench: Path = pathRoot / 'workbench'
 pathWorkbenchFonts: Path = pathWorkbench / 'fonts'
 
-achVendID: str = '1INT'
+achVendID: str = '1INT' # See "Registering Vendor ID 1INT.pdf".
 fontUnitsPerEm: int = fontUnitsPerEmHARDCODED
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 
