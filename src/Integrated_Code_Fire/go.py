@@ -30,12 +30,17 @@ References
 	Internal package reference.
 
 """
+# ruff: noqa: D103
 from Integrated_Code_Fire import pathWorkbenchSourceHanMono
 from Integrated_Code_Fire.foundry import smithyCastsFiraCode, smithyCastsFontFamily
 from Integrated_Code_Fire.logistics import cleanWorkbench, removeWorkbench, valetCopiesFilesToWorkbenchFonts
-from Integrated_Code_Fire.mergeFonts import mergeFonts
+from Integrated_Code_Fire.mergeFonts import mergeFonts, mergeFontsV2
 from Integrated_Code_Fire.shipping import makeAssets
-from Integrated_Code_Fire.writeMetadata import writeMetadata
+from Integrated_Code_Fire.writeMetadata import scribeUpdatesFontMetadata, writeMetadata
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+	from pathlib import Path
 
 def go(workersMaximum: int = 1) -> None:
 	"""You can run the end-to-end font build assembly line.
@@ -86,5 +91,20 @@ def go(workersMaximum: int = 1) -> None:
 	makeAssets()
 	removeWorkbench()
 
+def goV2(workersMaximum: int = 1) -> None:
+	smithyCastsFiraCode()
+	fontFamily: str = 'FrankenFont'
+	scribeUpdatesFontMetadata(fontFamily)
+	listPathFilenames: list[Path] = smithyCastsFontFamily(fontFamily, workersMaximum)
+	pathWorkbenchFontFamily: Path = listPathFilenames[0].parent
+	valetCopiesFilesToWorkbenchFonts(pathWorkbenchFontFamily, 'Simplified_Chinese*.otf')
+
+	listPathFilenames = mergeFontsV2(fontFamily)
+
+	cleanWorkbench()
+	writeMetadata()
+	makeAssets()
+	removeWorkbench()
+
 if __name__ == '__main__':
-	go(14)
+	goV2(14)

@@ -1,11 +1,13 @@
-# ruff: noqa: D100, D103
+"""The functions in this module should be run infrequently. Put oft-run updating functions in other modules."""
+# ruff: noqa: D103
 from fontTools.misc.psCharStrings import T1CharString
 from hunterMakesPy import raiseIfNone
-from Integrated_Code_Fire import bearingIncrement, fontUnitsPerEm, pathRoot
+from Integrated_Code_Fire import (
+	bearingIncrement, filenameFontFamilyLocale, fontFamilyLocale, fontUnitsPerEm, pathRoot, settingsPackage)
+from Integrated_Code_Fire.writeMetadata import escapesStringForOpenTypeFeature, getMetadataByFontWeight
 from more_itertools import loops
 from multiprocessing import Pool
 from pathlib import Path
-from tqdm import tqdm
 import fontTools.misc.eexec
 import re as regex
 import shutil
@@ -19,7 +21,6 @@ regexStartData: regex.Pattern[bytes] = regex.compile(rb'\(Binary\)\s+(\d+)\s+Sta
 setOpenTypeMetricNameHhea: set[str] = {'Ascender', 'Descender', 'LineGap'}
 setOpenTypeMetricNameOS2: set[str] = {'TypoAscender', 'TypoDescender', 'TypoLineGap', 'XHeight', 'CapHeight', 'winAscent', 'winDescent'}
 
-# TODO rename files so that `smithyCastsFontFamily` will work.
 def scientistCreatesFrankenFont(fontFamilyDonor: str = 'SourceHanMono', fontFamilyMonster: str = 'FrankenFont', workersMaximum: int = 1) -> None:
 	pathDonor: Path = pathRoot / fontFamilyDonor
 	pathMonster: Path = pathRoot / fontFamilyMonster
@@ -33,12 +34,12 @@ def scientistCreatesFrankenFont(fontFamilyDonor: str = 'SourceHanMono', fontFami
 	listPathFilenamesOpenTypeFeature: list[Path] = sorted(pathMonster.glob('glyphs/*.features'))
 
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		tqdm(concurrencyManager.map(forgerTransformsOpenTypeFeatureAtPathFilename, listPathFilenamesOpenTypeFeature), total=len(listPathFilenamesOpenTypeFeature), desc='Forging features')
-		tqdm(concurrencyManager.map(forgerTransformsCIDFontPostScriptAtPathFilename, listPathFilenamesCIDFontPostScript), total=len(listPathFilenamesCIDFontPostScript), desc='Forging CID fonts')
+		set(concurrencyManager.map(artisanTransformsOpenTypeFeature, listPathFilenamesOpenTypeFeature))
+		set(concurrencyManager.map(artisanTransformsCIDFontPostScript, listPathFilenamesCIDFontPostScript))
 
 #======== CID font PostScript transformations ========
 
-def forgerTransformsCIDFontPostScriptAtPathFilename(pathFilename: Path) -> None:
+def artisanTransformsCIDFontPostScript(pathFilename: Path) -> None:
 	bytesPostScriptSource: bytes = pathFilename.read_bytes()
 	matchStartData: regex.Match[bytes] = raiseIfNone(regexStartData.search(bytesPostScriptSource))
 
@@ -264,7 +265,7 @@ def _rebuildsCIDFontPostScriptBytes(bytesPrefix: bytes, bytesSuffix: bytes, byte
 
 #======== OpenType feature file transformations ========
 
-def forgerTransformsOpenTypeFeatureAtPathFilename(pathFilename: Path) -> None:
+def artisanTransformsOpenTypeFeature(pathFilename: Path) -> None:
 	bytesFeatureSource: bytes = pathFilename.read_bytes()
 	stringFeatureSource: str = bytesFeatureSource.decode('utf-8')
 	stringFeatureTransformed: str = _updatesOpenTypeFeatureMetricOverrides(stringFeatureSource, fontUnitsPerEm)
@@ -357,5 +358,146 @@ def _scalesOpenTypeMetricLines(stringTableContentSource: str, setMetricName: set
 	stringTableContentTransformed: str = ''.join(listStringLineTransformed)
 	return stringTableContentTransformed
 
+#======== Font family name transformations ========
+
+def scribeUpdatesFontFamilyNames(fontFamilyDonor: str = 'SourceHanMono', fontFamilyMonster: str = 'FrankenFont', fontDisplayNameDonor: str = 'Source Han Mono', fontDisplayNameMonster: str = 'Franken Font', workersMaximum: int = 1) -> None:
+	pathMonster: Path = pathRoot / fontFamilyMonster
+
+	listPathFilenamesCIDFontInfo: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfontinfo'))
+	listPathFilenamesCIDFontPostScript: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfont.ps'))
+	listPathFilenamesH: list[Path] = sorted((pathMonster / 'metadata').glob('*.H'))
+	listPathFilenamesFontMenuNameDB: list[Path] = [pathMonster / 'metadata' / 'FontMenuNameDB']
+
+	with Pool(processes=workersMaximum) as concurrencyManager:
+		set(concurrencyManager.starmap(_updatesCIDFontInfoFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in listPathFilenamesCIDFontInfo]))
+		set(concurrencyManager.starmap(_updatesCIDFontPostScriptFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in listPathFilenamesCIDFontPostScript]))
+		set(concurrencyManager.starmap(_updatesHFileFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster) for pathFilename in listPathFilenamesH]))
+		set(concurrencyManager.starmap(_updatesFontMenuNameDBFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in listPathFilenamesFontMenuNameDB]))
+
+def _updatesCIDFontInfoFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
+	stringCIDFontInfoSource: str = pathFilename.read_text(encoding='utf-8')
+	stringCIDFontInfoTransformed: str = stringCIDFontInfoSource
+
+	regexFontName: regex.Pattern[str] = regex.compile(r'^(FontName\s+\()([^)]+)(\).*)$', flags=regex.MULTILINE)
+	regexFullName: regex.Pattern[str] = regex.compile(r'^(FullName\s+\()([^)]+)(\).*)$', flags=regex.MULTILINE)
+	regexFamilyName: regex.Pattern[str] = regex.compile(r'^(FamilyName\s+\()([^)]+)(\).*)$', flags=regex.MULTILINE)
+
+	stringCIDFontInfoTransformed = regexFontName.sub(lambda matchFontName: matchFontName.group(1) + matchFontName.group(2).replace(fontFamilyDonor, fontFamilyMonster) + matchFontName.group(3), stringCIDFontInfoTransformed)
+	stringCIDFontInfoTransformed = regexFullName.sub(lambda matchFullName: matchFullName.group(1) + matchFullName.group(2).replace(fontDisplayNameDonor, fontDisplayNameMonster) + matchFullName.group(3), stringCIDFontInfoTransformed)
+	stringCIDFontInfoTransformed = regexFamilyName.sub(lambda matchFamilyName: matchFamilyName.group(1) + matchFamilyName.group(2).replace(fontDisplayNameDonor, fontDisplayNameMonster) + matchFamilyName.group(3), stringCIDFontInfoTransformed)
+
+	pathFilename.write_text(stringCIDFontInfoTransformed, encoding='utf-8')
+
+def _updatesCIDFontPostScriptFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
+	bytesPostScriptSource: bytes = pathFilename.read_bytes()
+	stringPostScriptSource: str = bytesPostScriptSource.decode('latin-1')
+
+	matchStartData: regex.Match[str] | None = regex.search(r'\(Binary\)\s+\d+\s+StartData', stringPostScriptSource)
+	if matchStartData is None:
+		return
+
+	offsetBinaryStart: int = matchStartData.end()
+	stringASCIIHeader: str = stringPostScriptSource[:offsetBinaryStart]
+	stringBinaryRemainder: str = stringPostScriptSource[offsetBinaryStart:]
+
+	stringASCIIHeaderTransformed: str = stringASCIIHeader
+	stringASCIIHeaderTransformed = stringASCIIHeaderTransformed.replace(fontFamilyDonor, fontFamilyMonster)
+	stringASCIIHeaderTransformed = stringASCIIHeaderTransformed.replace(fontDisplayNameDonor, fontDisplayNameMonster)
+
+	stringPostScriptTransformed: str = stringASCIIHeaderTransformed + stringBinaryRemainder
+	bytesPostScriptTransformed: bytes = stringPostScriptTransformed.encode('latin-1')
+	pathFilename.write_bytes(bytesPostScriptTransformed)
+
+def _updatesHFileFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str) -> None:
+	stringHFileSource: str = pathFilename.read_text(encoding='utf-8')
+	stringHFileTransformed: str = stringHFileSource.replace(fontFamilyDonor, fontFamilyMonster)
+	pathFilename.write_text(stringHFileTransformed, encoding='utf-8')
+
+def _updatesFontMenuNameDBFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
+	stringFontMenuNameDBSource: str = pathFilename.read_text(encoding='utf-8')
+	stringFontMenuNameDBTransformed: str = stringFontMenuNameDBSource
+
+	stringFontMenuNameDBTransformed = stringFontMenuNameDBTransformed.replace(f'[{fontFamilyDonor}', f'[{fontFamilyMonster}')
+	stringFontMenuNameDBTransformed = stringFontMenuNameDBTransformed.replace(fontDisplayNameDonor, fontDisplayNameMonster)
+
+	pathFilename.write_text(stringFontMenuNameDBTransformed, encoding='utf-8')
+
+#======== Metadata transformations ========
+
+def scribeUpdatesMetadata(fontFamily: str = 'FrankenFont', workersMaximum: int = 1) -> None:
+	pathMonster: Path = pathRoot / fontFamily
+	listPathFilenamesCIDFontInfo: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfontinfo'))
+	listPathFilenamesCIDFontPostScript: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfont.ps'))
+	listPathFilenamesOpenTypeFeature: list[Path] = sorted(pathMonster.glob('glyphs/*.features'))
+
+	dictionaryMetadata: dict[int, str] = getMetadataByFontWeight('', filenameFontFamilyLocale, fontFamilyLocale)
+	stringCopyright: str = dictionaryMetadata[0]
+	stringTrademark: str = dictionaryMetadata[7]
+
+	with Pool(processes=workersMaximum) as concurrencyManager:
+		set(concurrencyManager.starmap(_updatesCIDFontInfoMetadata, [(pathFilename, stringCopyright, stringTrademark) for pathFilename in listPathFilenamesCIDFontInfo]))
+		set(concurrencyManager.starmap(_updatesCIDFontPostScriptMetadata, [(pathFilename, stringCopyright) for pathFilename in listPathFilenamesCIDFontPostScript]))
+		set(concurrencyManager.starmap(_updatesOpenTypeFeatureMetadata, [(pathFilename, dictionaryMetadata) for pathFilename in listPathFilenamesOpenTypeFeature]))
+
+def _updatesCIDFontInfoMetadata(pathFilename: Path, stringCopyright: str, stringTrademark: str) -> None:
+	dictionaryMetadataUpdates: dict[str, str] = {
+		'version': f'({settingsPackage.fontVersion})',
+		'AdobeCopyright': f'({stringCopyright})',
+		'Trademark': f'({stringTrademark})',
+	}
+
+	listStringLineTransformed: list[str] = []
+	for stringLine in pathFilename.read_text(encoding='utf-8').splitlines(keepends=True):
+		for stringKey, stringValue in dictionaryMetadataUpdates.items():
+			if stringLine.startswith(stringKey):
+				listStringLineTransformed.append(f'{stringKey:<26} {stringValue}\n')
+				break
+		else:
+			listStringLineTransformed.append(stringLine)
+
+	pathFilename.write_text(''.join(listStringLineTransformed), encoding='utf-8')
+
+def _updatesCIDFontPostScriptMetadata(pathFilename: Path, stringCopyright: str) -> None:
+	stringPostScriptSource: str = pathFilename.read_bytes().decode('latin-1')
+	matchStartData: regex.Match[str] | None = regex.search(r'\(Binary\)\s+\d+\s+StartData', stringPostScriptSource)
+	if matchStartData is None:
+		return
+
+	stringASCIIHeader: str = stringPostScriptSource[:matchStartData.end()]
+
+	regexVersion: regex.Pattern[str] = regex.compile(r'^(%%Version:\s+)[\d.]+', flags=regex.MULTILINE)
+	regexCIDFontVersion: regex.Pattern[str] = regex.compile(r'^(/CIDFontVersion\s+)[\d.]+(.+def)', flags=regex.MULTILINE)
+	regexNotice: regex.Pattern[str] = regex.compile(r'^(\s*/Notice\s+\()[^)]+', flags=regex.MULTILINE)
+
+	stringCopyrightASCII: str = stringCopyright.removesuffix(', with Reserved Font Name "Integrated."').replace('\u2018', '"').replace('\u2019', '"')
+
+	stringASCIIHeaderTransformed: str = regexVersion.sub(f'\\g<1>{settingsPackage.fontVersion}', stringASCIIHeader)
+	stringASCIIHeaderTransformed = regexCIDFontVersion.sub(f'\\g<1>{settingsPackage.fontVersion}\\g<2>', stringASCIIHeaderTransformed)
+	stringASCIIHeaderTransformed = regexNotice.sub(f'\\g<1>{stringCopyrightASCII})', stringASCIIHeaderTransformed)
+
+	pathFilename.write_bytes((stringASCIIHeaderTransformed + stringPostScriptSource[matchStartData.end():]).encode('latin-1'))
+
+def _updatesOpenTypeFeatureMetadata(pathFilename: Path, dictionaryMetadata: dict[int, str]) -> None:
+	stringFeatureSource: str = pathFilename.read_text(encoding='utf-8')
+
+	regexHeadRevision: regex.Pattern[str] = regex.compile(r'(table head \{[^}]*FontRevision )[\d.]+', flags=regex.DOTALL)
+	stringFeatureTransformed: str = regexHeadRevision.sub(f'\\g<1>{settingsPackage.fontVersion}', stringFeatureSource)
+
+	regexNameTable: regex.Pattern[str] = regex.compile(r'(table name \{)(.*?)(\} name;)', flags=regex.DOTALL)
+	matchNameTable: regex.Match[str] | None = regexNameTable.search(stringFeatureTransformed)
+	if matchNameTable is not None:
+		listNameIDToUpdate: list[int] = [0, 7, 8, 9, 10, 11, 12, 13, 14]
+		listStringNameEntry: list[str] = [
+			f'  nameid {nameID} "{escapesStringForOpenTypeFeature(dictionaryMetadata[nameID])}";'
+			for nameID in listNameIDToUpdate if nameID in dictionaryMetadata
+		]
+
+		stringNameTableTransformed: str = f"{matchNameTable.group(1)}\n{'\n'.join(listStringNameEntry)}\n{matchNameTable.group(3)}"
+		stringFeatureTransformed = regexNameTable.sub(lambda _: stringNameTableTransformed, stringFeatureTransformed, count=1)
+
+	pathFilename.write_text(stringFeatureTransformed, encoding='utf-8')
+
 if __name__ == '__main__':
-	scientistCreatesFrankenFont(workersMaximum=14)
+	# scientistCreatesFrankenFont(workersMaximum=14)  # noqa: ERA001
+	scribeUpdatesFontFamilyNames(workersMaximum=14)
+	scribeUpdatesMetadata(workersMaximum=14)

@@ -164,7 +164,7 @@ def smithyCastsFontFormat(fontFormat: Literal['otf', 'ttf']) -> None:
 		, autohint=False
 	)
 
-def smithyCastsFontFamily(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1) -> None:
+def smithyCastsFontFamily(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1) -> list[Path]:
 	"""You can compile all Source Han Mono font variants across five locales, seven weights, and two styles.
 
 	(AI generated docstring)
@@ -226,9 +226,11 @@ def smithyCastsFontFamily(fontFamily: str = 'SourceHanMono', workersMaximum: int
 	listStyles: list[Literal['Italic'] | None] = [None, 'Italic']
 
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		concurrencyManager.starmap(smithyCastsFont, CartesianProduct([fontFamily], listLocales, listWeights, listStyles))
+		listPathFilename: list[Path] = concurrencyManager.starmap(smithyCastsFont, CartesianProduct([fontFamily], listLocales, listWeights, listStyles))
 
-def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style: Literal['Italic'] | None = None) -> None:
+	return listPathFilename
+
+def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style: Literal['Italic'] | None = None) -> Path:
 	"""You can compile a single Source Han Mono font variant using AFDKO makeotf.
 
 	(AI generated docstring)
@@ -289,6 +291,8 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 	pathCompiled: Path = pathWorkbench / fontFamily
 	pathCompiled.mkdir(parents=True, exist_ok=True)
 
+	pathFilename: Path = pathCompiled / '.'.join(filter(truthy, [locale, style, weight, fontFamily, 'otf']))
+
 	afdko_makeotf([
 		'-f', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfont', 'ps'])))
 		, '-ff', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'features'])))
@@ -303,11 +307,13 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 		, '-omitDSIG'
 		, '-ncn'
 		, '-gs'
-		, '-o', str(pathCompiled / '.'.join(filter(truthy, [locale, style, weight, fontFamily, 'otf'])))
+		, '-o', str(pathFilename)
 	])
+
+	return pathFilename
 
 if __name__ == '__main__':
 	# smithyCastsFiraCode()
-	smithyCastsFontFamily('SourceHanMono', 14)
-	# smithyCastsFontFamily('FrankenFont', 14)
+	# smithyCastsFontFamily('SourceHanMono', 14)
+	smithyCastsFontFamily('FrankenFont', 14)
 

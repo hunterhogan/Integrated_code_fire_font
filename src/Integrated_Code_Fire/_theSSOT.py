@@ -1,22 +1,20 @@
+from dataclasses import dataclass
 from fontTools import subset
-from hunterMakesPy import PackageSettings
+from hunterMakesPy import PackageSettings as humpy_PackageSettings
 from Integrated_Code_Fire import WeightIn
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from pathlib import Path
 
-settingsPackage = PackageSettings('Integrated_Code_Fire')
-
 #======== Eliminate hardcoding, which sometimes means adding the value to `settingsPackage`. ========
-pythonDesignedAnIdioticFileStructureWithoutCreatingProperTools: Path = settingsPackage.pathPackage.parent.parent.resolve()
-
 fontFamilyHARDCODED: str = 'Integrated Code 火'
 fontLocale한국인HARDCODED: str = '한국인'
 fontLocale台湾HARDCODED: str = '台灣'
 fontLocale日本HARDCODED: str = '日本'
 fontLocale简化字HARDCODED: str = '简化字'
 fontLocale香港HARDCODED: str = '香港'
+fontVersionHARDCODED: float = 0.002
 
 subsetOptionsHARDCODED = subset.Options(
 	glyph_names = True,
@@ -31,7 +29,34 @@ subsetOptionsHARDCODED = subset.Options(
 )
 fontUnitsPerEmHARDCODED: int = 2000
 
+#======== Subclass `PackageSettings` to add package-specific settings. ========
+
+@dataclass
+class PackageSettings(humpy_PackageSettings):
+	fontFamily: str = fontFamilyHARDCODED
+	fontLocale한국인: str = fontLocale한국인HARDCODED
+	fontLocale台湾: str = fontLocale台湾HARDCODED
+	fontLocale日本: str = fontLocale日本HARDCODED
+	fontLocale简化字: str = fontLocale简化字HARDCODED
+	fontLocale香港: str = fontLocale香港HARDCODED
+	fontVersion: float = fontVersionHARDCODED
+	achVendID: str = '1INT' # See "Registering Vendor ID 1INT.pdf".
+
+#-------- Package settings. ---------------------------------------------
+
+settingsPackage = PackageSettings('Integrated_Code_Fire')
+
 #======== Centralized settings that have not yet found their home, such as in `settingsPackage`. ========
+
+#-------- Paths I want in package settings but haven't yet moved there. ---------------------------------------------
+
+pythonDesignedAnIdioticFileStructureWithoutCreatingProperTools: Path = settingsPackage.pathPackage.parent.parent.resolve()
+pathRoot: Path = pythonDesignedAnIdioticFileStructureWithoutCreatingProperTools
+pathAssets: Path = pathRoot / 'assets'
+pathWorkbench: Path = pathRoot / 'workbench'
+pathWorkbenchFonts: Path = pathWorkbench / 'fonts'
+
+#-------- Other settings. ---------------------------------------------
 
 # TODO These ranges are wrong. Figure out the correct way to subset Source Han Mono.
 unicodeSC: tuple[str, ...] = ('FFFE-FFFF', 'FF64-FFFC', 'FF00-FF61', 'EE0C-FEFE', 'E0B4-EDFF', '300E-DFFF', '3000-300B')
@@ -45,22 +70,9 @@ dictionaryWeights: dict[str, WeightIn] = {
 	'Bold': WeightIn('Bold', 'Heavy'),
 }
 
-pathRoot: Path = pythonDesignedAnIdioticFileStructureWithoutCreatingProperTools
-
-fontFamily: str = fontFamilyHARDCODED
-fontLocale한국인: str = fontLocale한국인HARDCODED
-fontLocale台湾: str = fontLocale台湾HARDCODED
-fontLocale日本: str = fontLocale日本HARDCODED
-fontLocale简化字: str = fontLocale简化字HARDCODED
-fontLocale香港: str = fontLocale香港HARDCODED
-fontFamilyLocale: str = ' '.join((fontFamily, fontLocale简化字))  # noqa: FLY002
+fontFamilyLocale: str = ' '.join((settingsPackage.fontFamily, settingsPackage.fontLocale简化字))  # noqa: FLY002
 filenameFontFamilyLocale: str = fontFamilyLocale.replace(' ', '')
 
-pathAssets: Path = pathRoot / 'assets'
-pathWorkbench: Path = pathRoot / 'workbench'
-pathWorkbenchFonts: Path = pathWorkbench / 'fonts'
-
-achVendID: str = '1INT' # See "Registering Vendor ID 1INT.pdf".
 fontUnitsPerEm: int = fontUnitsPerEmHARDCODED
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 

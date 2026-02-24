@@ -8,6 +8,7 @@ autohinting
 axisregistry
 babelfont
 bopomofo
+byteord
 Carrois
 cffsubr
 charstring
@@ -74,6 +75,7 @@ metainfo
 Metainfo
 naddn
 nadds
+nameid
 namerecord
 nanoemoji
 NISHIZUKA

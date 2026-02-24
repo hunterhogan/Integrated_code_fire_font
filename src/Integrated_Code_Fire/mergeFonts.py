@@ -33,6 +33,7 @@ References
 	Internal package reference.
 
 """
+# ruff: noqa: D103
 from copy import deepcopy
 from fontTools import subset
 from fontTools.pens.cu2quPen import Cu2QuPen
@@ -285,3 +286,28 @@ def mergeFonts() -> None:
 		fontBase.save(pathWorkbenchFonts / f"{filenameFontFamilyLocale}{weightName}.ttf")
 		fontBase.close()
 		fontSourceHanMono.close()
+
+def _buildsPreparedFontV2(pathFilename: Path, listUnicodeCodepoint: list[int]) -> TTFont:
+	ttFont: TTFont = TTFont(pathFilename)
+	_convertOpenTypeToTrueType(ttFont)
+	_subsetsByUnicodeRanges(ttFont, listUnicodeCodepoint, deepcopy(subsetOptions))
+	return ttFont
+
+def mergeFontsV2(fontFamily: str) -> list[Path]:
+	listPathFilename: list[Path] = []
+	listUnicodeCodepoint: list[int] = subset.parse_unicodes(','.join(unicodeSC))
+
+	for weightName, weightValues in dictionaryWeights.items():
+		fontSource: TTFont = _buildsPreparedFontV2(
+			pathWorkbenchFonts / f"Simplified_Chinese.{weightValues.SourceHanMono}.{fontFamily}.otf",
+			listUnicodeCodepoint
+		)
+		fontBase: TTFont = TTFont(pathWorkbenchFonts / f"FiraCode-{weightValues.FiraCode}.ttf")
+		mergeSourceFontIntoBaseFont(fontBase, fontSource)
+		pathOutput: Path = pathWorkbenchFonts / f"{filenameFontFamilyLocale}{weightName}.ttf"
+		fontBase.save(pathOutput)
+		fontBase.close()
+		fontSource.close()
+		listPathFilename.append(pathOutput)
+
+	return listPathFilename

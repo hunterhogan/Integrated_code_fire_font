@@ -34,13 +34,12 @@ if TYPE_CHECKING:
 	from collections.abc import Sequence
 
 def librarianGetsUnicode() -> Sequence[str]:  # noqa: D103
-	qq = 'SourceHanMono'
-	ww = 'Simplified_Chinese.UTF32.map'
-	pathFilename: Path = pathRoot / qq / 'metadata' / ww
-	rr = pathFilename.read_text(encoding='utf-8')
-	# return [line[11:None] for line in rr.splitlines()]  # noqa: ERA001
-	return ['0x' + line[1:9] for line in rr.splitlines()]
-
+	fontFamilyName = 'SourceHanMono'
+	filename = 'Simplified_Chinese.UTF32.map'
+	pathFilename: Path = pathRoot / fontFamilyName / 'metadata' / filename
+	# Getting fonttools to read inputs of unicodes is not easy. The best luck I've had requires prefixing "U+" and removing all
+	# leading zeros. For a range, only prefix the first number.
+	return ['U+' + line[1:9] for line in pathFilename.read_text(encoding='utf-8').splitlines()]
 
 def valetCopiesFilesToWorkbenchFonts(pathRoot: PurePath, theGlob: str = '*.*') -> None:
 	"""You can create `pathWorkbenchFonts` and copy files matching `theGlob` from `pathRoot` into `pathWorkbenchFonts`.
@@ -145,6 +144,7 @@ def removeWorkbench() -> None:
 
 	pathWorkbench.rmdir()
 
+# TODO cleanWorkbench: make it smarter
 def cleanWorkbench() -> None:
 	"""You can remove source font input files from `pathWorkbenchFonts`.
 
@@ -181,6 +181,9 @@ def cleanWorkbench() -> None:
 		pathFilename.unlink()
 
 	for pathFilename in pathWorkbenchFonts.glob('*SourceHanMono*.otf'):
+		pathFilename.unlink()
+
+	for pathFilename in pathWorkbenchFonts.glob('*Franken*.otf'):
 		pathFilename.unlink()
 
 if __name__ == '__main__':
