@@ -25,7 +25,7 @@ References
 	https://docs.python.org/3/library/shutil.html#shutil.copy2
 
 """
-from Integrated_Code_Fire import pathRoot, pathWorkbench, pathWorkbenchFonts, pathWorkbenchSourceHanMono
+from Integrated_Code_Fire import settingsPackage
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING
 import shutil
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 def librarianGetsUnicode() -> Sequence[str]:  # noqa: D103
 	fontFamilyName = 'SourceHanMono'
 	filename = 'Simplified_Chinese.UTF32.map'
-	pathFilename: Path = pathRoot / fontFamilyName / 'metadata' / filename
+	pathFilename: Path = settingsPackage.pathRoot / fontFamilyName / 'metadata' / filename
 	# Getting fonttools to read inputs of unicodes is not easy. The best luck I've had requires prefixing "U+" and removing all
 	# leading zeros. For a range, only prefix the first number.
 	return ['U+' + line[1:9] for line in pathFilename.read_text(encoding='utf-8').splitlines()]
@@ -92,12 +92,12 @@ def valetCopiesFilesToWorkbenchFonts(pathRoot: PurePath, theGlob: str = '*.*') -
 		Internal package reference.
 
 	"""
-	pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
+	settingsPackage.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
 	for pathFilename in Path(pathRoot).glob(theGlob):
-		shutil.copy2(pathFilename, pathWorkbenchFonts)
+		shutil.copy2(pathFilename, settingsPackage.pathWorkbenchFonts)
 
 # TODO removeWorkbench: smarter, but avoid nukes, or have some way of knowing it's ok to nuke it.
-def removeWorkbench() -> None:
+def removeWorkbench(pathRemove: Path) -> None:
 	"""You can remove `pathWorkbenchFonts` and `pathWorkbench`.
 
 	(AI generated docstring)
@@ -129,20 +129,20 @@ def removeWorkbench() -> None:
 		Internal package reference.
 
 	"""
-	for pathFilename in pathWorkbenchFonts.iterdir():
+	for pathFilename in settingsPackage.pathWorkbenchFonts.iterdir():
 		pathFilename.unlink()
 
-	pathWorkbenchFonts.rmdir()
+	settingsPackage.pathWorkbenchFonts.rmdir()
 
-	for pathFilename in pathWorkbenchSourceHanMono.iterdir():
+	for pathFilename in pathRemove.iterdir():
 		pathFilename.unlink()
 
-	pathWorkbenchSourceHanMono.rmdir()
+	pathRemove.rmdir()
 
-	for pathFilename in pathWorkbench.iterdir():
+	for pathFilename in settingsPackage.pathWorkbench.iterdir():
 		pathFilename.unlink()
 
-	pathWorkbench.rmdir()
+	settingsPackage.pathWorkbench.rmdir()
 
 # TODO cleanWorkbench: make it smarter
 def cleanWorkbench() -> None:
@@ -177,13 +177,13 @@ def cleanWorkbench() -> None:
 		Internal package reference.
 
 	"""
-	for pathFilename in pathWorkbenchFonts.glob('FiraCode*.ttf'):
+	for pathFilename in settingsPackage.pathWorkbenchFonts.glob('FiraCode*.ttf'):
 		pathFilename.unlink()
 
-	for pathFilename in pathWorkbenchFonts.glob('*SourceHanMono*.otf'):
+	for pathFilename in settingsPackage.pathWorkbenchFonts.glob('*SourceHanMono*.otf'):
 		pathFilename.unlink()
 
-	for pathFilename in pathWorkbenchFonts.glob('*Franken*.otf'):
+	for pathFilename in settingsPackage.pathWorkbenchFonts.glob('*Franken*.otf'):
 		pathFilename.unlink()
 
 if __name__ == '__main__':

@@ -17,6 +17,7 @@ dependencies = [
     "glyphslib[colr,ufo-normalization]>=6.12.6",
     "hunterMakesPy>=0.4.0",
     "more-itertools>=10.8.0",
+    "platformdirs>=4.9.2",
     "tqdm>=4.67.3",
 ]
 

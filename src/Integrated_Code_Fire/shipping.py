@@ -23,8 +23,7 @@ References
 	Internal package reference.
 
 """
-
-from Integrated_Code_Fire import pathAssets, pathWorkbenchFonts
+from Integrated_Code_Fire import settingsPackage
 from zipfile import ZIP_DEFLATED, ZipFile
 
 filenameZIP: str = 'IntegratedCode.zip'
@@ -62,10 +61,10 @@ def makeAssets() -> None:
 		Internal package reference.
 
 	"""
-	pathAssets.mkdir(exist_ok = True)
-	for pathFilename in pathWorkbenchFonts.glob(filenameMask_ttf):
-		pathFilename.replace(pathAssets / pathFilename.name)
+	settingsPackage.pathAssets.mkdir(exist_ok = True)
+	for pathFilename in settingsPackage.pathWorkbenchFonts.glob(filenameMask_ttf):
+		pathFilename.replace(settingsPackage.pathAssets / pathFilename.name)
 
-	with ZipFile(pathAssets / filenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipArchive:
-		for pathFilename in pathAssets.glob(filenameMask_ttf):
+	with ZipFile(settingsPackage.pathAssets / filenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipArchive:
+		for pathFilename in settingsPackage.pathAssets.glob(filenameMask_ttf):
 			zipArchive.write(pathFilename, arcname = pathFilename.name)

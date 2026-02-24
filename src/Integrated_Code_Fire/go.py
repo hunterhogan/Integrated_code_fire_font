@@ -89,7 +89,7 @@ def go(workersMaximum: int = 1) -> None:
 	cleanWorkbench()
 	writeMetadata()
 	makeAssets()
-	removeWorkbench()
+	removeWorkbench(pathWorkbenchSourceHanMono)
 
 def goV2(workersMaximum: int = 1) -> None:
 	smithyCastsFiraCode()
@@ -104,7 +104,7 @@ def goV2(workersMaximum: int = 1) -> None:
 	cleanWorkbench()
 	writeMetadata()
 	makeAssets()
-	removeWorkbench()
+	removeWorkbench(pathWorkbenchFontFamily)
 
 if __name__ == '__main__':
 	goV2(14)

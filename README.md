@@ -6,7 +6,7 @@ Integrated Code 火 is a code-centric font combining [Fira Code](https://github.
 
 ## Download Integrated Code 火 简化字
 
-Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest). The compiled fonts are not in the repository source code.
+Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) because they are not in the repository source code.
 
 从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译后的字体。编译后的字体不在仓库源代码中。
 
@@ -74,7 +74,7 @@ Run go.py.
 
 ### Make Source Han Mono Comprehensive TTC file
 
-I followed the instructions seven-year-old instructions in the Source Han Mono repository as closely as possible, which should hypothetically produce the same file in their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger than the release file, and I can't figure out if my is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
+I followed the instructions seven-year-old instructions in the Source Han Mono repository as closely as possible, except I didn't "subroutinize", which should hypothetically produce a similar file to their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger, which is expected, but I can't figure out if my file is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
 
 1. Run `foundry.smithyCastsFontFamily('SourceHanMono')`.
 2. Run makeTTCSuper.cmd.

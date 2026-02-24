@@ -46,8 +46,7 @@ References
 from fontTools.misc.encodingTools import getEncoding
 from fontTools.misc.textTools import byteord, tobytes
 from fontTools.ttLib import TTFont
-from Integrated_Code_Fire import (
-	filenameFontFamilyLocale, fontFamilyLocale, pathRoot, pathWorkbenchFonts, settingsPackage)
+from Integrated_Code_Fire import settingsPackage
 from pathlib import Path
 from typing import TYPE_CHECKING
 import re as regex
@@ -55,7 +54,11 @@ import re as regex
 if TYPE_CHECKING:
 	from pathlib import Path
 
-def getMetadataByFontWeight(weight: str, filenameFontFamilyLocale: str, fontFamilyLocale: str) -> dict[int, str]:
+platformID: int = 3
+platEncID: int = 1
+langID: int = 0x0409
+
+def getMetadataByFontWeight(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
 	"""You can build a name record mapping for a given `weight`.
 
 	(AI generated docstring)
@@ -88,12 +91,12 @@ def getMetadataByFontWeight(weight: str, filenameFontFamilyLocale: str, fontFami
 	"""
 	return {
 		0: 'Copyright 2026 Hunter Hogan (https://www.patreon.com/integrated), with Reserved Font Name \u2018Integrated.\u2019',
-		1: fontFamilyLocale,
+		1: fontFamily,
 		2: weight,
-		3: f"{settingsPackage.fontVersion};{settingsPackage.achVendID};{filenameFontFamilyLocale}{weight}",
-		4: f"{fontFamilyLocale}{weight}",
+		3: f"{settingsPackage.fontVersion};{settingsPackage.achVendID};{filenameFontFamily}{weight}",
+		4: f"{fontFamily}{weight}",
 		5: f"Version {settingsPackage.fontVersion}",
-		6: f"{filenameFontFamilyLocale}{weight}",
+		6: f"{filenameFontFamily}{weight}",
 		7: 'Fira Mono is a trademark of The Mozilla Corporation. Source is a trademark of Adobe in the United States and/or other countries.',
 		8: 'Carrois Corporate; Edenspiekermann AG; Nikita Prokopov; Adobe',
 		9: 'Carrois Corporate; Edenspiekermann AG; Nikita Prokopov; Ryoko NISHIZUKA 西塚涼子 (kana, bopomofo & ideographs); Paul D. Hunt (Latin, Italic, Greek & Cyrillic); Sandoll Communications 산돌커뮤니케이션, Soo-young JANG 장수영 & Joo-yeon KANG 강주연 (hangul elements, letters & syllables)',
@@ -102,13 +105,9 @@ def getMetadataByFontWeight(weight: str, filenameFontFamilyLocale: str, fontFami
 		12: 'https://tonsky.me http://www.adobe.com/type/',
 		13: 'This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL',
 		14: 'http://scripts.sil.org/OFL',
-		16: fontFamilyLocale,
+		16: fontFamily,
 		17: weight,
 	}
-
-platformID: int = 3
-platEncID: int = 1
-langID: int = 0x0409
 
 def updateFontFile(pathFilenameFont: Path) -> None:
 	"""You can update a `.ttf` font file in place.
@@ -160,8 +159,8 @@ def updateFontFile(pathFilenameFont: Path) -> None:
 		Internal package reference.
 
 	"""
-	weight: str = pathFilenameFont.stem.removeprefix(filenameFontFamilyLocale)
-	dictionaryNameIDToNameRecordValue: dict[int, str] = getMetadataByFontWeight(weight, filenameFontFamilyLocale, fontFamilyLocale)
+	weight: str = pathFilenameFont.stem.removeprefix(settingsPackage.filenameFontFamilyLocale简化字)
+	dictionaryNameIDToNameRecordValue: dict[int, str] = getMetadataByFontWeight(weight, settingsPackage.filenameFontFamilyLocale简化字, settingsPackage.fontFamilyLocale简化字)
 	with TTFont(pathFilenameFont) as fontBase:
 		fontBase['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
 		fontBase['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
@@ -203,7 +202,7 @@ def writeMetadata() -> None:
 		Internal package reference.
 
 	"""
-	set(map(updateFontFile, pathWorkbenchFonts.glob(f'{filenameFontFamilyLocale}*.ttf')))
+	set(map(updateFontFile, settingsPackage.pathWorkbenchFonts.glob(f'{settingsPackage.filenameFontFamilyLocale简化字}*.ttf')))
 
 def escapesStringForOpenTypeFeature(stringValue: str, platformID: int = 3, platformEncodingID: int = 1, languageID: int = 0x0409) -> str:
 	encoding = getEncoding(platformID, platformEncodingID, languageID)
@@ -215,8 +214,8 @@ def escapesStringForOpenTypeFeature(stringValue: str, platformID: int = 3, platf
 
 	if encoding == 'utf_16_be':
 		return ''.join(
-			_escapesCharacterForOpenTypeFeature(byteord(bytesEncoded[i]) * 256 + byteord(bytesEncoded[i + 1]))
-			for i in range(0, len(bytesEncoded), 2)
+			_escapesCharacterForOpenTypeFeature(byteord(bytesEncoded[index]) * 256 + byteord(bytesEncoded[index + 1]))
+			for index in range(0, len(bytesEncoded), 2)
 		)
 
 	return ''.join(_escapesCharacterForOpenTypeFeature(byteord(byte)) for byte in bytesEncoded)
@@ -241,7 +240,7 @@ def _escapesCharacterForOpenTypeFeature(integerCodepoint: int) -> str:
 def scribeUpdatesFontMetadata(fontFamily: str = 'FrankenFont') -> None:
 	regexVersion: regex.Pattern[str] = regex.compile(r'^version\s+\([\d.]+\)', regex.MULTILINE)
 
-	for pathFilename in sorted((pathRoot / fontFamily).glob('glyphs/*.cidfontinfo')):
+	for pathFilename in sorted((settingsPackage.pathRoot / fontFamily).glob('glyphs/*.cidfontinfo')):
 		pathFilename.write_text(
 			regexVersion.sub(
 				f'version{" " * 20} ({settingsPackage.fontVersion})\n',

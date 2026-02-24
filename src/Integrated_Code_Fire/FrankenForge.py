@@ -1,13 +1,15 @@
-"""The functions in this module should be run infrequently. Put oft-run updating functions in other modules."""
+"""The functions in this module are to renovate other fonts and should be run infrequently. Put oft-run updating-functions in other modules."""
 # ruff: noqa: D103
+from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from fontTools.misc.psCharStrings import T1CharString
 from hunterMakesPy import raiseIfNone
-from Integrated_Code_Fire import (
-	bearingIncrement, filenameFontFamilyLocale, fontFamilyLocale, fontUnitsPerEm, pathRoot, settingsPackage)
+from Integrated_Code_Fire import bearingIncrement, settingsPackage
 from Integrated_Code_Fire.writeMetadata import escapesStringForOpenTypeFeature, getMetadataByFontWeight
+from itertools import repeat
 from more_itertools import loops
 from multiprocessing import Pool
 from pathlib import Path
+from tqdm import tqdm
 import fontTools.misc.eexec
 import re as regex
 import shutil
@@ -18,152 +20,118 @@ regexLenIV: regex.Pattern[bytes] = regex.compile(rb'/lenIV\s+(-?\d+)', flags=reg
 regexOpenTypeMetricLine: regex.Pattern[str] = regex.compile(r'^(\s*)([A-Za-z][A-Za-z0-9/]*)\s+(-?\d+)(\s*;.*)$')
 regexStartData: regex.Pattern[bytes] = regex.compile(rb'\(Binary\)\s+(\d+)\s+StartData')
 
-setOpenTypeMetricNameHhea: set[str] = {'Ascender', 'Descender', 'LineGap'}
-setOpenTypeMetricNameOS2: set[str] = {'TypoAscender', 'TypoDescender', 'TypoLineGap', 'XHeight', 'CapHeight', 'winAscent', 'winDescent'}
+set_hhea: set[str] = {'Ascender', 'Descender', 'LineGap'}
+setOS2: set[str] = {'TypoAscender', 'TypoDescender', 'TypoLineGap', 'XHeight', 'CapHeight', 'winAscent', 'winDescent'}
 
 def scientistCreatesFrankenFont(fontFamilyDonor: str = 'SourceHanMono', fontFamilyMonster: str = 'FrankenFont', workersMaximum: int = 1) -> None:
-	pathDonor: Path = pathRoot / fontFamilyDonor
-	pathMonster: Path = pathRoot / fontFamilyMonster
+	pathDonor: Path = settingsPackage.pathRoot / fontFamilyDonor
+	pathMonster: Path = settingsPackage.pathRoot / fontFamilyMonster
 
 	shutil.copytree(pathDonor, pathMonster, dirs_exist_ok=True)
 
 	for pathFilename in (*Path(pathMonster, 'metadata').glob('*.txt'), *Path(pathMonster, 'metadata').glob('*.H')):
 		pathFilename: Path = pathFilename.with_stem(pathFilename.stem.replace(fontFamilyDonor, fontFamilyMonster))
 
-	listPathFilenamesCIDFontPostScript: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfont.ps'))
-	listPathFilenamesOpenTypeFeature: list[Path] = sorted(pathMonster.glob('glyphs/*.features'))
+	with ProcessPoolExecutor(workersMaximum) as concurrencyManager:
+		listClaimTickets: list[Future[None]] =list(map(concurrencyManager.submit, repeat(artisanChangesFeatures), pathMonster.glob('glyphs/*.features')))  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-argument-type]
+		listClaimTickets.extend(map(concurrencyManager.submit, repeat(artisanChangesPostScript), pathMonster.glob('glyphs/*.cidfont.ps')))  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-argument-type]
 
-	with Pool(processes=workersMaximum) as concurrencyManager:
-		set(concurrencyManager.map(artisanTransformsOpenTypeFeature, listPathFilenamesOpenTypeFeature))
-		set(concurrencyManager.map(artisanTransformsCIDFontPostScript, listPathFilenamesCIDFontPostScript))
+		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc='Applying artisan changes'):
+			claimTicket.result()
 
 #======== CID font PostScript transformations ========
 
-def artisanTransformsCIDFontPostScript(pathFilename: Path) -> None:
-	bytesPostScriptSource: bytes = pathFilename.read_bytes()
-	matchStartData: regex.Match[bytes] = raiseIfNone(regexStartData.search(bytesPostScriptSource))
+def artisanChangesPostScript(pathFilename: Path) -> None:
+	PostScript: bytes = pathFilename.read_bytes()
+	matchStartData: regex.Match[bytes] = raiseIfNone(regexStartData.search(PostScript))
 
-	lengthStartData: int = int(matchStartData.group(1))
-	offsetStartData: int = matchStartData.end() + 1
-	offsetEndData: int = offsetStartData + lengthStartData
-	if offsetEndData > len(bytesPostScriptSource):
-		message: str = f'I received {offsetEndData = }, but I need a value less than or equal to {len(bytesPostScriptSource) = }.'
-		raise ValueError(message)
+	offsetStart: int = matchStartData.end() + 1
+	offsetEnd: int = offsetStart + int(matchStartData.group(1))
 
-	bytesPrefix: bytes = bytesPostScriptSource[:offsetStartData]
-	bytesStartData: bytes = bytesPostScriptSource[offsetStartData:offsetEndData]
-	bytesSuffix: bytes = bytesPostScriptSource[offsetEndData:]
+	prefix: bytes = PostScript[:offsetStart]
 
-	integerCIDMapOffset: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'CIDMapOffset')
-	integerFDBytes: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'FDBytes')
-	integerGDBytes: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'GDBytes')
-	integerCIDCount: int = _readsIntegerKeyFromPrefix(bytesPrefix, b'CIDCount')
-
-	bytesPrefixTransformed: bytes = _updatesFontMatrixEntries(bytesPrefix, fontUnitsPerEm)
-	bytesStartDataTransformed: bytes = _updatesCIDStartDataBytes( bytesPrefix , bytesStartData , integerCIDMapOffset , integerFDBytes , integerGDBytes , integerCIDCount , bearingIncrement )
-	bytesPostScriptTransformed: bytes = _rebuildsCIDFontPostScriptBytes( bytesPrefixTransformed , bytesSuffix , bytesStartDataTransformed )
+	bytesPostScriptTransformed: bytes = _rebuildCIDFont(_updateFontMatrix(prefix, settingsPackage.fontUnitsPerEm), PostScript[offsetEnd:]
+			, _updateCIDStart(prefix, PostScript[offsetStart:offsetEnd]
+				, _getInt(prefix, b'CIDMapOffset')
+				, _getInt(prefix, b'FDBytes')
+				, _getInt(prefix, b'GDBytes')
+				, _getInt(prefix, b'CIDCount')
+				, bearingIncrement))
 
 	pathFilename.write_bytes(bytesPostScriptTransformed)
 
-def _readsIntegerKeyFromPrefix(bytesPrefix: bytes, keyName: bytes) -> int:
-	matchKey: regex.Match[bytes] = raiseIfNone(regex.search(rb'/' + regex.escape(keyName) + rb'\s+(-?\d+)', bytesPrefix))
-	return int(matchKey.group(1))
+def _getInt(prefix: bytes, key: bytes) -> int:
+	return int(raiseIfNone(regex.search(rb'/' + regex.escape(key) + rb'\s+(-?\d+)', prefix)).group(1))
 
-def _updatesFontMatrixEntries(bytesPrefix: bytes, fontUnitsPerEmTarget: int) -> bytes:
+def _updateFontMatrix(prefix: bytes, unitsPerEm: int) -> bytes:
 	def replaceFontMatrix(matchFontMatrix: regex.Match[bytes]) -> bytes:
 		bytesFontMatrixTransformed: bytes = matchFontMatrix.group(0)
 		listNumberAsString: list[bytes] = matchFontMatrix.group(1).split()
 		if len(listNumberAsString) == 6:
 			listNumber: list[float] = [float(numberAsString) for numberAsString in listNumberAsString]
-			floatMaximumAbsoluteScale: float = max(abs(listNumber[0]), abs(listNumber[1]), abs(listNumber[2]), abs(listNumber[3]))
-			booleanScaleLooksValid: bool = floatMaximumAbsoluteScale != 0.0 and floatMaximumAbsoluteScale <= 0.01
-			if booleanScaleLooksValid:
-				integerFontUnitsPerEmSource: int = round(1.0 / floatMaximumAbsoluteScale)
-				if integerFontUnitsPerEmSource > 0:
-					floatScaleFactor: float = integerFontUnitsPerEmSource / fontUnitsPerEmTarget
-					listNumberScaled: list[float] = [number * floatScaleFactor for number in listNumber]
-					bytesNumberScaled: bytes = ' '.join(_formatsPostScriptNumber(number) for number in listNumberScaled).encode('ascii')
+			MaximumAbsoluteScale: float = max(abs(listNumber[0]), abs(listNumber[1]), abs(listNumber[2]), abs(listNumber[3]))
+			if MaximumAbsoluteScale != 0.0 and MaximumAbsoluteScale <= 0.01:
+				FontUnitsPerEmSource: int = round(1.0 / MaximumAbsoluteScale)
+				if FontUnitsPerEmSource > 0:
+					listNumberScaled: list[float] = [number * (FontUnitsPerEmSource / unitsPerEm) for number in listNumber]
+					bytesNumberScaled: bytes = ' '.join(_formatFloat(number) for number in listNumberScaled).encode('ascii')
 					bytesFontMatrixTransformed = b'/FontMatrix [' + bytesNumberScaled + b'] def'
 
 		return bytesFontMatrixTransformed
 
-	return regexFontMatrix.sub(replaceFontMatrix, bytesPrefix)
+	return regexFontMatrix.sub(replaceFontMatrix, prefix)
 
-def _formatsPostScriptNumber(number: float) -> str:
-	stringNumber: str = format(number, '.10f').rstrip('0').rstrip('.')
-	stringNumberFormatted: str = stringNumber
-	if stringNumber in {'', '-0'}:
-		stringNumberFormatted = '0'
-	return stringNumberFormatted
+def _formatFloat(number: float) -> str:
+	string: str = format(number, '.10f').rstrip('0').rstrip('.')
+	if string in {'', '-0'}:
+		string = '0'
+	return string
 
-def _updatesCIDStartDataBytes(bytesPrefix: bytes, bytesStartData: bytes, integerCIDMapOffset: int, integerFDBytes: int, integerGDBytes: int, integerCIDCount: int, bearingIncrement: int) -> bytes:
-	integerEntryCount: int = integerCIDCount + 1
-	integerEntrySize: int = integerFDBytes + integerGDBytes
-	integerMapStart: int = integerCIDMapOffset
-	integerMapEnd: int = integerMapStart + integerEntryCount * integerEntrySize
-	if integerMapEnd > len(bytesStartData):
-		message: str = f'I received {integerMapEnd = }, but I need a value less than or equal to {len(bytesStartData) = }.'
-		raise ValueError(message)
+def _updateCIDStart(prefix: bytes, startData: bytes, CIDMapOffset: int, FDBytes: int, GDBytes: int, CIDCount: int, bearingIncrement: int) -> bytes:
+	EntryCount: int = CIDCount + 1
+	MapStart: int = CIDMapOffset
+	MapEnd: int = MapStart + EntryCount * (FDBytes + GDBytes)
 
 	listFDByEntry: list[int] = []
 	listOffsetByEntry: list[int] = []
-	offsetMapRead: int = integerMapStart
-	for _indexEntry in loops(integerEntryCount):
-		integerFD: int = 0
-		if integerFDBytes > 0:
-			integerFD = int.from_bytes(bytesStartData[offsetMapRead:offsetMapRead + integerFDBytes], 'big')
-			offsetMapRead += integerFDBytes
-		integerOffset: int = int.from_bytes(bytesStartData[offsetMapRead:offsetMapRead + integerGDBytes], 'big')
-		offsetMapRead += integerGDBytes
-		listFDByEntry.append(integerFD)
-		listOffsetByEntry.append(integerOffset)
+	offsetMapRead: int = MapStart
+	for _indexEntry in loops(EntryCount):
+		FD: int = 0
+		if FDBytes > 0:
+			FD = int.from_bytes(startData[offsetMapRead:offsetMapRead + FDBytes], 'big')
+			offsetMapRead += FDBytes
+		offsetMapRead += GDBytes
+		listFDByEntry.append(FD)
+		listOffsetByEntry.append(int.from_bytes(startData[offsetMapRead:offsetMapRead + GDBytes], 'big'))
 
-	integerGlyphDataStart: int = listOffsetByEntry[0]
-	if integerGlyphDataStart < integerMapEnd:
-		message: str = f'I received {integerGlyphDataStart = }, but I need a value greater than or equal to {integerMapEnd = }.'
-		raise ValueError(message)
-	if listOffsetByEntry[-1] > len(bytesStartData):
-		message: str = (
-			f'I received {listOffsetByEntry[-1] = }, '
-			f'but I need a value less than or equal to {len(bytesStartData) = }.'
-		)
-		raise ValueError(message)
+	GlyphDataStart: int = listOffsetByEntry[0]
 
-	listLenIVByFD: list[int] = _readsLenIVValuesByFD(bytesPrefix, max(listFDByEntry))
+	listLenIVByFD: list[int] = _getLenIV(prefix, max(listFDByEntry))
 
 	bytearrayGlyphDataTransformed: bytearray = bytearray()
 	listOffsetByEntryTransformed: list[int] = []
-	integerOffsetCurrent: int = integerGlyphDataStart
-	for integerCID in range(integerCIDCount):
-		listOffsetByEntryTransformed.append(integerOffsetCurrent)
-		integerOffsetStart: int = listOffsetByEntry[integerCID]
-		integerOffsetEnd: int = listOffsetByEntry[integerCID + 1]
-		if integerOffsetStart != integerOffsetEnd:
-			integerFDCurrent: int = listFDByEntry[integerCID]
-			integerLenIV: int = listLenIVByFD[integerFDCurrent] if integerFDCurrent < len(listLenIVByFD) else 4
-			bytesCharstringTransformed: bytes = _updatesType1CharStringMetric( bytesStartData[integerOffsetStart:integerOffsetEnd] , bearingIncrement , integerLenIV )
+	OffsetCurrent: int = GlyphDataStart
+	for CID in range(CIDCount):
+		listOffsetByEntryTransformed.append(OffsetCurrent)
+		if listOffsetByEntry[CID] != listOffsetByEntry[CID + 1]:
+			FDCurrent: int = listFDByEntry[CID]
+			LenIV: int = listLenIVByFD[FDCurrent] if FDCurrent < len(listLenIVByFD) else 4
+			bytesCharstringTransformed: bytes = _updateT1CharString(startData[listOffsetByEntry[CID]:listOffsetByEntry[CID + 1]], bearingIncrement, LenIV)
 			bytearrayGlyphDataTransformed.extend(bytesCharstringTransformed)
-			integerOffsetCurrent += len(bytesCharstringTransformed)
-	listOffsetByEntryTransformed.append(integerOffsetCurrent)
+			OffsetCurrent += len(bytesCharstringTransformed)
+	listOffsetByEntryTransformed.append(OffsetCurrent)
 
 	bytearrayMapTransformed: bytearray = bytearray()
-	for indexEntry in range(integerEntryCount):
-		integerFD = listFDByEntry[indexEntry]
-		integerOffset = listOffsetByEntryTransformed[indexEntry]
-		if integerFDBytes > 0:
-			bytearrayMapTransformed.extend(integerFD.to_bytes(integerFDBytes, 'big'))
-		bytearrayMapTransformed.extend(integerOffset.to_bytes(integerGDBytes, 'big'))
+	for indexEntry in range(EntryCount):
+		FD = listFDByEntry[indexEntry]
+		if FDBytes > 0:
+			bytearrayMapTransformed.extend(FD.to_bytes(FDBytes, 'big'))
+		bytearrayMapTransformed.extend(listOffsetByEntryTransformed[indexEntry].to_bytes(GDBytes, 'big'))
 
-	return b''.join((
-		bytesStartData[:integerMapStart]
-		, bytes(bytearrayMapTransformed)
-		, bytesStartData[integerMapEnd:integerGlyphDataStart]
-		, bytes(bytearrayGlyphDataTransformed)
-		, bytesStartData[listOffsetByEntry[-1]:]
-	))
+	return b''.join((startData[:MapStart], bytes(bytearrayMapTransformed), startData[MapEnd:GlyphDataStart], bytes(bytearrayGlyphDataTransformed), startData[listOffsetByEntry[-1]:]))
 
-def _readsLenIVValuesByFD(bytesPrefix: bytes, maximumFDIndex: int) -> list[int]:
-	listLenIVFromPrefix: list[int] = [int(matchLenIV.group(1)) for matchLenIV in regexLenIV.finditer(bytesPrefix)]
+def _getLenIV(prefix: bytes, maximumFDIndex: int) -> list[int]:
+	listLenIVFromPrefix: list[int] = [int(matchLenIV.group(1)) for matchLenIV in regexLenIV.finditer(prefix)]
 	listLenIVByFD: list[int] = []
 	if not listLenIVFromPrefix:
 		listLenIVByFD = [4] * (maximumFDIndex + 1)
@@ -177,169 +145,131 @@ def _readsLenIVValuesByFD(bytesPrefix: bytes, maximumFDIndex: int) -> list[int]:
 				listLenIVByFD.append(listLenIVFromPrefix[-1])
 	return listLenIVByFD
 
-def _updatesType1CharStringMetric(bytesCharStringSource: bytes, bearingIncrement: int, integerLenIV: int) -> bytes:
-	bytesPrefixDecrypted: bytes = b''
-	bytesProgramSource: bytes = bytesCharStringSource
-	if integerLenIV != -1:
-		tupleDecrypted: tuple[bytes, int] = fontTools.misc.eexec.decrypt(bytesCharStringSource, 4330)
+def _updateT1CharString(CharString: bytes, bearingIncrement: int, LenIV: int) -> bytes:
+	prefixDecrypted: bytes = b''
+	bytesProgramSource: bytes = CharString
+	if LenIV != -1:
+		tupleDecrypted: tuple[bytes, int] = fontTools.misc.eexec.decrypt(CharString, 4330)
 		bytesDecrypted: bytes = tupleDecrypted[0]
-		if integerLenIV > len(bytesDecrypted):
-			message: str = f'I received {integerLenIV = }, but I need a value less than or equal to {len(bytesDecrypted) = }.'
-			raise ValueError(message)
-		bytesPrefixDecrypted = bytesDecrypted[:integerLenIV]
-		bytesProgramSource = bytesDecrypted[integerLenIV:]
+		prefixDecrypted = bytesDecrypted[:LenIV]
+		bytesProgramSource = bytesDecrypted[LenIV:]
 
 	charstring: T1CharString = T1CharString(bytecode=bytesProgramSource)
 	charstring.decompile()
 	listProgram: list[int | float | str | bytes] = raiseIfNone(charstring.program)
-	_updatesMetricOperands(listProgram, bearingIncrement)
+	_updateBearings(listProgram, bearingIncrement)
 	charstring.program = listProgram
 	charstring.compile()
-	objectBytecode: bytes = raiseIfNone(charstring.bytecode)
-	bytesProgramTransformed: bytes = bytes(objectBytecode)
+	bytesProgramTransformed: bytes = bytes(raiseIfNone(charstring.bytecode))
 
 	bytesCharstringTransformed: bytes = bytesProgramTransformed
-	if integerLenIV != -1:
-		bytesDecryptedTransformed: bytes = bytesPrefixDecrypted + bytesProgramTransformed
+	if LenIV != -1:
+		bytesDecryptedTransformed: bytes = prefixDecrypted + bytesProgramTransformed
 		tupleEncrypted: tuple[bytes, int] = fontTools.misc.eexec.encrypt(bytesDecryptedTransformed, 4330)
 		bytesEncryptedTransformed: bytes = tupleEncrypted[0]
 		bytesCharstringTransformed = bytesEncryptedTransformed
 
 	return bytesCharstringTransformed
 
-def _updatesMetricOperands(listProgram: list[int | float | str | bytes], bearingIncrement: int) -> None:
-	booleanMetricOperatorFound: bool = False
-	for indexTable, table in enumerate(listProgram):
-		if table == 'hsbw':
-			if indexTable < 2:
-				message: str = f'I could not read expected integer operands for hsbw at {indexTable = }.'
-				raise TypeError(message)
-			valueSideBearing: int | float | str | bytes = listProgram[indexTable - 2]
-			valueAdvanceWidth: int | float | str | bytes = listProgram[indexTable - 1]
-			if not isinstance(valueSideBearing, int) or not isinstance(valueAdvanceWidth, int):
-				message: str = f'I could not read expected integer operands for hsbw at {indexTable = }.'
-				raise TypeError(message)
-			integerSideBearingBefore: int = valueSideBearing
-			integerAdvanceWidthBefore: int = valueAdvanceWidth
-			listProgram[indexTable - 2] = integerSideBearingBefore + bearingIncrement
-			listProgram[indexTable - 1] = integerAdvanceWidthBefore + bearingIncrement * 2
-			booleanMetricOperatorFound = True
-			break
+def _updateBearings(listProgram: list[int | float | str | bytes], bearingIncrement: int) -> None:
+	if 'hsbw' in listProgram:
+		index: int = listProgram.index('hsbw')
+		listProgram[index - 2] += bearingIncrement  # pyright: ignore[reportOperatorIssue] # ty:ignore[unsupported-operator]
+		listProgram[index - 1] += bearingIncrement * 2  # pyright: ignore[reportOperatorIssue] # ty:ignore[unsupported-operator]
 
-		if table == 'sbw':
-			if indexTable < 4:
-				message: str = f'I could not read expected integer operands for sbw at {indexTable = }.'
-				raise TypeError(message)
-			valueSideBearing: int | float | str | bytes = listProgram[indexTable - 4]
-			valueAdvanceWidth: int | float | str | bytes = listProgram[indexTable - 2]
-			if not isinstance(valueSideBearing, int) or not isinstance(valueAdvanceWidth, int):
-				message: str = f'I could not read expected integer operands for sbw at {indexTable = }.'
-				raise TypeError(message)
-			integerSideBearingBefore: int = valueSideBearing
-			integerAdvanceWidthBefore: int = valueAdvanceWidth
-			listProgram[indexTable - 4] = integerSideBearingBefore + bearingIncrement
-			listProgram[indexTable - 2] = integerAdvanceWidthBefore + bearingIncrement * 2
-			booleanMetricOperatorFound = True
-			break
+	elif 'sbw' in listProgram:
+		index = listProgram.index('sbw')
+		listProgram[index - 4] += bearingIncrement  # pyright: ignore[reportOperatorIssue] # ty:ignore[unsupported-operator]
+		listProgram[index - 2] += bearingIncrement * 2  # pyright: ignore[reportOperatorIssue] # ty:ignore[unsupported-operator]
 
-	if not booleanMetricOperatorFound:
-		message: str = 'I could not find hsbw or sbw in the Type 1 charstring program.'
-		raise ValueError(message)
+def _rebuildCIDFont(prefix: bytes, suffix: bytes, startData: bytes) -> bytes:
+	StartDataLength: int = len(startData)
+	bytesStartDataToken: bytes = f'(Binary) {StartDataLength} StartData'.encode('ascii')
+	prefixUpdated: bytes = regexStartData.sub(bytesStartDataToken, prefix, count=1)
 
-def _rebuildsCIDFontPostScriptBytes(bytesPrefix: bytes, bytesSuffix: bytes, bytesStartDataTransformed: bytes) -> bytes:
-	integerStartDataLength: int = len(bytesStartDataTransformed)
-	bytesStartDataToken: bytes = f'(Binary) {integerStartDataLength} StartData'.encode('ascii')
-	bytesPrefixUpdated: bytes = regexStartData.sub(bytesStartDataToken, bytesPrefix, count=1)
+	LineEndingLength: int = 0
+	if suffix.startswith(b'\r\n'):
+		LineEndingLength = 2
+	elif suffix.startswith((b'\r', b'\n')):
+		LineEndingLength = 1
 
-	integerLineEndingLength: int = 0
-	if bytesSuffix.startswith(b'\r\n'):
-		integerLineEndingLength = 2
-	elif bytesSuffix.startswith((b'\r', b'\n')):
-		integerLineEndingLength = 1
+	bytesBeginDataToken: bytes = f'%%BeginData: {len(bytesStartDataToken) + 1 + StartDataLength + LineEndingLength} Binary Bytes'.encode('ascii')
+	prefixUpdated = regexBeginData.sub(bytesBeginDataToken, prefixUpdated, count=1)
 
-	integerBeginDataLength: int = len(bytesStartDataToken) + 1 + integerStartDataLength + integerLineEndingLength
-	bytesBeginDataToken: bytes = f'%%BeginData: {integerBeginDataLength} Binary Bytes'.encode('ascii')
-	bytesPrefixUpdated = regexBeginData.sub(bytesBeginDataToken, bytesPrefixUpdated, count=1)
-
-	return b''.join((bytesPrefixUpdated, bytesStartDataTransformed, bytesSuffix))
+	return b''.join((prefixUpdated, startData, suffix))
 
 #======== OpenType feature file transformations ========
 
-def artisanTransformsOpenTypeFeature(pathFilename: Path) -> None:
-	bytesFeatureSource: bytes = pathFilename.read_bytes()
-	stringFeatureSource: str = bytesFeatureSource.decode('utf-8')
-	stringFeatureTransformed: str = _updatesOpenTypeFeatureMetricOverrides(stringFeatureSource, fontUnitsPerEm)
-	bytesFeatureTransformed: bytes = stringFeatureTransformed.encode('utf-8')
-	pathFilename.write_bytes(bytesFeatureTransformed)
+def artisanChangesFeatures(pathFilename: Path) -> None:
+	stringFeatureSource: str = pathFilename.read_bytes().decode('utf-8')
+	stringFeatureTransformed: str = _updateOverrides(stringFeatureSource, settingsPackage.fontUnitsPerEm)
+	pathFilename.write_bytes(stringFeatureTransformed.encode('utf-8'))
 
-def _updatesOpenTypeFeatureMetricOverrides(stringFeatureSource: str, fontUnitsPerEmTarget: int) -> str:
-	integerSourceUnitsPerEm: int = _readsSourceUnitsPerEmFromOpenTypeFeature(stringFeatureSource)
-	floatScaleFactor: float = 1.0
-	if integerSourceUnitsPerEm > 0:
-		floatScaleFactor = fontUnitsPerEmTarget / integerSourceUnitsPerEm
+def _updateOverrides(feature: str, unitsPerEm: int) -> str:
+	SourceUnitsPerEm: int = _getSourceUnitsPerEm(feature)
+	scaleBy: float = 1.0
+	if SourceUnitsPerEm > 0:
+		scaleBy = unitsPerEm / SourceUnitsPerEm
 
-	stringFeatureTransformed: str = stringFeatureSource
-	if floatScaleFactor != 1.0:
-		stringFeatureTransformed = _scalesFeatureTableMetricValues(stringFeatureTransformed, 'hhea', setOpenTypeMetricNameHhea, floatScaleFactor)
-		stringFeatureTransformed = _scalesFeatureTableMetricValues(stringFeatureTransformed, 'OS/2', setOpenTypeMetricNameOS2, floatScaleFactor)
+	stringFeatureTransformed: str = feature
+	if scaleBy != 1.0:
+		stringFeatureTransformed = _scaleMetrics(stringFeatureTransformed, 'hhea', set_hhea, scaleBy)
+		stringFeatureTransformed = _scaleMetrics(stringFeatureTransformed, 'OS/2', setOS2, scaleBy)
 
 	return stringFeatureTransformed
 
-def _readsSourceUnitsPerEmFromOpenTypeFeature(stringFeatureSource: str) -> int:
-	integerUnitsPerEm: int = 0
+def _getSourceUnitsPerEm(feature: str) -> int:
+	UnitsPerEm: int = 0
 
-	integerTypoAscender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'OS/2', 'TypoAscender')
-	integerTypoDescender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'OS/2', 'TypoDescender')
-	integerTypoLineGap: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'OS/2', 'TypoLineGap')
-	if integerTypoAscender is not None and integerTypoDescender is not None and integerTypoLineGap is not None:
-		integerUnitsPerEm = integerTypoAscender - integerTypoDescender + integerTypoLineGap
+	if ((TypoAscender := _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature, 'OS/2', 'TypoAscender')) is not None
+		and (TypoDescender := _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature, 'OS/2', 'TypoDescender')) is not None
+		and (TypoLineGap := _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature, 'OS/2', 'TypoLineGap')) is not None):
+		UnitsPerEm = TypoAscender - TypoDescender + TypoLineGap
 
-	if integerUnitsPerEm <= 0:
-		hheaAscender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'hhea', 'Ascender')
-		hheaDescender: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'hhea', 'Descender')
-		hheaLineGap: int | None = _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource, 'hhea', 'LineGap')
-		if hheaAscender is not None and hheaDescender is not None and hheaLineGap is not None:
-			integerUnitsPerEm = hheaAscender - hheaDescender + hheaLineGap
+	if (UnitsPerEm <= 0
+		and (hheaAscender := _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature, 'hhea', 'Ascender')) is not None
+		and (hheaDescender := _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature, 'hhea', 'Descender')) is not None
+		and (hheaLineGap := _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature, 'hhea', 'LineGap')) is not None):
+		UnitsPerEm = hheaAscender - hheaDescender + hheaLineGap
 
-	return integerUnitsPerEm
+	return UnitsPerEm
 
-def _readsOpenTypeMetricValueFromFeatureTable(stringFeatureSource: str, stringTableName: str, stringMetricName: str) -> int | None:
+def _useRegexForEverythingBecauseNoOneInTheUniverseHasEverDoneThisBefore(feature: str, table: str, metric: str) -> int | None:
 	matchTable: regex.Match[str] | None = regex.compile(
-		rf'(?ms)table\s+{regex.escape(stringTableName)}\s*\{{(.*?)\}}\s*{regex.escape(stringTableName)};'
-	).search(stringFeatureSource)
+		rf'(?ms)table\s+{regex.escape(table)}\s*\{{(.*?)\}}\s*{regex.escape(table)};'
+	).search(feature)
 
-	integerMetricValue: int | None = None
+	MetricValue: int |   None = None
 	if matchTable is not None:
 		stringTableContent: str = matchTable.group(1)
 		matchMetric: regex.Match[str] | None = regex.compile(
-			rf'(?m)^\s*{regex.escape(stringMetricName)}\s+(-?\d+)\s*;'
+			rf'(?m)^\s*{regex.escape(metric)}\s+(-?\d+)\s*;'
 		).search(stringTableContent)
 		if matchMetric is not None:
-			integerMetricValue = int(matchMetric.group(1))
+			MetricValue = int(matchMetric.group(1))
 
-	return integerMetricValue
+	return MetricValue
 
-def _scalesFeatureTableMetricValues(stringFeatureSource: str, stringTableName: str, setMetricName: set[str], floatScaleFactor: float) -> str:
+def _scaleMetrics(feature: str, table: str, metric: set[str], scaleBy: float) -> str:
 
 	listStringSection: list[str] = []
-	integerOffsetCurrent: int = 0
+	OffsetCurrent: int = 0
 	for matchTable in regex.compile(
-		rf'(?ms)(table\s+{regex.escape(stringTableName)}\s*\{{)(.*?)(\}}\s*{regex.escape(stringTableName)};)'
-	).finditer(stringFeatureSource):
+		rf'(?ms)(table\s+{regex.escape(table)}\s*\{{)(.*?)(\}}\s*{regex.escape(table)};)'
+	).finditer(feature):
 		stringTableContentSource: str = matchTable.group(2)
-		stringTableContentTransformed: str = _scalesOpenTypeMetricLines(stringTableContentSource, setMetricName, floatScaleFactor)
-		listStringSection.append(stringFeatureSource[integerOffsetCurrent:matchTable.start()])
+		stringTableContentTransformed: str = _scaleLines(stringTableContentSource, metric, scaleBy)
+		listStringSection.append(feature[OffsetCurrent:matchTable.start()])
 		listStringSection.append(matchTable.group(1))
 		listStringSection.append(stringTableContentTransformed)
 		listStringSection.append(matchTable.group(3))
-		integerOffsetCurrent = matchTable.end()
+		OffsetCurrent = matchTable.end()
 
-	listStringSection.append(stringFeatureSource[integerOffsetCurrent:])
-	stringFeatureTransformed: str = ''.join(listStringSection)
-	return stringFeatureTransformed
+	listStringSection.append(feature[OffsetCurrent:])
+	return ''.join(listStringSection)
 
-def _scalesOpenTypeMetricLines(stringTableContentSource: str, setMetricName: set[str], floatScaleFactor: float) -> str:
-	listStringLineSource: list[str] = stringTableContentSource.splitlines(keepends=True)
+def _scaleLines(tableContent: str, setMetricNames: set[str], scaleBy: float) -> str:
+	listStringLineSource: list[str] = tableContent.splitlines(keepends=True)
 	listStringLineTransformed: list[str] = []
 
 	for stringLineSource in listStringLineSource:
@@ -347,11 +277,11 @@ def _scalesOpenTypeMetricLines(stringTableContentSource: str, setMetricName: set
 		matchMetricLine: regex.Match[str] | None = regexOpenTypeMetricLine.match(stringLineSource)
 		if matchMetricLine is not None:
 			stringMetricName: str = matchMetricLine.group(2)
-			if stringMetricName in setMetricName:
-				integerMetricValueSource: int = int(matchMetricLine.group(3))
-				integerMetricValueTransformed: int = round(integerMetricValueSource * floatScaleFactor)
+			if stringMetricName in setMetricNames:
+				MetricValueSource: int = int(matchMetricLine.group(3))
+				MetricValueTransformed: int = round(MetricValueSource * scaleBy)
 				stringLineTransformed = (
-					f'{matchMetricLine.group(1)}{stringMetricName} {integerMetricValueTransformed}{matchMetricLine.group(4)}'
+					f'{matchMetricLine.group(1)}{stringMetricName} {MetricValueTransformed}{matchMetricLine.group(4)}'
 				)
 		listStringLineTransformed.append(stringLineTransformed)
 
@@ -360,90 +290,63 @@ def _scalesOpenTypeMetricLines(stringTableContentSource: str, setMetricName: set
 
 #======== Font family name transformations ========
 
-def scribeUpdatesFontFamilyNames(fontFamilyDonor: str = 'SourceHanMono', fontFamilyMonster: str = 'FrankenFont', fontDisplayNameDonor: str = 'Source Han Mono', fontDisplayNameMonster: str = 'Franken Font', workersMaximum: int = 1) -> None:
-	pathMonster: Path = pathRoot / fontFamilyMonster
+def scribeUpdatesFontFamily(fontFamilyDonor: str = 'SourceHanMono', fontFamilyMonster: str = 'FrankenFont', fontDisplayNameDonor: str = 'Source Han Mono', fontDisplayNameMonster: str = 'Franken Font', workersMaximum: int = 1) -> None:
+	pathMonster: Path = settingsPackage.pathRoot / fontFamilyMonster
 
-	listPathFilenamesCIDFontInfo: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfontinfo'))
-	listPathFilenamesCIDFontPostScript: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfont.ps'))
-	listPathFilenamesH: list[Path] = sorted((pathMonster / 'metadata').glob('*.H'))
-	listPathFilenamesFontMenuNameDB: list[Path] = [pathMonster / 'metadata' / 'FontMenuNameDB']
+	pathFilename: Path = pathMonster / 'metadata' / 'FontMenuNameDB'
+	pathFilename.write_text(pathFilename.read_text(encoding='utf-8').replace(f'[{fontFamilyDonor}', f'[{fontFamilyMonster}').replace(fontDisplayNameDonor, fontDisplayNameMonster), encoding='utf-8')
 
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		set(concurrencyManager.starmap(_updatesCIDFontInfoFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in listPathFilenamesCIDFontInfo]))
-		set(concurrencyManager.starmap(_updatesCIDFontPostScriptFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in listPathFilenamesCIDFontPostScript]))
-		set(concurrencyManager.starmap(_updatesHFileFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster) for pathFilename in listPathFilenamesH]))
-		set(concurrencyManager.starmap(_updatesFontMenuNameDBFamilyNames, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in listPathFilenamesFontMenuNameDB]))
+		set(concurrencyManager.starmap(_updateCIDFontInfo, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in pathMonster.glob('glyphs/*.cidfontinfo')]))
+		set(concurrencyManager.starmap(_updateCIDFont, [(pathFilename, fontFamilyDonor, fontFamilyMonster, fontDisplayNameDonor, fontDisplayNameMonster) for pathFilename in pathMonster.glob('glyphs/*.cidfont.ps')]))
+		set(concurrencyManager.starmap(_updateUTF32H, [(pathFilename, fontFamilyDonor, fontFamilyMonster) for pathFilename in pathMonster.glob('metadata/*.H')]))
 
-def _updatesCIDFontInfoFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
-	stringCIDFontInfoSource: str = pathFilename.read_text(encoding='utf-8')
-	stringCIDFontInfoTransformed: str = stringCIDFontInfoSource
+def _updateCIDFontInfo(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
+	string: str = pathFilename.read_text(encoding='utf-8')
 
 	regexFontName: regex.Pattern[str] = regex.compile(r'^(FontName\s+\()([^)]+)(\).*)$', flags=regex.MULTILINE)
 	regexFullName: regex.Pattern[str] = regex.compile(r'^(FullName\s+\()([^)]+)(\).*)$', flags=regex.MULTILINE)
 	regexFamilyName: regex.Pattern[str] = regex.compile(r'^(FamilyName\s+\()([^)]+)(\).*)$', flags=regex.MULTILINE)
 
-	stringCIDFontInfoTransformed = regexFontName.sub(lambda matchFontName: matchFontName.group(1) + matchFontName.group(2).replace(fontFamilyDonor, fontFamilyMonster) + matchFontName.group(3), stringCIDFontInfoTransformed)
-	stringCIDFontInfoTransformed = regexFullName.sub(lambda matchFullName: matchFullName.group(1) + matchFullName.group(2).replace(fontDisplayNameDonor, fontDisplayNameMonster) + matchFullName.group(3), stringCIDFontInfoTransformed)
-	stringCIDFontInfoTransformed = regexFamilyName.sub(lambda matchFamilyName: matchFamilyName.group(1) + matchFamilyName.group(2).replace(fontDisplayNameDonor, fontDisplayNameMonster) + matchFamilyName.group(3), stringCIDFontInfoTransformed)
+	string = regexFontName.sub(lambda matchFontName: matchFontName.group(1) + matchFontName.group(2).replace(fontFamilyDonor, fontFamilyMonster) + matchFontName.group(3), string)
+	string = regexFullName.sub(lambda matchFullName: matchFullName.group(1) + matchFullName.group(2).replace(fontDisplayNameDonor, fontDisplayNameMonster) + matchFullName.group(3), string)
+	string = regexFamilyName.sub(lambda matchFamilyName: matchFamilyName.group(1) + matchFamilyName.group(2).replace(fontDisplayNameDonor, fontDisplayNameMonster) + matchFamilyName.group(3), string)
 
-	pathFilename.write_text(stringCIDFontInfoTransformed, encoding='utf-8')
+	pathFilename.write_text(string, encoding='utf-8')
 
-def _updatesCIDFontPostScriptFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
-	bytesPostScriptSource: bytes = pathFilename.read_bytes()
-	stringPostScriptSource: str = bytesPostScriptSource.decode('latin-1')
+def _updateCIDFont(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
+	string: str = pathFilename.read_bytes().decode('latin-1')
 
-	matchStartData: regex.Match[str] | None = regex.search(r'\(Binary\)\s+\d+\s+StartData', stringPostScriptSource)
+	matchStartData: regex.Match[str] | None = regex.search(r'\(Binary\)\s+\d+\s+StartData', string)
 	if matchStartData is None:
 		return
 
-	offsetBinaryStart: int = matchStartData.end()
-	stringASCIIHeader: str = stringPostScriptSource[:offsetBinaryStart]
-	stringBinaryRemainder: str = stringPostScriptSource[offsetBinaryStart:]
+	cutHere: int = matchStartData.end()
 
-	stringASCIIHeaderTransformed: str = stringASCIIHeader
-	stringASCIIHeaderTransformed = stringASCIIHeaderTransformed.replace(fontFamilyDonor, fontFamilyMonster)
-	stringASCIIHeaderTransformed = stringASCIIHeaderTransformed.replace(fontDisplayNameDonor, fontDisplayNameMonster)
+	pathFilename.write_bytes((string[:cutHere].replace(fontFamilyDonor, fontFamilyMonster).replace(fontDisplayNameDonor, fontDisplayNameMonster) + string[cutHere:]).encode('latin-1'))
 
-	stringPostScriptTransformed: str = stringASCIIHeaderTransformed + stringBinaryRemainder
-	bytesPostScriptTransformed: bytes = stringPostScriptTransformed.encode('latin-1')
-	pathFilename.write_bytes(bytesPostScriptTransformed)
-
-def _updatesHFileFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str) -> None:
-	stringHFileSource: str = pathFilename.read_text(encoding='utf-8')
-	stringHFileTransformed: str = stringHFileSource.replace(fontFamilyDonor, fontFamilyMonster)
-	pathFilename.write_text(stringHFileTransformed, encoding='utf-8')
-
-def _updatesFontMenuNameDBFamilyNames(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str, fontDisplayNameDonor: str, fontDisplayNameMonster: str) -> None:
-	stringFontMenuNameDBSource: str = pathFilename.read_text(encoding='utf-8')
-	stringFontMenuNameDBTransformed: str = stringFontMenuNameDBSource
-
-	stringFontMenuNameDBTransformed = stringFontMenuNameDBTransformed.replace(f'[{fontFamilyDonor}', f'[{fontFamilyMonster}')
-	stringFontMenuNameDBTransformed = stringFontMenuNameDBTransformed.replace(fontDisplayNameDonor, fontDisplayNameMonster)
-
-	pathFilename.write_text(stringFontMenuNameDBTransformed, encoding='utf-8')
+def _updateUTF32H(pathFilename: Path, fontFamilyDonor: str, fontFamilyMonster: str) -> None:
+	pathFilename.write_text(pathFilename.read_text(encoding='utf-8').replace(fontFamilyDonor, fontFamilyMonster), encoding='utf-8')
 
 #======== Metadata transformations ========
 
 def scribeUpdatesMetadata(fontFamily: str = 'FrankenFont', workersMaximum: int = 1) -> None:
-	pathMonster: Path = pathRoot / fontFamily
-	listPathFilenamesCIDFontInfo: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfontinfo'))
-	listPathFilenamesCIDFontPostScript: list[Path] = sorted(pathMonster.glob('glyphs/*.cidfont.ps'))
-	listPathFilenamesOpenTypeFeature: list[Path] = sorted(pathMonster.glob('glyphs/*.features'))
+	pathMetadata: Path = settingsPackage.pathRoot / fontFamily
 
-	dictionaryMetadata: dict[int, str] = getMetadataByFontWeight('', filenameFontFamilyLocale, fontFamilyLocale)
+	dictionaryMetadata: dict[int, str] = getMetadataByFontWeight('', settingsPackage.filenameFontFamilyLocale简化字, settingsPackage.fontFamilyLocale简化字)
 	stringCopyright: str = dictionaryMetadata[0]
 	stringTrademark: str = dictionaryMetadata[7]
 
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		set(concurrencyManager.starmap(_updatesCIDFontInfoMetadata, [(pathFilename, stringCopyright, stringTrademark) for pathFilename in listPathFilenamesCIDFontInfo]))
-		set(concurrencyManager.starmap(_updatesCIDFontPostScriptMetadata, [(pathFilename, stringCopyright) for pathFilename in listPathFilenamesCIDFontPostScript]))
-		set(concurrencyManager.starmap(_updatesOpenTypeFeatureMetadata, [(pathFilename, dictionaryMetadata) for pathFilename in listPathFilenamesOpenTypeFeature]))
+		set(concurrencyManager.starmap(_updateCIDFontInfoMetadata, [(pathFilename, stringCopyright, stringTrademark) for pathFilename in pathMetadata.glob('glyphs/*.cidfontinfo')]))
+		set(concurrencyManager.starmap(_updateCIDFontMetadata, [(pathFilename, stringCopyright) for pathFilename in pathMetadata.glob('glyphs/*.cidfont.ps')]))
+		set(concurrencyManager.starmap(_updateFeatureMetadata, [(pathFilename, dictionaryMetadata) for pathFilename in pathMetadata.glob('glyphs/*.features')]))
 
-def _updatesCIDFontInfoMetadata(pathFilename: Path, stringCopyright: str, stringTrademark: str) -> None:
+def _updateCIDFontInfoMetadata(pathFilename: Path, stringCopyright: str, trademark: str) -> None:
 	dictionaryMetadataUpdates: dict[str, str] = {
 		'version': f'({settingsPackage.fontVersion})',
 		'AdobeCopyright': f'({stringCopyright})',
-		'Trademark': f'({stringTrademark})',
+		'Trademark': f'({trademark})',
 	}
 
 	listStringLineTransformed: list[str] = []
@@ -457,7 +360,7 @@ def _updatesCIDFontInfoMetadata(pathFilename: Path, stringCopyright: str, string
 
 	pathFilename.write_text(''.join(listStringLineTransformed), encoding='utf-8')
 
-def _updatesCIDFontPostScriptMetadata(pathFilename: Path, stringCopyright: str) -> None:
+def _updateCIDFontMetadata(pathFilename: Path, stringCopyright: str) -> None:
 	stringPostScriptSource: str = pathFilename.read_bytes().decode('latin-1')
 	matchStartData: regex.Match[str] | None = regex.search(r'\(Binary\)\s+\d+\s+StartData', stringPostScriptSource)
 	if matchStartData is None:
@@ -477,10 +380,10 @@ def _updatesCIDFontPostScriptMetadata(pathFilename: Path, stringCopyright: str) 
 
 	pathFilename.write_bytes((stringASCIIHeaderTransformed + stringPostScriptSource[matchStartData.end():]).encode('latin-1'))
 
-def _updatesOpenTypeFeatureMetadata(pathFilename: Path, dictionaryMetadata: dict[int, str]) -> None:
+def _updateFeatureMetadata(pathFilename: Path, dictionaryMetadata: dict[int, str]) -> None:
 	stringFeatureSource: str = pathFilename.read_text(encoding='utf-8')
 
-	regexHeadRevision: regex.Pattern[str] = regex.compile(r'(table head \{[^}]*FontRevision )[\d.]+', flags=regex.DOTALL)
+	regexHeadRevision: regex.Pattern[str] = regex.compile(r'(table head \{[^}]*FontRevision)[\d.]+', flags=regex.DOTALL)
 	stringFeatureTransformed: str = regexHeadRevision.sub(f'\\g<1>{settingsPackage.fontVersion}', stringFeatureSource)
 
 	regexNameTable: regex.Pattern[str] = regex.compile(r'(table name \{)(.*?)(\} name;)', flags=regex.DOTALL)
@@ -498,6 +401,6 @@ def _updatesOpenTypeFeatureMetadata(pathFilename: Path, dictionaryMetadata: dict
 	pathFilename.write_text(stringFeatureTransformed, encoding='utf-8')
 
 if __name__ == '__main__':
-	# scientistCreatesFrankenFont(workersMaximum=14)  # noqa: ERA001
-	scribeUpdatesFontFamilyNames(workersMaximum=14)
+	scientistCreatesFrankenFont(workersMaximum=14)
+	scribeUpdatesFontFamily(workersMaximum=14)
 	scribeUpdatesMetadata(workersMaximum=14)

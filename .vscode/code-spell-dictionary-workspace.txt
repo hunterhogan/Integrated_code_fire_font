@@ -2,6 +2,7 @@ absl
 ADBO
 addn
 afdko
+appauthor
 arcname
 autohint
 autohinting
@@ -27,6 +28,7 @@ compresslevel
 defcon
 desubroutinize
 DSIG
+duda
 duospaced
 Edenspiekermann
 eexec
@@ -41,6 +43,7 @@ Franken
 fullwidth
 Fullwidth
 GDEF
+gethostname
 gflanguages
 gfsubsets
 gftools

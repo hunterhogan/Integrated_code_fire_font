@@ -41,8 +41,8 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import newTable, TTFont
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import (
-	advanceWidth, bearingIncrement, dictionaryWeights, filenameFontFamilyLocale, fontUnitsPerEm, leftSideBearing,
-	maximumErrorUnitsPerEm, pathWorkbenchFonts, postTableFormat, reverseContourDirection, subsetOptions, unicodeSC)
+	advanceWidth, bearingIncrement, dictionaryWeights, leftSideBearing, maximumErrorUnitsPerEm, postTableFormat,
+	reverseContourDirection, settingsPackage, subsetOptions, unicodeSC)
 from typing import TYPE_CHECKING
 import fontTools.ttLib.scaleUpem
 
@@ -122,7 +122,7 @@ def _sourceHanMonoBuildsPreparedFont(pathFilename: Path, listUnicodeCodepoint: l
 	ttFont: TTFont = TTFont(pathFilename)
 	_convertOpenTypeToTrueType(ttFont)
 	_subsetsByUnicodeRanges(ttFont, listUnicodeCodepoint, deepcopy(subsetOptions))
-	fontTools.ttLib.scaleUpem.scale_upem(ttFont, fontUnitsPerEm)
+	fontTools.ttLib.scaleUpem.scale_upem(ttFont, settingsPackage.fontUnitsPerEm)
 	applyBearingIncrementToFont(ttFont, bearingIncrement)
 	return ttFont
 
@@ -280,10 +280,10 @@ def mergeFonts() -> None:
 	"""
 	listUnicodeCodepoint: list[int] = subset.parse_unicodes(','.join(unicodeSC))
 	for weightName, weightValues in dictionaryWeights.items():
-		fontSourceHanMono: TTFont = _sourceHanMonoBuildsPreparedFont(pathWorkbenchFonts / f"Simplified_Chinese.{weightValues.SourceHanMono}.SourceHanMono.otf", listUnicodeCodepoint)
-		fontBase: TTFont = TTFont(pathWorkbenchFonts / f"FiraCode-{weightValues.FiraCode}.ttf")
+		fontSourceHanMono: TTFont = _sourceHanMonoBuildsPreparedFont(settingsPackage.pathWorkbenchFonts / f"Simplified_Chinese.{weightValues.SourceHanMono}.SourceHanMono.otf", listUnicodeCodepoint)
+		fontBase: TTFont = TTFont(settingsPackage.pathWorkbenchFonts / f"FiraCode-{weightValues.FiraCode}.ttf")
 		mergeSourceFontIntoBaseFont(fontBase, fontSourceHanMono)
-		fontBase.save(pathWorkbenchFonts / f"{filenameFontFamilyLocale}{weightName}.ttf")
+		fontBase.save(settingsPackage.pathWorkbenchFonts / f"{settingsPackage.filenameFontFamilyLocale简化字}{weightName}.ttf")
 		fontBase.close()
 		fontSourceHanMono.close()
 
@@ -299,12 +299,12 @@ def mergeFontsV2(fontFamily: str) -> list[Path]:
 
 	for weightName, weightValues in dictionaryWeights.items():
 		fontSource: TTFont = _buildsPreparedFontV2(
-			pathWorkbenchFonts / f"Simplified_Chinese.{weightValues.SourceHanMono}.{fontFamily}.otf",
+			settingsPackage.pathWorkbenchFonts / f"Simplified_Chinese.{weightValues.SourceHanMono}.{fontFamily}.otf",
 			listUnicodeCodepoint
 		)
-		fontBase: TTFont = TTFont(pathWorkbenchFonts / f"FiraCode-{weightValues.FiraCode}.ttf")
+		fontBase: TTFont = TTFont(settingsPackage.pathWorkbenchFonts / f"FiraCode-{weightValues.FiraCode}.ttf")
 		mergeSourceFontIntoBaseFont(fontBase, fontSource)
-		pathOutput: Path = pathWorkbenchFonts / f"{filenameFontFamilyLocale}{weightName}.ttf"
+		pathOutput: Path = settingsPackage.pathWorkbenchFonts / f"{settingsPackage.filenameFontFamilyLocale简化字}{weightName}.ttf"
 		fontBase.save(pathOutput)
 		fontBase.close()
 		fontSource.close()

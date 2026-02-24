@@ -35,8 +35,7 @@ References
 """
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
-from Integrated_Code_Fire import (
-	lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, pathRoot, pathWorkbench, pathWorkbenchFonts)
+from Integrated_Code_Fire import lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, settingsPackage
 from itertools import product as CartesianProduct
 from multiprocessing import Pool
 from typing import Literal, TYPE_CHECKING
@@ -159,7 +158,7 @@ def smithyCastsFontFormat(fontFormat: Literal['otf', 'ttf']) -> None:
 	FontProject().run_from_glyphs(
 		glyphs_path=str(pathFilenameFiraCodeGlyphs)
 		, output=(fontFormat,)
-		, output_dir=str(pathWorkbenchFonts)
+		, output_dir=str(settingsPackage.pathWorkbenchFonts)
 		, interpolate=True
 		, autohint=False
 	)
@@ -287,8 +286,8 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 		Internal package reference.
 
 	"""
-	pathFontFamily: Path = pathRoot / fontFamily
-	pathCompiled: Path = pathWorkbench / fontFamily
+	pathFontFamily: Path = settingsPackage.pathRoot / fontFamily
+	pathCompiled: Path = settingsPackage.pathWorkbench / fontFamily
 	pathCompiled.mkdir(parents=True, exist_ok=True)
 
 	pathFilename: Path = pathCompiled / '.'.join(filter(truthy, [locale, style, weight, fontFamily, 'otf']))
