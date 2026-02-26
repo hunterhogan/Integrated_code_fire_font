@@ -44,7 +44,7 @@ if gethostname() == 'duda':
 class PackageSettings(humpy_PackageSettings):
 	achVendID: str = '1INT' # See "Registering Vendor ID 1INT.pdf".
 	fontFamily: Final[str] = 'Integrated Code 火'
-	fontUnitsPerEm: int = 2000
+	unitsPerEm: int = 1000
 	fontVersion: float = fontVersionHARDCODED
 	pathRoot: Path = pathRootHARDCODED
 
@@ -78,14 +78,9 @@ class PackageSettings(humpy_PackageSettings):
 		if gethostname() == 'duda':
 			self.pathRoot = pathRootHARDCODED
 
-		self.pathRoot.mkdir(parents=True, exist_ok=True)
-
 		self.pathAssets = self.pathRoot / 'assets'
-		self.pathAssets.mkdir(parents=True, exist_ok=True)
 		self.pathWorkbench = self.pathRoot / 'workbench'
-		self.pathWorkbench.mkdir(parents=True, exist_ok=True)
 		self.pathWorkbenchFonts = self.pathWorkbench / 'fonts'
-		self.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
 
 		self.fontFamilyLocale한국인 = ' '.join((self.fontFamily, fontLocale한국인))
 		self.fontFamilyLocale台湾 = ' '.join((self.fontFamily, fontLocale台湾))
@@ -122,6 +117,8 @@ dictionaryWeights: dict[str, WeightIn] = {
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 pathFilenameFiraCodeGlyphs: Path = settingsPackage.pathRoot / 'FiraCode' / 'FiraCode.glyphs'
+fontFamily: str = 'FrankenFont'
+pathFilenameGlyphs: Path = Path(pathFilenameFiraCodeGlyphs.parent.parent, fontFamily, fontFamily + pathFilenameFiraCodeGlyphs.suffix)
 pathWorkbenchSourceHanMono: Path = settingsPackage.pathWorkbench / 'SourceHanMono'
 advanceWidth: int = 0
 leftSideBearing: int = 1

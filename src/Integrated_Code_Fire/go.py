@@ -31,7 +31,7 @@ References
 
 """
 # ruff: noqa: D103
-from Integrated_Code_Fire import pathWorkbenchSourceHanMono
+from Integrated_Code_Fire import pathFilenameFiraCodeGlyphs, pathWorkbenchSourceHanMono
 from Integrated_Code_Fire.foundry import smithyCastsFiraCode, smithyCastsFontFamily
 from Integrated_Code_Fire.logistics import cleanWorkbench, removeWorkbench, valetCopiesFilesToWorkbenchFonts
 from Integrated_Code_Fire.mergeFonts import mergeFonts, mergeFontsV2
@@ -81,7 +81,7 @@ def go(workersMaximum: int = 1) -> None:
 		Internal package reference.
 
 	"""
-	smithyCastsFiraCode()
+	smithyCastsFiraCode(pathFilenameFiraCodeGlyphs)
 	fontFamily: str = 'SourceHanMono'
 	smithyCastsFontFamily(fontFamily, workersMaximum)
 	valetCopiesFilesToWorkbenchFonts(pathWorkbenchSourceHanMono, 'Simplified_Chinese*.otf')
@@ -92,7 +92,7 @@ def go(workersMaximum: int = 1) -> None:
 	removeWorkbench(pathWorkbenchSourceHanMono)
 
 def goV2(workersMaximum: int = 1) -> None:
-	smithyCastsFiraCode()
+	smithyCastsFiraCode(pathFilenameFiraCodeGlyphs)
 	fontFamily: str = 'FrankenFont'
 	scribeUpdatesFontMetadata(fontFamily)
 	listPathFilenames: list[Path] = smithyCastsFontFamily(fontFamily, workersMaximum)

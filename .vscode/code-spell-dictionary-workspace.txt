@@ -8,6 +8,7 @@ autohint
 autohinting
 axisregistry
 babelfont
+bbox
 bopomofo
 byteord
 Carrois
@@ -25,7 +26,10 @@ codepoints
 colr
 compreffor
 compresslevel
+copytree
 defcon
+designspace
+Designspace
 desubroutinize
 DSIG
 duda
@@ -50,7 +54,9 @@ gftools
 glyf
 glyphsets
 glyphslib
+gname
 GOADB
+GPOS
 GSUB
 Hangugeo
 Hanja
@@ -98,6 +104,7 @@ pyclipper
 pycparser
 rasterizers
 recalc
+rotatefont
 Ryoko
 Sandoll
 Sarasa
@@ -106,6 +113,9 @@ Scedilla
 SCHARDCODED
 sfnt
 sfntedit
+shutil
+sidebearing
+Sidebearing
 skco
 statmake
 subroutinization
@@ -124,6 +134,9 @@ unicodes
 Unihan
 Upem
 vharfbuzz
+vhea
+Vhea
+vmtx
 VORG
 yeon
 youseedee

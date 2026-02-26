@@ -8,11 +8,14 @@ from Integrated_Code_Fire.writeMetadata import escapesStringForOpenTypeFeature, 
 from itertools import repeat
 from more_itertools import loops
 from multiprocessing import Pool
-from pathlib import Path
 from tqdm import tqdm
+from typing import TYPE_CHECKING
 import fontTools.misc.eexec
 import re as regex
 import shutil
+
+if TYPE_CHECKING:
+	from pathlib import Path
 
 regexBeginData: regex.Pattern[bytes] = regex.compile(rb'%%BeginData:\s*\d+\s+Binary Bytes')
 regexFontMatrix: regex.Pattern[bytes] = regex.compile(rb'/FontMatrix\s+\[([^\]]+)\]\s+def')
@@ -29,8 +32,8 @@ def scientistCreatesFrankenFont(fontFamilyDonor: str = 'SourceHanMono', fontFami
 
 	shutil.copytree(pathDonor, pathMonster, dirs_exist_ok=True)
 
-	for pathFilename in (*Path(pathMonster, 'metadata').glob('*.txt'), *Path(pathMonster, 'metadata').glob('*.H')):
-		pathFilename: Path = pathFilename.with_stem(pathFilename.stem.replace(fontFamilyDonor, fontFamilyMonster))
+	for pathFilename in (*pathMonster.rglob('*.txt'), *pathMonster.rglob('*.H')):
+		pathFilename.rename(pathFilename.with_stem(pathFilename.stem.replace(fontFamilyDonor, fontFamilyMonster)))
 
 	with ProcessPoolExecutor(workersMaximum) as concurrencyManager:
 		listClaimTickets: list[Future[None]] =list(map(concurrencyManager.submit, repeat(artisanChangesFeatures), pathMonster.glob('glyphs/*.features')))  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-argument-type]
@@ -38,6 +41,9 @@ def scientistCreatesFrankenFont(fontFamilyDonor: str = 'SourceHanMono', fontFami
 
 		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc='Applying artisan changes'):
 			claimTicket.result()
+
+	scribeUpdatesFontFamily(workersMaximum=14)
+	scribeUpdatesMetadata(workersMaximum=14)
 
 #======== CID font PostScript transformations ========
 
@@ -50,7 +56,7 @@ def artisanChangesPostScript(pathFilename: Path) -> None:
 
 	prefix: bytes = PostScript[:offsetStart]
 
-	bytesPostScriptTransformed: bytes = _rebuildCIDFont(_updateFontMatrix(prefix, settingsPackage.fontUnitsPerEm), PostScript[offsetEnd:]
+	bytesPostScriptTransformed: bytes = _rebuildCIDFont(_updateFontMatrix(prefix, settingsPackage.unitsPerEm), PostScript[offsetEnd:]
 			, _updateCIDStart(prefix, PostScript[offsetStart:offsetEnd]
 				, _getInt(prefix, b'CIDMapOffset')
 				, _getInt(prefix, b'FDBytes')
@@ -202,7 +208,7 @@ def _rebuildCIDFont(prefix: bytes, suffix: bytes, startData: bytes) -> bytes:
 
 def artisanChangesFeatures(pathFilename: Path) -> None:
 	stringFeatureSource: str = pathFilename.read_bytes().decode('utf-8')
-	stringFeatureTransformed: str = _updateOverrides(stringFeatureSource, settingsPackage.fontUnitsPerEm)
+	stringFeatureTransformed: str = _updateOverrides(stringFeatureSource, settingsPackage.unitsPerEm)
 	pathFilename.write_bytes(stringFeatureTransformed.encode('utf-8'))
 
 def _updateOverrides(feature: str, unitsPerEm: int) -> str:
@@ -402,5 +408,3 @@ def _updateFeatureMetadata(pathFilename: Path, dictionaryMetadata: dict[int, str
 
 if __name__ == '__main__':
 	scientistCreatesFrankenFont(workersMaximum=14)
-	scribeUpdatesFontFamily(workersMaximum=14)
-	scribeUpdatesMetadata(workersMaximum=14)

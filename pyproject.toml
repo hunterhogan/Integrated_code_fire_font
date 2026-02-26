@@ -1,7 +1,7 @@
 [project]
 name = "Integrated_Code_Fire"
 version = "0.0.2"
-description = "Integrated Code 火 is a code-centric font combining an up-to-date Fira Code compile with a modified Source Han Mono compile."
+description = "Integrated Code 火 is a code-centric font combining Fira Code and Source Han Mono."
 readme = "README.md"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 license = "CC-BY-NC-4.0"

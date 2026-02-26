@@ -35,8 +35,9 @@ References
 """
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
-from Integrated_Code_Fire import lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, settingsPackage
-from itertools import product as CartesianProduct
+from Integrated_Code_Fire import (
+	lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, pathFilenameGlyphs, settingsPackage)
+from itertools import product as CartesianProduct, repeat
 from multiprocessing import Pool
 from typing import Literal, TYPE_CHECKING
 
@@ -45,7 +46,7 @@ if TYPE_CHECKING:
 
 truthy = None
 
-def smithyCastsFiraCode(workersMaximum: int = 2) -> None:
+def smithyCastsFiraCode(pathFilename: Path, workersMaximum: int = 2) -> None:
 	"""You can compile Fira Code fonts in both OTF and TTF formats from Glyphs source files.
 
 	(AI generated docstring)
@@ -105,9 +106,9 @@ def smithyCastsFiraCode(workersMaximum: int = 2) -> None:
 	listOutputFormats: list[Literal['otf', 'ttf']] = ['otf', 'ttf']
 
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		concurrencyManager.map(smithyCastsFontFormat, listOutputFormats)
+		concurrencyManager.starmap(smithyCastsFontFormat, zip(repeat(pathFilename), listOutputFormats))
 
-def smithyCastsFontFormat(fontFormat: Literal['otf', 'ttf']) -> None:
+def smithyCastsFontFormat(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> None:
 	"""You can compile Fira Code fonts from Glyphs source in a specified output format.
 
 	(AI generated docstring)
@@ -155,8 +156,9 @@ def smithyCastsFontFormat(fontFormat: Literal['otf', 'ttf']) -> None:
 		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map
 
 	"""
+	settingsPackage.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
 	FontProject().run_from_glyphs(
-		glyphs_path=str(pathFilenameFiraCodeGlyphs)
+		glyphs_path=str(pathFilename)
 		, output=(fontFormat,)
 		, output_dir=str(settingsPackage.pathWorkbenchFonts)
 		, interpolate=True
@@ -312,7 +314,8 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 	return pathFilename
 
 if __name__ == '__main__':
-	# smithyCastsFiraCode()
+	# smithyCastsFiraCode(pathFilenameFiraCodeGlyphs, 2)
+	smithyCastsFiraCode(pathFilenameGlyphs, 2)
 	# smithyCastsFontFamily('SourceHanMono', 14)
-	smithyCastsFontFamily('FrankenFont', 14)
+	# smithyCastsFontFamily('FrankenFont', 14)
 

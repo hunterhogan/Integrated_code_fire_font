@@ -122,7 +122,7 @@ def _sourceHanMonoBuildsPreparedFont(pathFilename: Path, listUnicodeCodepoint: l
 	ttFont: TTFont = TTFont(pathFilename)
 	_convertOpenTypeToTrueType(ttFont)
 	_subsetsByUnicodeRanges(ttFont, listUnicodeCodepoint, deepcopy(subsetOptions))
-	fontTools.ttLib.scaleUpem.scale_upem(ttFont, settingsPackage.fontUnitsPerEm)
+	fontTools.ttLib.scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
 	applyBearingIncrementToFont(ttFont, bearingIncrement)
 	return ttFont
 
