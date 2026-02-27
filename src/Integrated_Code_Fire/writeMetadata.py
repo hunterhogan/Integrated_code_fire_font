@@ -43,20 +43,14 @@ References
 
 """
 # ruff: noqa: D103
-from fontTools.misc.encodingTools import getEncoding
-from fontTools.misc.textTools import byteord, tobytes
 from fontTools.ttLib import TTFont
-from Integrated_Code_Fire import settingsPackage
+from Integrated_Code_Fire import name, settingsPackage
 from pathlib import Path
 from typing import TYPE_CHECKING
 import re as regex
 
 if TYPE_CHECKING:
 	from pathlib import Path
-
-platformID: int = 3
-platEncID: int = 1
-langID: int = 0x0409
 
 def getMetadataByFontWeight(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
 	"""You can build a name record mapping for a given `weight`.
@@ -94,7 +88,7 @@ def getMetadataByFontWeight(weight: str, filenameFontFamily: str, fontFamily: st
 		1: fontFamily,
 		2: weight,
 		3: f"{settingsPackage.fontVersion};{settingsPackage.achVendID};{filenameFontFamily}{weight}",
-		4: f"{fontFamily}{weight}",
+		4: f"{fontFamily} {weight}",
 		5: f"Version {settingsPackage.fontVersion}",
 		6: f"{filenameFontFamily}{weight}",
 		7: 'Fira Mono is a trademark of The Mozilla Corporation. Source is a trademark of Adobe in the United States and/or other countries.',
@@ -161,15 +155,15 @@ def updateFontFile(pathFilenameFont: Path) -> None:
 	"""
 	weight: str = pathFilenameFont.stem.removeprefix(settingsPackage.filenameFontFamilyLocale简化字)
 	dictionaryNameIDToNameRecordValue: dict[int, str] = getMetadataByFontWeight(weight, settingsPackage.filenameFontFamilyLocale简化字, settingsPackage.fontFamilyLocale简化字)
-	with TTFont(pathFilenameFont) as fontBase:
-		fontBase['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
-		fontBase['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
+	with TTFont(pathFilenameFont) as font:
+		font['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
+		font['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
 		for nameID in sorted(dictionaryNameIDToNameRecordValue):
-			fontBase['name'].removeNames(nameID, platformID, platEncID, langID)
-			fontBase['name'].setName(dictionaryNameIDToNameRecordValue[nameID], nameID, platformID, platEncID, langID)
-		fontBase.save(pathFilenameFont)
+			font['name'].removeNames(nameID, name['platformID'], name['platEncID'], name['langID'])
+			font['name'].setName(dictionaryNameIDToNameRecordValue[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
+		font.save(pathFilenameFont)
 
-def writeMetadata() -> None:
+def writeMetadata(listPathFilenames: list[Path]) -> None:
 	"""You can update metadata for each built `.ttf` file in `pathWorkbenchFonts`.
 
 	(AI generated docstring)
@@ -202,40 +196,7 @@ def writeMetadata() -> None:
 		Internal package reference.
 
 	"""
-	set(map(updateFontFile, settingsPackage.pathWorkbenchFonts.glob(f'{settingsPackage.filenameFontFamilyLocale简化字}*.ttf')))
-
-def escapesStringForOpenTypeFeature(stringValue: str, platformID: int = 3, platformEncodingID: int = 1, languageID: int = 0x0409) -> str:
-	encoding = getEncoding(platformID, platformEncodingID, languageID)
-	if encoding is None:
-		messageError: str = f'Unsupported encoding for platform {platformID}, encoding {platformEncodingID}, language {languageID}'
-		raise ValueError(messageError)
-
-	bytesEncoded: bytes = tobytes(stringValue, encoding=encoding)
-
-	if encoding == 'utf_16_be':
-		return ''.join(
-			_escapesCharacterForOpenTypeFeature(byteord(bytesEncoded[index]) * 256 + byteord(bytesEncoded[index + 1]))
-			for index in range(0, len(bytesEncoded), 2)
-		)
-
-	return ''.join(_escapesCharacterForOpenTypeFeature(byteord(byte)) for byte in bytesEncoded)
-
-def _escapesCharacterForOpenTypeFeature(integerCodepoint: int) -> str:
-	if integerCodepoint == 0x22:
-		return '\\"'
-	if integerCodepoint == 0x5C:
-		return '\\\\\\\\'
-
-	if 0x20 <= integerCodepoint <= 0x7E:
-		return chr(integerCodepoint)
-
-	if integerCodepoint <= 0xFF:
-		return f'\\{integerCodepoint:02X}'
-
-	if integerCodepoint <= 0xFFFF:
-		return f'\\{integerCodepoint:04X}'
-
-	return f'\\{integerCodepoint:06X}'
+	set(map(updateFontFile, listPathFilenames))
 
 def scribeUpdatesFontMetadata(fontFamily: str = 'FrankenFont') -> None:
 	regexVersion: regex.Pattern[str] = regex.compile(r'^version\s+\([\d.]+\)', regex.MULTILINE)

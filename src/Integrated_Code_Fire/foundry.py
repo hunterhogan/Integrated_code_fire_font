@@ -35,137 +35,18 @@ References
 """
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
-from Integrated_Code_Fire import (
-	lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, pathFilenameGlyphs, settingsPackage)
+from Integrated_Code_Fire import lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, settingsPackage
 from itertools import product as CartesianProduct, repeat
 from multiprocessing import Pool
 from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from collections.abc import Iterable
 	from pathlib import Path
 
-truthy = None
+notNone = None # Ironic, no?
 
-def smithyCastsFiraCode(pathFilename: Path, workersMaximum: int = 2) -> None:
-	"""You can compile Fira Code fonts in both OTF and TTF formats from Glyphs source files.
-
-	(AI generated docstring)
-
-	This function compiles Fira Code fonts by invoking `smithyCastsFontFormat`
-	for both `'otf'` and `'ttf'` output formats in parallel using
-	`multiprocessing.Pool` [1]. The function reads the Glyphs source file from
-	`pathFilenameFiraCodeGlyphs` and writes compiled font files to
-	`pathWorkbenchFonts`.
-
-	Parameters
-	----------
-	workersMaximum : int = 2
-		Maximum number of parallel worker processes for compiling font formats.
-
-	Returns
-	-------
-	resultNone : None
-		This function performs file I/O and returns `None`.
-
-	Raises
-	------
-	Exception
-		Raised if `fontmake` [2] encounters errors during font compilation.
-	OSError
-		Raised if filesystem operations fail while reading source files or
-		writing compiled fonts.
-
-	Examples
-	--------
-	Invoked by `go` [3] as the first step in the build assembly line:
-
-	>>> from Integrated_Code_Fire.foundry import smithyCastsFiraCode
-	>>> smithyCastsFiraCode()
-
-	Invoked directly in the `__main__` block:
-
-	>>> if __name__ == '__main__':
-	...     smithyCastsFiraCode()
-
-	References
-	----------
-	[1] multiprocessing.Pool - Python Standard Library
-		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool
-	[2] fontmake - Read the Docs
-		https://github.com/googlefonts/fontmake
-	[3] Integrated_Code_Fire.go.go
-		Internal package reference.
-	[4] Integrated_Code_Fire.smithyCastsFontFormat
-		Internal package reference.
-	[5] Integrated_Code_Fire.pathFilenameFiraCodeGlyphs
-		Internal package reference.
-	[6] Integrated_Code_Fire.pathWorkbenchFonts
-		Internal package reference.
-
-	"""
-	listOutputFormats: list[Literal['otf', 'ttf']] = ['otf', 'ttf']
-
-	with Pool(processes=workersMaximum) as concurrencyManager:
-		concurrencyManager.starmap(smithyCastsFontFormat, zip(repeat(pathFilename), listOutputFormats))
-
-def smithyCastsFontFormat(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> None:
-	"""You can compile Fira Code fonts from Glyphs source in a specified output format.
-
-	(AI generated docstring)
-
-	This function uses `fontmake.font_project.FontProject` [1] to compile Fira
-	Code fonts from the Glyphs source file at `pathFilenameFiraCodeGlyphs` [2].
-	The function interpolates font instances, disables autohinting, and writes
-	the compiled font files to `pathWorkbenchFonts` [3].
-
-	Parameters
-	----------
-	fontFormat : Literal['otf', 'ttf']
-		Output font format, either `'otf'` for OpenType CFF or `'ttf'` for
-		TrueType.
-
-	Returns
-	-------
-	resultNone : None
-		This function performs file I/O and returns `None`.
-
-	Raises
-	------
-	Exception
-		Raised if `fontmake` [1] encounters errors during font compilation.
-	OSError
-		Raised if filesystem operations fail while reading source files or
-		writing compiled fonts.
-
-	Examples
-	--------
-	Invoked by `smithyCastsFiraCode` via `multiprocessing.Pool.map` [4]:
-
-	>>> from Integrated_Code_Fire.foundry import smithyCastsFontFormat
-	>>> smithyCastsFontFormat('ttf')
-
-	References
-	----------
-	[1] fontmake.font_project.FontProject - Read the Docs
-		https://github.com/googlefonts/fontmake
-	[2] Integrated_Code_Fire.pathFilenameFiraCodeGlyphs
-		Internal package reference.
-	[3] Integrated_Code_Fire.pathWorkbenchFonts
-		Internal package reference.
-	[4] multiprocessing.Pool.map - Python Standard Library
-		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map
-
-	"""
-	settingsPackage.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
-	FontProject().run_from_glyphs(
-		glyphs_path=str(pathFilename)
-		, output=(fontFormat,)
-		, output_dir=str(settingsPackage.pathWorkbenchFonts)
-		, interpolate=True
-		, autohint=False
-	)
-
-def smithyCastsFontFamily(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1) -> list[Path]:
+def smithyCasts_afdko(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1) -> list[Path]:
 	"""You can compile all Source Han Mono font variants across five locales, seven weights, and two styles.
 
 	(AI generated docstring)
@@ -222,16 +103,13 @@ def smithyCastsFontFamily(fontFamily: str = 'SourceHanMono', workersMaximum: int
 		https://docs.python.org/3/library/itertools.html#itertools.product
 
 	"""  # noqa: RUF002
-	listLocales: list[str] = ['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan']
-	listWeights: list[str] = ['ExtraLight', 'Light', 'Normal', 'Regular', 'Medium', 'Bold', 'Heavy']
-	listStyles: list[Literal['Italic'] | None] = [None, 'Italic']
-
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		listPathFilename: list[Path] = concurrencyManager.starmap(smithyCastsFont, CartesianProduct([fontFamily], listLocales, listWeights, listStyles))
+		listPathFilename: list[Path] = concurrencyManager.starmap(smithy_makeotf
+			, CartesianProduct([fontFamily], settingsPackage.listLocales, settingsPackage.listWeights, settingsPackage.listStyles))
 
 	return listPathFilename
 
-def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style: Literal['Italic'] | None = None) -> Path:
+def smithy_makeotf(fontFamily: str, locale: str, weight: str = 'Regular', style: Literal['Italic'] | None = None) -> Path:
 	"""You can compile a single Source Han Mono font variant using AFDKO makeotf.
 
 	(AI generated docstring)
@@ -292,15 +170,15 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 	pathCompiled: Path = settingsPackage.pathWorkbench / fontFamily
 	pathCompiled.mkdir(parents=True, exist_ok=True)
 
-	pathFilename: Path = pathCompiled / '.'.join(filter(truthy, [locale, style, weight, fontFamily, 'otf']))
+	pathFilename: Path = pathCompiled / '.'.join(filter(notNone, [locale, style, weight, fontFamily, 'otf']))
 
 	afdko_makeotf([
-		'-f', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfont', 'ps'])))
-		, '-ff', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'features'])))
-		, '-fi', str((pathFontFamily / 'glyphs') / '.'.join(filter(truthy, [locale, style, weight, 'OTC', 'cidfontinfo'])))
+		'-f', str((pathFontFamily / 'glyphs') / '.'.join(filter(notNone, [locale, style, weight, 'OTC', 'cidfont', 'ps'])))
+		, '-ff', str((pathFontFamily / 'glyphs') / '.'.join(filter(notNone, [locale, style, weight, 'OTC', 'features'])))
+		, '-fi', str((pathFontFamily / 'glyphs') / '.'.join(filter(notNone, [locale, style, weight, 'OTC', 'cidfontinfo'])))
 		, '-cs', lookupAFDKOCharacterSet[locale]
-		, '-ch', str((pathFontFamily / 'metadata') / '.'.join(filter(truthy, [locale, style, fontFamily, 'UTF32', 'H'])))
-		, '-ci', str((pathFontFamily / 'metadata') / '.'.join(filter(truthy, [locale, style, fontFamily, 'sequences', 'txt'])))
+		, '-ch', str((pathFontFamily / 'metadata') / '.'.join(filter(notNone, [locale, style, fontFamily, 'UTF32', 'H'])))
+		, '-ci', str((pathFontFamily / 'metadata') / '.'.join(filter(notNone, [locale, style, fontFamily, 'sequences', 'txt'])))
 		, '-omitMacNames'
 		, '-mf', str((pathFontFamily / 'metadata') / 'FontMenuNameDB')
 		, '-r'
@@ -313,9 +191,124 @@ def smithyCastsFont(fontFamily: str, locale: str, weight: str = 'Regular', style
 
 	return pathFilename
 
+def smithyCastsGlyphs(pathFilename: Path, workersMaximum: int = 2, fontFormats: Iterable[str] = frozenset(['otf', 'ttf'])) -> None:
+	"""You can compile Fira Code fonts in both OTF and TTF formats from Glyphs source files.
+
+	(AI generated docstring)
+
+	This function compiles Fira Code fonts by invoking `smithyCastsFontFormat`
+	for both `'otf'` and `'ttf'` output formats in parallel using
+	`multiprocessing.Pool` [1]. The function reads the Glyphs source file from
+	`pathFilenameFiraCodeGlyphs` and writes compiled font files to
+	`pathWorkbenchFonts`.
+
+	Parameters
+	----------
+	workersMaximum : int = 2
+		Maximum number of parallel worker processes for compiling font formats.
+
+	Returns
+	-------
+	resultNone : None
+		This function performs file I/O and returns `None`.
+
+	Raises
+	------
+	Exception
+		Raised if `fontmake` [2] encounters errors during font compilation.
+	OSError
+		Raised if filesystem operations fail while reading source files or
+		writing compiled fonts.
+
+	Examples
+	--------
+	Invoked by `go` [3] as the first step in the build assembly line:
+
+	>>> from Integrated_Code_Fire.foundry import smithyCastsFiraCode
+	>>> smithyCastsFiraCode()
+
+	Invoked directly in the `__main__` block:
+
+	>>> if __name__ == '__main__':
+	...     smithyCastsFiraCode()
+
+	References
+	----------
+	[1] multiprocessing.Pool - Python Standard Library
+		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool
+	[2] fontmake - Read the Docs
+		https://github.com/googlefonts/fontmake
+	[3] Integrated_Code_Fire.go.go
+		Internal package reference.
+	[4] Integrated_Code_Fire.smithyCastsFontFormat
+		Internal package reference.
+	[5] Integrated_Code_Fire.pathFilenameFiraCodeGlyphs
+		Internal package reference.
+	[6] Integrated_Code_Fire.pathWorkbenchFonts
+		Internal package reference.
+
+	"""
+	with Pool(processes=workersMaximum) as concurrencyManager:
+		concurrencyManager.starmap(smithyFontProject, zip(repeat(pathFilename), fontFormats))
+
+def smithyFontProject(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> None:
+	"""You can compile Fira Code fonts from Glyphs source in a specified output format.
+
+	(AI generated docstring)
+
+	This function uses `fontmake.font_project.FontProject` [1] to compile Fira
+	Code fonts from the Glyphs source file at `pathFilenameFiraCodeGlyphs` [2].
+	The function interpolates font instances, disables autohinting, and writes
+	the compiled font files to `pathWorkbenchFonts` [3].
+
+	Parameters
+	----------
+	fontFormat : Literal['otf', 'ttf']
+		Output font format, either `'otf'` for OpenType CFF or `'ttf'` for
+		TrueType.
+
+	Returns
+	-------
+	resultNone : None
+		This function performs file I/O and returns `None`.
+
+	Raises
+	------
+	Exception
+		Raised if `fontmake` [1] encounters errors during font compilation.
+	OSError
+		Raised if filesystem operations fail while reading source files or
+		writing compiled fonts.
+
+	Examples
+	--------
+	Invoked by `smithyCastsFiraCode` via `multiprocessing.Pool.map` [4]:
+
+	>>> from Integrated_Code_Fire.foundry import smithyCastsFontFormat
+	>>> smithyCastsFontFormat('ttf')
+
+	References
+	----------
+	[1] fontmake.font_project.FontProject - Read the Docs
+		https://github.com/googlefonts/fontmake
+	[2] Integrated_Code_Fire.pathFilenameFiraCodeGlyphs
+		Internal package reference.
+	[3] Integrated_Code_Fire.pathWorkbenchFonts
+		Internal package reference.
+	[4] multiprocessing.Pool.map - Python Standard Library
+		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map
+
+	"""
+	settingsPackage.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
+	FontProject().run_from_glyphs(
+		glyphs_path=str(pathFilename)
+		, output=(fontFormat,)
+		, output_dir=str(settingsPackage.pathWorkbenchFonts)
+		, interpolate=True
+		, autohint=False
+	)
+
 if __name__ == '__main__':
-	# smithyCastsFiraCode(pathFilenameFiraCodeGlyphs, 2)
-	smithyCastsFiraCode(pathFilenameGlyphs, 2)
-	# smithyCastsFontFamily('SourceHanMono', 14)
-	# smithyCastsFontFamily('FrankenFont', 14)
+	smithyCastsGlyphs(pathFilenameFiraCodeGlyphs, 2)
+	smithyCasts_afdko('SourceHanMono', 14)
 

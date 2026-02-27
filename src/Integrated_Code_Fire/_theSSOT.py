@@ -4,12 +4,12 @@ from Integrated_Code_Fire import WeightIn
 from pathlib import Path
 from socket import gethostname
 from sys import modules as sysModules
-from typing import Final
+from typing import ClassVar, Final, Literal
 import dataclasses
 import platformdirs
 
 #======== Eliminate hardcoding, which sometimes means adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.002
+fontVersionHARDCODED: float = 0.003
 # NOTE Update this? ^^^^^^^^^^^^^^^
 
 fontLocale한국인HARDCODED: str = '한국인'
@@ -47,6 +47,9 @@ class PackageSettings(humpy_PackageSettings):
 	unitsPerEm: int = 1000
 	fontVersion: float = fontVersionHARDCODED
 	pathRoot: Path = pathRootHARDCODED
+	listLocales: ClassVar[list[str]] = ['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan']
+	listWeights: ClassVar[list[str]] = ['ExtraLight', 'Light', 'Normal', 'Regular', 'Medium', 'Bold', 'Heavy']
+	listStyles: ClassVar[list[Literal['Italic'] | None]] = [None, 'Italic']
 
 	fontLocale한국인: dataclasses.InitVar[str] = fontLocale한국인HARDCODED
 	fontLocale台湾: dataclasses.InitVar[str] = fontLocale台湾HARDCODED
@@ -102,8 +105,18 @@ settingsPackage = PackageSettings('Integrated_Code_Fire')
 
 #======== Centralized settings that have not yet found their home, such as in `settingsPackage`. ========
 
-# TODO These ranges are wrong. Figure out the correct way to subset Source Han Mono.
-unicodeSC: tuple[str, ...] = ('FFFE-FFFF', 'FF64-FFFC', 'FF00-FF61', 'EE0C-FEFE', 'E0B4-EDFF', '300E-DFFF', '3000-300B')
+# TODO These ranges are incomplete. Figure out the correct way to subset Source Han Mono.
+unicodeSC: tuple[str, ...] = (
+	'3000-300B',
+	'300E-DFFF',
+	'E004-E09F',
+	'E0A3-E0AF',
+	'E0B4-EDFF',
+	'EE0C-FEFE',
+	'FF00-FF61',
+	'FF64-FFFC',
+	'FFFE-FFFF',
+	)
 
 dictionaryWeights: dict[str, WeightIn] = {
 	'Light': WeightIn('Light', 'Light'),
@@ -117,12 +130,16 @@ dictionaryWeights: dict[str, WeightIn] = {
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 pathFilenameFiraCodeGlyphs: Path = settingsPackage.pathRoot / 'FiraCode' / 'FiraCode.glyphs'
-fontFamily: str = 'FrankenFont'
-pathFilenameGlyphs: Path = Path(pathFilenameFiraCodeGlyphs.parent.parent, fontFamily, fontFamily + pathFilenameFiraCodeGlyphs.suffix)
-pathWorkbenchSourceHanMono: Path = settingsPackage.pathWorkbench / 'SourceHanMono'
-advanceWidth: int = 0
-leftSideBearing: int = 1
-bearingIncrement: int = 200
+name: dict[str, int] = {
+	'platformID' : 3,
+	'platEncID' : 1,
+	'langID' : 0x0409,
+}
+hmtx: dict[str, int] = {
+	'width' : 0,
+	'bearingLeft' : 1,
+	'increment' : 100,
+}
 """Horizontal increment in font units added to left bearings and advance
 widths when integrating Source Han glyphs.
 
@@ -139,8 +156,9 @@ References
 	https://fonttools.readthedocs.io/en/latest/
 """
 maximumErrorUnitsPerEm: float = 1.0
-postTableFormat: float = 2.0
 reverseContourDirection: bool = True
+
+postTableFormat: float = 2.0
 
 lookupAFDKOCharacterSet: dict[str, str] = {
 	'Hong_Kong': '2',

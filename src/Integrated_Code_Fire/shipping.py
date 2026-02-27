@@ -24,12 +24,14 @@ References
 
 """
 from Integrated_Code_Fire import settingsPackage
+from typing import TYPE_CHECKING
 from zipfile import ZIP_DEFLATED, ZipFile
 
-filenameZIP: str = 'IntegratedCode.zip'
-filenameMask_ttf: str = 'I*.ttf'
+if TYPE_CHECKING:
+	from collections.abc import Iterable
+	from pathlib import Path
 
-def makeAssets() -> None:
+def makeAssets(listPathFilenames: Iterable[Path], filenameZIP: str) -> None:
 	"""You can move `.ttf` files into `pathAssets` and write `filenameZIP`.
 
 	(AI generated docstring)
@@ -61,10 +63,8 @@ def makeAssets() -> None:
 		Internal package reference.
 
 	"""
-	settingsPackage.pathAssets.mkdir(exist_ok = True)
-	for pathFilename in settingsPackage.pathWorkbenchFonts.glob(filenameMask_ttf):
-		pathFilename.replace(settingsPackage.pathAssets / pathFilename.name)
-
-	with ZipFile(settingsPackage.pathAssets / filenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipArchive:
-		for pathFilename in settingsPackage.pathAssets.glob(filenameMask_ttf):
-			zipArchive.write(pathFilename, arcname = pathFilename.name)
+	settingsPackage.pathAssets.mkdir(parents=True, exist_ok=True)
+	with ZipFile(settingsPackage.pathAssets / filenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipWrite:
+		for pathFilename in listPathFilenames:
+			zipWrite.write(pathFilename, arcname = pathFilename.name)
+			pathFilename.replace(settingsPackage.pathAssets / pathFilename.name)

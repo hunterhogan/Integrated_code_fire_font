@@ -144,48 +144,6 @@ def removeWorkbench(pathRemove: Path) -> None:
 
 	settingsPackage.pathWorkbench.rmdir()
 
-# TODO cleanWorkbench: make it smarter
-def cleanWorkbench() -> None:
-	"""You can remove source font input files from `pathWorkbenchFonts`.
-
-	(AI generated docstring)
-
-	This function deletes each `Path` in `pathWorkbenchFonts` that matches the
-	glob pattern `'FiraCode*.ttf'` and deletes each `Path` in `pathWorkbenchFonts`
-	that matches the glob pattern `'SourceHanMonoSC*.otf'`.
-
-	Returns
-	-------
-	resultNone : None
-		This function returns `None`.
-
-	Raises
-	------
-	OSError
-		Raised if a filesystem operation fails while deleting files.
-
-	Examples
-	--------
-	This function is invoked by `go`.
-
-	>>> from Integrated_Code_Fire.go import go
-	>>> go()
-
-	References
-	----------
-	[1] Integrated_Code_Fire.go.go
-		Internal package reference.
-
-	"""
-	for pathFilename in settingsPackage.pathWorkbenchFonts.glob('FiraCode*.ttf'):
-		pathFilename.unlink()
-
-	for pathFilename in settingsPackage.pathWorkbenchFonts.glob('*SourceHanMono*.otf'):
-		pathFilename.unlink()
-
-	for pathFilename in settingsPackage.pathWorkbenchFonts.glob('*Franken*.otf'):
-		pathFilename.unlink()
-
 if __name__ == '__main__':
 	zz = librarianGetsUnicode()
 	print(zz[0:50])  # noqa: T201

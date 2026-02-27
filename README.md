@@ -53,8 +53,8 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 
 ### Tips to make life easier
 
-1. In the names of files and fonts, to avoid confusion, don't use these characters as separators: - (hyphen), – (en dash), — (em dash), or similar characters. For some readers, they can be ambiguous due to 一, which is an ideograph representing "1".
-2. When preparing files, only make changes in the "workbench" directory. Never change files in directories with glyph and metadata information unless you intend the change to be permanent and universal.
+1. In the names of files and fonts, don't use separators: - (hyphen), – (en dash), — (em dash), or similar characters. For some readers, they can be ambiguous due to 一, which is an ideograph representing "1".
+2. When preparing font files, only make changes in the "workbench" directory. Never change files in directories with glyph or metadata information unless you intend the change to be permanent and universal.
 
 ### Comparison of weight names
 

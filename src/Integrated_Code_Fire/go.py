@@ -31,16 +31,20 @@ References
 
 """
 # ruff: noqa: D103
-from Integrated_Code_Fire import pathFilenameFiraCodeGlyphs, pathWorkbenchSourceHanMono
-from Integrated_Code_Fire.foundry import smithyCastsFiraCode, smithyCastsFontFamily
-from Integrated_Code_Fire.logistics import cleanWorkbench, removeWorkbench, valetCopiesFilesToWorkbenchFonts
+from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
+from Integrated_Code_Fire import pathFilenameFiraCodeGlyphs
+from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsGlyphs
+from Integrated_Code_Fire.logistics import removeWorkbench, valetCopiesFilesToWorkbenchFonts
 from Integrated_Code_Fire.mergeFonts import mergeFonts, mergeFontsV2
 from Integrated_Code_Fire.shipping import makeAssets
 from Integrated_Code_Fire.writeMetadata import scribeUpdatesFontMetadata, writeMetadata
 from typing import TYPE_CHECKING
+import sys
 
 if TYPE_CHECKING:
 	from pathlib import Path
+
+ansiColors = AnsiColors()
 
 def go(workersMaximum: int = 1) -> None:
 	"""You can run the end-to-end font build assembly line.
@@ -81,30 +85,38 @@ def go(workersMaximum: int = 1) -> None:
 		Internal package reference.
 
 	"""
-	smithyCastsFiraCode(pathFilenameFiraCodeGlyphs)
+	sys.stdout.write(f"{ansiColors.BlackOnCyan}smithyCastsGlyphs{ansiColorReset}\n")
+	smithyCastsGlyphs(pathFilenameFiraCodeGlyphs, fontFormats=['ttf'])
+
 	fontFamily: str = 'SourceHanMono'
-	smithyCastsFontFamily(fontFamily, workersMaximum)
-	valetCopiesFilesToWorkbenchFonts(pathWorkbenchSourceHanMono, 'Simplified_Chinese*.otf')
-	mergeFonts()
-	cleanWorkbench()
-	writeMetadata()
-	makeAssets()
-	removeWorkbench(pathWorkbenchSourceHanMono)
+	listPathFilenames: list[Path] = smithyCasts_afdko(fontFamily, workersMaximum)
+
+	pathWorkbenchFontFamily: Path = listPathFilenames[0].parent
+	valetCopiesFilesToWorkbenchFonts(pathWorkbenchFontFamily, 'Simplified_Chinese*.otf')
+
+	listPathFilenames = mergeFonts(fontFamily, workersMaximum)
+	writeMetadata(listPathFilenames)
+
+	filenameZIP: str = 'IntegratedCode.zip'
+	makeAssets(listPathFilenames, filenameZIP)
+	removeWorkbench(pathWorkbenchFontFamily)
 
 def goV2(workersMaximum: int = 1) -> None:
-	smithyCastsFiraCode(pathFilenameFiraCodeGlyphs)
+	smithyCastsGlyphs(pathFilenameFiraCodeGlyphs)
 	fontFamily: str = 'FrankenFont'
+	fontFamily: str = 'SourceHanMono'
 	scribeUpdatesFontMetadata(fontFamily)
-	listPathFilenames: list[Path] = smithyCastsFontFamily(fontFamily, workersMaximum)
+	listPathFilenames: list[Path] = smithyCasts_afdko(fontFamily, workersMaximum)
 	pathWorkbenchFontFamily: Path = listPathFilenames[0].parent
 	valetCopiesFilesToWorkbenchFonts(pathWorkbenchFontFamily, 'Simplified_Chinese*.otf')
 
 	listPathFilenames = mergeFontsV2(fontFamily)
 
-	cleanWorkbench()
-	writeMetadata()
-	makeAssets()
+	writeMetadata(listPathFilenames)
+
+	filenameZIP: str = 'IntegratedCode.zip'
+	makeAssets(listPathFilenames, filenameZIP)
 	removeWorkbench(pathWorkbenchFontFamily)
 
 if __name__ == '__main__':
-	goV2(14)
+	go(14)
