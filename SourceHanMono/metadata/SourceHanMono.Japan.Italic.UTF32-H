@@ -1,8 +1,8 @@
 %!PS-Adobe-3.0 Resource-CMap
 %%DocumentNeededResources: ProcSet (CIDInit)
 %%IncludeResource: ProcSet (CIDInit)
-%%BeginResource: CMap (Japan.Italic.SourceHanMono.UTF32.H)
-%%Title: (Japan.Italic.SourceHanMono.UTF32.H Adobe Identity 0)
+%%BeginResource: CMap (SourceHanMono.Japan.Italic.UTF32-H)
+%%Title: (SourceHanMono.Japan.Italic.UTF32-H Adobe Identity 0)
 %%Version: 1.000
 %%Copyright: -----------------------------------------------------------
 %%Copyright: Copyright 1990-2019 Adobe. All rights reserved.
@@ -18,11 +18,11 @@
 %%Copyright: Redistributions in binary form must reproduce the above
 %%Copyright: copyright notice, this list of conditions and the following
 %%Copyright: disclaimer in the documentation and/or other materials
-%%Copyright: provided with the distribution. 
+%%Copyright: provided with the distribution.
 %%Copyright:
 %%Copyright: Neither the name of Adobe nor the names of its contributors
 %%Copyright: may be used to endorse or promote products derived from this
-%%Copyright: software without specific prior written permission. 
+%%Copyright: software without specific prior written permission.
 %%Copyright:
 %%Copyright: THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
 %%Copyright: CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
@@ -52,7 +52,7 @@ begincmap
   /Supplement 0 def
 end def
 
-/CMapName /Japan.Italic.SourceHanMono.UTF32.H def
+/CMapName /SourceHanMono.Japan.Italic.UTF32-H def
 /CMapVersion 1.000 def
 /CMapType 1 def
 

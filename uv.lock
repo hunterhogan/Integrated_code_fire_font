@@ -383,7 +383,7 @@ wheels = [
 
 [[package]]
 name = "integrated-code-fire"
-version = "0.0.2"
+version = "0.0.3"
 source = { editable = "." }
 dependencies = [
     { name = "afdko" },
@@ -396,6 +396,8 @@ dependencies = [
     { name = "huntermakespy" },
     { name = "more-itertools" },
     { name = "platformdirs" },
+    { name = "toolz" },
+    { name = "toolz-stubs" },
     { name = "tqdm" },
 ]
 
@@ -414,9 +416,11 @@ requires-dist = [
     { name = "fontmake", extras = ["all"], specifier = ">=3.11.1" },
     { name = "fonttools", extras = ["ufo", "unicode"], specifier = ">=4.61.1" },
     { name = "glyphslib", extras = ["colr", "ufo-normalization"], specifier = ">=6.12.6" },
-    { name = "huntermakespy", specifier = ">=0.4.0" },
+    { name = "huntermakespy", specifier = ">=0.4.1" },
     { name = "more-itertools", specifier = ">=10.8.0" },
     { name = "platformdirs", specifier = ">=4.9.2" },
+    { name = "toolz", specifier = ">=1.1.0" },
+    { name = "toolz-stubs", specifier = ">=0.3.1" },
     { name = "tqdm", specifier = ">=4.67.3" },
 ]
 
@@ -654,6 +658,27 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/36/49/c81e1a551726b8153c7a600b041e4480ac85db13985b7b260a01d85e0a6c/skia_pathops-0.9.2-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:f8c72c70e57dd6655f880ae63642ff26753bb888f4c6411709a12cc10bee005e", size = 4316667, upload-time = "2026-02-16T10:30:08.326Z" },
     { url = "https://files.pythonhosted.org/packages/bb/b4/484ba09325c75d4470578b3f16bfe5a30cc348ece2566df59702c487084c/skia_pathops-0.9.2-cp310-abi3-win32.whl", hash = "sha256:3b9ef6629d2c8cb8604a7e22d4d2fe2c0160788b9792145a2cf0f968ec245751", size = 1450912, upload-time = "2026-02-16T10:30:09.762Z" },
     { url = "https://files.pythonhosted.org/packages/ff/96/bd1bfaf5335242a86d8af940ff2124861e9bc6a5520cf96fda374fd10945/skia_pathops-0.9.2-cp310-abi3-win_amd64.whl", hash = "sha256:9ae72d801b5f4c5dbb937fb25476a12fa2da70860f28dd637da2b529dbd8271c", size = 1782901, upload-time = "2026-02-16T10:30:11.546Z" },
+]
+
+[[package]]
+name = "toolz"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/d6/114b492226588d6ff54579d95847662fc69196bdeec318eb45393b24c192/toolz-1.1.0.tar.gz", hash = "sha256:27a5c770d068c110d9ed9323f24f1543e83b2f300a687b7891c1a6d56b697b5b", size = 52613, upload-time = "2025-10-17T04:03:21.661Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fb/12/5911ae3eeec47800503a238d971e51722ccea5feb8569b735184d5fcdbc0/toolz-1.1.0-py3-none-any.whl", hash = "sha256:15ccc861ac51c53696de0a5d6d4607f99c210739caf987b5d2054f3efed429d8", size = 58093, upload-time = "2025-10-17T04:03:20.435Z" },
+]
+
+[[package]]
+name = "toolz-stubs"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "toolz" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ee/98/6690a4f68c4eba338efcc03c22f91a866036987ef20f6c2378d2e67dc129/toolz_stubs-0.3.1.tar.gz", hash = "sha256:277946eaafdd1d52cfd003fdfa08b485e9196af43bf800c6094a5a2b880fe1b0", size = 62947, upload-time = "2026-01-08T12:48:30.531Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/39/6d/457d956e8d9dae766d821444d10cbdbd4760a02e6e5be7c2b06a72a7521f/toolz_stubs-0.3.1-py3-none-any.whl", hash = "sha256:807cefdb67120e495bfc141af856391990b487391b4e8fda8fb06e2b9a04b9bf", size = 66920, upload-time = "2026-01-08T12:48:28.962Z" },
 ]
 
 [[package]]

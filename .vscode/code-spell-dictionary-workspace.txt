@@ -51,6 +51,7 @@ gethostname
 gflanguages
 gfsubsets
 gftools
+gids
 glyf
 glyphsets
 glyphslib
