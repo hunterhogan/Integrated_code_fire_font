@@ -33,7 +33,6 @@ References
 """
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import pathFilenameFiraCodeGlyphs, settingsPackage
-from Integrated_Code_Fire.archivist import writeMetadata
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
 from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import getDictionaryFontsScaled
@@ -64,8 +63,6 @@ def go(workersMaximum: int = 1) -> None:
 	valetRemovesFiles(pathFiraCode)
 
 	listPathFilenames = mergeFonts(fontFamily, dictionaryFontsScaled, workersMaximum)
-
-	writeMetadata(listPathFilenames)
 
 	filenameZIP: str = "IntegratedCode.zip"
 	makeAssets(listPathFilenames, filenameZIP)

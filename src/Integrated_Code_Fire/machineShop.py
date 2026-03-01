@@ -18,10 +18,10 @@ def getDictionaryFontsScaled(pathFonts: Path, theGlob: str) -> dict[str, TTFont]
 		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
 	return dictionaryFontsScaled
 
-def machinistSubsetsOTF(pathFilename: Path, gids: list[int]) -> TTFont:
+def machinistSubsetsOTF(pathFilename: Path, gids: list[int], unicodes: list[int]) -> TTFont:
 	ttFont: TTFont = TTFont(pathFilename)
 	subsetter = subset.Subsetter(subsetOptions)
-	subsetter.populate(gids = gids)
+	subsetter.populate(gids = gids, unicodes = unicodes)
 	subsetter.subset(ttFont)
 	otf_to_ttf(ttFont)
 	machinistModifiesSideBearings(ttFont, hmtx['increment'])

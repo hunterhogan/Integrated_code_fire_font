@@ -43,14 +43,15 @@ References
 
 """
 # ruff: noqa: D103
-from fontTools.ttLib import TTFont
-from Integrated_Code_Fire import settingsPackage, WeightIn
+from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
+	from fontTools.ttLib import TTFont
 	from pathlib import Path
-def getMetadataByFontWeight(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
+
+def getNameIDMetadata(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
 	"""You can build a name record mapping for a given `weight`.
 
 	(AI generated docstring)
@@ -107,100 +108,12 @@ name: dict[str, int] = {
 	'langID' : 0x0409,
 }
 
-def updateFontFile(pathFilenameFont: Path) -> None:
-	"""You can update a `.ttf` font file in place.
-
-	(AI generated docstring)
-
-	This function derives `weight` from `pathFilenameFont.stem` by removing the
-	prefix `filenameFontFamilyLocale`. This function uses
-	`getMetadataByFontWeight(weight)` to populate a name record mapping.
-
-	This function opens `pathFilenameFont` with `TTFont` and writes these values.
-
-	* `TTFont['head'].fontRevision` is set to `fontVersion`.
-	* `TTFont['OS/2'].achVendID` is set to `achVendID`.
-	* Each name record in the mapping is applied by removing and setting a name
-		record using `platformID`, `platEncID`, and `langID`.
-
-	Parameters
-	----------
-	pathFilenameFont : Path
-		Path to the `.ttf` font file to update.
-
-	Returns
-	-------
-	resultNone : None
-		This function returns `None`.
-
-	Raises
-	------
-	OSError
-		Raised if `TTFont.save` fails to write `pathFilenameFont`.
-	Exception
-		Raised if `fontTools` fails to parse or update `pathFilenameFont`.
-
-	Examples
-	--------
-	This function is invoked by `writeMetadata`.
-
-	>>> from Integrated_Code_Fire.writeMetadata import writeMetadata
-	>>> writeMetadata()
-
-	References
-	----------
-	[1] fontTools `TTFont` documentation.
-		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
-	[2] Integrated_Code_Fire.writeMetadata.getMetadataByFontWeight
-		Internal package reference.
-	[3] Integrated_Code_Fire.writeMetadata.writeMetadata
-		Internal package reference.
-
-	"""
-	weight: str = pathFilenameFont.stem.removeprefix(settingsPackage.filenameFontFamilyLocale简化字)
-	dictionaryNameIDToNameRecordValue: dict[int, str] = getMetadataByFontWeight(weight, settingsPackage.filenameFontFamilyLocale简化字, settingsPackage.fontFamilyLocale简化字)
-	with TTFont(pathFilenameFont) as font:
-		font['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
-		font['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
-		for nameID in dictionaryNameIDToNameRecordValue:
-			font['name'].removeNames(nameID, name['platformID'], name['platEncID'], name['langID'])
-			font['name'].setName(dictionaryNameIDToNameRecordValue[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
-		font.save(pathFilenameFont)
-
-def writeMetadata(listPathFilenames: list[Path]) -> None:
-	"""You can update metadata for each built `.ttf` file in `pathWorkbenchFonts`.
-
-	(AI generated docstring)
-
-	This function calls `updateFontFile` for each `.ttf` file matched by
-	`pathWorkbenchFonts.glob(f'{filenameFontFamilyLocale}*.ttf')`.
-
-	Returns
-	-------
-	resultNone : None
-		This function returns `None`.
-
-	Raises
-	------
-	Exception
-		Raised if `updateFontFile` fails for any matched `.ttf` file.
-
-	Examples
-	--------
-	This function is invoked by `Integrated_Code_Fire.go.go`.
-
-	>>> from Integrated_Code_Fire.go import go
-	>>> go()
-
-	References
-	----------
-	[1] Integrated_Code_Fire.go.go
-		Internal package reference.
-	[2] Integrated_Code_Fire.writeMetadata.updateFontFile
-		Internal package reference.
-
-	"""
-	set(map(updateFontFile, listPathFilenames))
+def updateFontFile(ttFont: TTFont, nameIDmetadata: dict[int, str]) -> None:
+	ttFont['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
+	ttFont['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
+	for nameID in nameIDmetadata:
+		ttFont['name'].removeNames(nameID, name['platformID'], name['platEncID'], name['langID'])
+		ttFont['name'].setName(nameIDmetadata[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
 
 """filenameSuffix
 cidfont.ps
@@ -215,9 +128,9 @@ UTF16-H
 UTF32-H
 """
 
-def getFilenameStem(fontFamily: str, locale: str | None = None, style: Literal['Italic'] | None = None, weight: str | None = None) -> str:
+def getFilenameStem(fontFamily: str, locale: str | None = None, style: Literal['Italic'] | None = None, weight: str | None = None, separator: str = '.') -> str:
 	notNone = None # Ironic, no?
-	return '.'.join(filter(notNone, [fontFamily, locale, style, weight]))
+	return separator.join(filter(notNone, [fontFamily, locale, style, weight]))
 
 def getGids(pathFilename: Path, *, floor: int = 0, ceiling: int | None = None, exclude: Iterable[int] = frozenset()) -> None:
 	# floor, ceiling, and exclude are unicode values
@@ -228,6 +141,14 @@ def getGids(pathFilename: Path, *, floor: int = 0, ceiling: int | None = None, e
 	# <00000020> <0000007e> 1
 
 	pass
+
+dictionaryLocales: dict[str, LocaleIn] = {
+	'Hong_Kong': LocaleIn('Hong_Kong', '香港'),
+	'Japan': LocaleIn('Japan', '日本'),
+	'Korea': LocaleIn('Korea', '한국인'),
+	'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字'),
+	'Taiwan': LocaleIn('Taiwan', '台灣'),
+}
 
 dictionaryWeights: dict[str, WeightIn] = {
 	'Light': WeightIn('Light', 'Light', 'Light'),
