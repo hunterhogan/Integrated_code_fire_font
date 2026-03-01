@@ -47,9 +47,7 @@ from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from collections.abc import Iterable
 	from fontTools.ttLib import TTFont
-	from pathlib import Path
 
 def getNameIDMetadata(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
 	"""You can build a name record mapping for a given `weight`.
@@ -132,16 +130,6 @@ def getFilenameStem(fontFamily: str, locale: str | None = None, style: Literal['
 	notNone = None # Ironic, no?
 	return separator.join(filter(notNone, [fontFamily, locale, style, weight]))
 
-def getGids(pathFilename: Path, *, floor: int = 0, ceiling: int | None = None, exclude: Iterable[int] = frozenset()) -> None:
-	# floor, ceiling, and exclude are unicode values
-	# floor and ceiling are inclusive
-	# 100 begincidchar
-	# <000000a0> 1
-	# 100 begincidrange
-	# <00000020> <0000007e> 1
-
-	pass
-
 dictionaryLocales: dict[str, LocaleIn] = {
 	'Hong_Kong': LocaleIn('Hong_Kong', '香港'),
 	'Japan': LocaleIn('Japan', '日本'),
@@ -180,6 +168,7 @@ References
 [1] fontTools - Read the Docs
 	https://fonttools.readthedocs.io/en/latest/
 """
+
 lookupAFDKOCharacterSet: dict[str, str] = {
 	'Hong_Kong': '2',
 	'Japan': '1',
@@ -206,11 +195,4 @@ References
 [2] Adobe CMap Resources - GitHub
 	https://github.com/adobe-type-tools/cmap-resources
 """
-
-if __name__ == '__main__':
-	fontFamily: str = 'SourceHanMono'
-	pathFilename: Path = settingsPackage.pathRoot / fontFamily / 'metadata' / f"{getFilenameStem(fontFamily, 'Simplified_Chinese')}.UTF32-H"
-	gids = getGids(pathFilename, floor=0x3000, ceiling=None, exclude=unicodeFiraCodeAbove0x3000)
-
-	pathFilenameHandMade: Path = settingsPackage.pathRoot / fontFamily / 'metadata' / f"{getFilenameStem(fontFamily, 'Simplified_Chinese')}.gids"
 

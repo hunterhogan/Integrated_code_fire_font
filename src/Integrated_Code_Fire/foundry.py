@@ -45,8 +45,6 @@ if TYPE_CHECKING:
 	from collections.abc import Iterable
 	from pathlib import Path
 
-notNone = None # Ironic, no?
-
 def smithyCasts_afdko(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1) -> list[Path]:
 	"""You can compile all Source Han Mono font variants across five locales, seven weights, and two styles.
 

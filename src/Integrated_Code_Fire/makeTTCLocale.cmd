@@ -1,6 +1,5 @@
 SETLOCAL enableDelayedExpansion
 SET fontFamily=SourceHanMono
-SET fontFamily=FrankenFont
 
 SET pathPS=C:\apps\Integrated_Code_Fire\%fontFamily%\glyphs
 SET pathSHM=C:\apps\Integrated_Code_Fire\workbench\%fontFamily%
@@ -19,33 +18,33 @@ CALL :subroutine
 GOTO :EOF
 :subroutine
 @REM Segregate the OTFs by locale.
-ROBOCOPY %pathSHM% %pathSHM%\%locale% /MOV %locale%.*
+ROBOCOPY %pathSHM% %pathSHM%\%locale% /MOV *.%locale%.*
 
 @REM DIR just Italic, but use the filename for both styles.
-FOR /F "tokens=1,3 delims=." %%G IN ('DIR /B %pathSHM%\%locale%\*.Italic.*.otf') DO (
-	CALL tx -cff %pathPS%\%%G.%%H.OTC.cidfont.ps %pathSHM%\%locale%\%%G.%%H.cff
-	CALL sfntedit -a CFF=%pathSHM%\%locale%\%%G.%%H.cff %pathSHM%\%locale%\%%G.%%H.%fontFamily%.otf
+FOR /F "tokens=1,2,4 delims=." %%G IN ('DIR /B %pathSHM%\%locale%\*.Italic.*.otf') DO (
+	CALL tx -cff %pathPS%\%%G.%%H.%%I.cidfont.ps %pathSHM%\%locale%\%%G.%%H.%%I.cff
+	CALL sfntedit -a CFF=%pathSHM%\%locale%\%%G.%%H.%%I.cff %pathSHM%\%locale%\%%G.%%H.%%I.otf
 
-	CALL tx -cff %pathPS%\%%G.Italic.%%H.OTC.cidfont.ps %pathSHM%\%locale%\%%G.Italic.%%H.cff
-	CALL sfntedit -a CFF=%pathSHM%\%locale%\%%G.Italic.%%H.cff %pathSHM%\%locale%\%%G.Italic.%%H.%fontFamily%.otf
+	CALL tx -cff %pathPS%\%%G.%%H.Italic.%%I.cidfont.ps %pathSHM%\%locale%\%%G.%%H.Italic.%%I.cff
+	CALL sfntedit -a CFF=%pathSHM%\%locale%\%%G.%%H.Italic.%%I.cff %pathSHM%\%locale%\%%G.%%H.Italic.%%I.otf
 )
 
 PUSHd %pathSHM%\%locale%
 
-CALL sfntedit -x CFF=CFF.%locale% -d DSIG %locale%.Regular.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Bold.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.ExtraLight.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Heavy.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.Bold.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.ExtraLight.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.Heavy.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.Light.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.Medium.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.Normal.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Italic.Regular.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Light.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Medium.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%locale% -d DSIG %locale%.Normal.%fontFamily%.otf
+CALL sfntedit -x CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Regular.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Bold.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.ExtraLight.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Heavy.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.Bold.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.ExtraLight.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.Heavy.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.Light.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.Medium.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.Normal.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Italic.Regular.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Light.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Medium.otf
+CALL sfntedit -a CFF=CFF.%locale% -d DSIG %fontFamily%.%locale%.Normal.otf
 
 POPD
 

@@ -1,6 +1,6 @@
 [project]
 name = "Integrated_Code_Fire"
-version = "0.0.5"
+version = "0.0.6"
 description = "Integrated Code 火 is a code-centric font combining Fira Code and Source Han Mono."
 readme = "README.md"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]

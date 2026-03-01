@@ -24,14 +24,16 @@ References
 
 """
 from Integrated_Code_Fire import settingsPackage
+from Integrated_Code_Fire.archivist import dictionaryLocales
 from typing import TYPE_CHECKING
 from zipfile import ZIP_DEFLATED, ZipFile
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
+	from Integrated_Code_Fire import LocaleIn
 	from pathlib import Path
 
-def makeAssets(listPathFilenames: Iterable[Path], filenameZIP: str) -> None:
+def makeAssets(listPathFilenames: Iterable[Path], filenameStem: str) -> None:
 	"""You can move `.ttf` files into `pathAssets` and write `filenameZIP`.
 
 	(AI generated docstring)
@@ -64,7 +66,10 @@ def makeAssets(listPathFilenames: Iterable[Path], filenameZIP: str) -> None:
 
 	"""
 	settingsPackage.pathAssets.mkdir(parents=True, exist_ok=True)
-	with ZipFile(settingsPackage.pathAssets / filenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipWrite:
-		for pathFilename in listPathFilenames:
-			zipWrite.write(pathFilename, arcname = pathFilename.name)
-			pathFilename.replace(settingsPackage.pathAssets / pathFilename.name)
+
+	for locale in settingsPackage.listLocales:
+		localeIn: LocaleIn = dictionaryLocales[locale]
+		pathFilenameZIP: Path = settingsPackage.pathAssets / f"{filenameStem}_{localeIn.ascii}.zip"
+		with ZipFile(pathFilenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipWrite:
+			for pathFilename in filter(lambda pathFilename: localeIn.IntegratedCode in pathFilename.stem, listPathFilenames):
+				zipWrite.write(pathFilename, arcname = pathFilename.name)

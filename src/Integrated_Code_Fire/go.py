@@ -53,8 +53,8 @@ def go(workersMaximum: int = 1) -> None:
 	fontFormatFiraCode: str = 'ttf'
 	pathFiraCode: Path = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphs, workersMaximum, [fontFormatFiraCode])
 
-	fontFamily: str = 'SourceHanMono'
-	listPathFilenames: list[Path] = smithyCasts_afdko(fontFamily, workersMaximum)
+	fontFamilyOTC: str = 'SourceHanMono'
+	listPathFilenames: list[Path] = smithyCasts_afdko(fontFamilyOTC, workersMaximum)
 	pathWorkbenchFontFamily: Path = listPathFilenames[0].parent
 	listPathFilenames = valetCopiesToWorkbench(pathWorkbenchFontFamily, "*.otf")
 	valetRemovesFiles(pathWorkbenchFontFamily)
@@ -62,9 +62,9 @@ def go(workersMaximum: int = 1) -> None:
 	dictionaryFontsScaled: dict[str, TTFont] = getDictionaryFontsScaled(pathFiraCode, f"*.{fontFormatFiraCode}")
 	valetRemovesFiles(pathFiraCode)
 
-	listPathFilenames = mergeFonts(fontFamily, dictionaryFontsScaled, workersMaximum)
+	listPathFilenames = mergeFonts(fontFamilyOTC, dictionaryFontsScaled, workersMaximum)
 
-	filenameZIP: str = "IntegratedCode.zip"
+	filenameZIP: str = "IntegratedCodeFire"
 	makeAssets(listPathFilenames, filenameZIP)
 
 	valetRemovesFiles(settingsPackage.pathWorkbenchFonts)

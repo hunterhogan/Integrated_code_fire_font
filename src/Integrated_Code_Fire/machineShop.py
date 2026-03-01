@@ -1,13 +1,16 @@
-# ruff: noqa
+# ruff: noqa D100
 from afdko.otf2ttf import otf_to_ttf
 from fontTools import subset
 from fontTools.ttLib import scaleUpem, TTFont
 from fontTools.ttLib.tables._g_l_y_f import Glyph
 from hunterMakesPy import raiseIfNone
-from Integrated_Code_Fire import settingsPackage, subsetOptions
+from Integrated_Code_Fire import settingsPackage
+from Integrated_Code_Fire._theSSOT import subsetOptionsHARDCODED
 from Integrated_Code_Fire.archivist import hmtx
 from pathlib import Path
 from tlz.dicttoolz import merge  # pyright: ignore[reportMissingModuleSource]
+
+subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 def getDictionaryFontsScaled(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 	"""weight: TTFont."""

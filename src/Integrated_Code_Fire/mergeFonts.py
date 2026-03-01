@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 	from pathlib import Path
 
 def mergeFonts(fontFamilyOTC: str, dictionaryFontsScaled: dict[str, TTFont], workersMaximum: int = 1) -> list[Path]:
-	listPathFilename: list[Path] = []
+	listPathFilenames: list[Path] = []
 	listClaimTickets: list[Future[None]] = []
 
 	with ProcessPoolExecutor(workersMaximum) as concurrencyManager:
@@ -33,12 +33,12 @@ def mergeFonts(fontFamilyOTC: str, dictionaryFontsScaled: dict[str, TTFont], wor
 			pathFilenameWrite: Path = settingsPackage.pathWorkbenchFonts / f"{getFilenameStem(settingsPackage.filenameFontFamily, localeIn.IntegratedCode, style, weightIn.IntegratedCode, '')}.ttf"
 			nameIDmetadata: dict[int, str] = getNameIDMetadata(weightIn.IntegratedCode, getFilenameStem(settingsPackage.filenameFontFamily, localeIn.IntegratedCode, separator=''), getFilenameStem(settingsPackage.fontFamily, localeIn.IntegratedCode, separator=' '))
 			listClaimTickets.append(concurrencyManager.submit(_mf, ttFont, pathFilenameOTC, gids, unicodes, nameIDmetadata, pathFilenameWrite))
-			listPathFilename.append(pathFilenameWrite)
+			listPathFilenames.append(pathFilenameWrite)
 
 		for _claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc = f"Merging fonts for {fontFamilyOTC}"):
 			pass
 
-	return listPathFilename
+	return listPathFilenames
 
 def _mf(ttFont: TTFont, pathFilenameOTF: Path, gids: list[int], unicodes: list[int], nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> None:
 	fontAppend: TTFont = machinistSubsetsOTF(pathFilenameOTF, gids, unicodes)

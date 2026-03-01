@@ -8,7 +8,7 @@ import dataclasses
 import platformdirs
 
 #======== Eliminate hardcoding, which sometimes means adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.005
+fontVersionHARDCODED: float = 0.006
 # NOTE Update this? ^^^^^^^^^^^^^^^
 
 subsetOptionsHARDCODED = subset.Options(
@@ -37,12 +37,12 @@ if gethostname() == 'duda':
 class PackageSettings(humpy_PackageSettings):
 	achVendID: str = '1INT' # See "Registering Vendor ID 1INT.pdf".
 	fontFamily: Final[str] = 'Integrated Code 火'
-	unitsPerEm: int = 1000
 	fontVersion: float = fontVersionHARDCODED
-	pathRoot: Path = pathRootHARDCODED
-	listLocales: ClassVar[list[str]] = ['Simplified_Chinese'] #, 'Hong_Kong', 'Japan', 'Korea', 'Taiwan']
-	listWeights: ClassVar[list[str]] = ['Light', 'Normal', 'Regular', 'Medium', 'Bold', 'Heavy'] #, 'ExtraLight']
+	listLocales: ClassVar[list[str]] = ['Simplified_Chinese', 'Hong_Kong', 'Japan', 'Korea', 'Taiwan']
 	listStyles: ClassVar[list[Literal['Italic'] | None]] = [None] #, 'Italic']
+	listWeights: ClassVar[list[str]] = ['Light', 'Normal', 'Regular', 'Medium', 'Bold', 'Heavy'] #, 'ExtraLight']
+	pathRoot: Path = pathRootHARDCODED
+	unitsPerEm: int = 1000
 
 	pathAssets: Path = dataclasses.field(init=False)
 	pathWorkbench: Path = dataclasses.field(init=False)
@@ -68,7 +68,5 @@ class PackageSettings(humpy_PackageSettings):
 settingsPackage = PackageSettings('Integrated_Code_Fire')
 
 #======== Centralized settings that have not yet found their home, such as in `settingsPackage`. ========
-
-subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 pathFilenameFiraCodeGlyphs: Path = settingsPackage.pathRoot / 'FiraCode' / 'FiraCode.glyphs'

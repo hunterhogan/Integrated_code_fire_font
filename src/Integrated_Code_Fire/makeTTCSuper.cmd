@@ -1,6 +1,6 @@
 SETLOCAL enableDelayedExpansion
 SET fontFamily=SourceHanMono
-SET fontFamily=FrankenFont
+
 SET pathPS=C:\apps\Integrated_Code_Fire\%fontFamily%\glyphs
 SET pathSHM=C:\apps\Integrated_Code_Fire\workbench\%fontFamily%
 
@@ -37,26 +37,26 @@ GOTO :EOF
 ROBOCOPY %pathSHM% %pathSHM%\%weight% /MOV *.%weight%.*
 
 @REM DIR just Italic, but use the filename for both styles.
-FOR /F "tokens=1,3 delims=." %%G IN ('DIR /B %pathSHM%\%weight%\*.Italic.*.otf') DO (
-	CALL tx -cff %pathPS%\%%G.%%H.OTC.cidfont.ps %pathSHM%\%weight%\%%G.%%H.cff
-	CALL sfntedit -a CFF=%pathSHM%\%weight%\%%G.%%H.cff %pathSHM%\%weight%\%%G.%%H.%fontFamily%.otf
+FOR /F "tokens=1,2,4 delims=." %%G IN ('DIR /B %pathSHM%\%weight%\*.Italic.*.otf') DO (
+	CALL tx -cff %pathPS%\%%G.%%H.%%I.cidfont.ps %pathSHM%\%weight%\%%G.%%H.%%I.cff
+	CALL sfntedit -a CFF=%pathSHM%\%weight%\%%G.%%H.%%I.cff %pathSHM%\%weight%\%%G.%%H.%%I.otf
 
-	CALL tx -cff %pathPS%\%%G.Italic.%%H.OTC.cidfont.ps %pathSHM%\%weight%\%%G.Italic.%%H.cff
-	CALL sfntedit -a CFF=%pathSHM%\%weight%\%%G.Italic.%%H.cff %pathSHM%\%weight%\%%G.Italic.%%H.%fontFamily%.otf
+	CALL tx -cff %pathPS%\%%G.%%H.Italic.%%I.cidfont.ps %pathSHM%\%weight%\%%G.%%H.Italic.%%I.cff
+	CALL sfntedit -a CFF=%pathSHM%\%weight%\%%G.%%H.Italic.%%I.cff %pathSHM%\%weight%\%%G.%%H.Italic.%%I.otf
 )
 
 PUSHd %pathSHM%\%weight%
 
-CALL sfntedit -x CFF=CFF.%weight% -d DSIG Japan.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Japan.Italic.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Hong_Kong.Italic.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Hong_Kong.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Korea.Italic.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Korea.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Simplified_Chinese.Italic.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Simplified_Chinese.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Taiwan.Italic.%weight%.%fontFamily%.otf
-CALL sfntedit -a CFF=CFF.%weight% -d DSIG Taiwan.%weight%.%fontFamily%.otf
+CALL sfntedit -x CFF=CFF.%weight% -d DSIG %fontFamily%.Japan.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Japan.Italic.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Hong_Kong.Italic.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Hong_Kong.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Korea.Italic.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Korea.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Simplified_Chinese.Italic.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Simplified_Chinese.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Taiwan.Italic.%weight%.otf
+CALL sfntedit -a CFF=CFF.%weight% -d DSIG %fontFamily%.Taiwan.%weight%.otf
 
 POPD
 
