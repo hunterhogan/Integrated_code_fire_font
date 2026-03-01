@@ -35,7 +35,8 @@ References
 """
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
-from Integrated_Code_Fire import lookupAFDKOCharacterSet, pathFilenameFiraCodeGlyphs, settingsPackage
+from Integrated_Code_Fire import settingsPackage
+from Integrated_Code_Fire.archivist import getFilenameStem, lookupAFDKOCharacterSet
 from itertools import product as CartesianProduct, repeat
 from multiprocessing import Pool
 from typing import Literal, TYPE_CHECKING
@@ -105,11 +106,11 @@ def smithyCasts_afdko(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1
 	"""  # noqa: RUF002
 	with Pool(processes=workersMaximum) as concurrencyManager:
 		listPathFilename: list[Path] = concurrencyManager.starmap(smithy_makeotf
-			, CartesianProduct([fontFamily], settingsPackage.listLocales, settingsPackage.listWeights, settingsPackage.listStyles))
+			, CartesianProduct([fontFamily], settingsPackage.listLocales, settingsPackage.listStyles, settingsPackage.listWeights))
 
 	return listPathFilename
 
-def smithy_makeotf(fontFamily: str, locale: str, weight: str = 'Regular', style: Literal['Italic'] | None = None) -> Path:
+def smithy_makeotf(fontFamily: str, locale: str, style: Literal['Italic'] | None = None, weight: str = 'Regular') -> Path:
 	"""You can compile a single Source Han Mono font variant using AFDKO makeotf.
 
 	(AI generated docstring)
@@ -170,15 +171,18 @@ def smithy_makeotf(fontFamily: str, locale: str, weight: str = 'Regular', style:
 	pathCompiled: Path = settingsPackage.pathWorkbench / fontFamily
 	pathCompiled.mkdir(parents=True, exist_ok=True)
 
-	pathFilename: Path = pathCompiled / '.'.join(filter(notNone, [locale, style, weight, fontFamily, 'otf']))
+	filenameStemGlyphs: str = getFilenameStem(fontFamily, locale, style, weight)
+	filenameStemMetadata: str = getFilenameStem(fontFamily, locale, style)
+
+	pathFilename: Path = pathCompiled / f"{filenameStemGlyphs}.otf"
 
 	afdko_makeotf([
-		'-f', str((pathFontFamily / 'glyphs') / '.'.join(filter(notNone, [locale, style, weight, 'OTC', 'cidfont', 'ps'])))
-		, '-ff', str((pathFontFamily / 'glyphs') / '.'.join(filter(notNone, [locale, style, weight, 'OTC', 'features'])))
-		, '-fi', str((pathFontFamily / 'glyphs') / '.'.join(filter(notNone, [locale, style, weight, 'OTC', 'cidfontinfo'])))
+		'-f', str((pathFontFamily / 'glyphs') / f"{filenameStemGlyphs}.cidfont.ps")
+		, '-ff', str((pathFontFamily / 'glyphs') / f"{filenameStemGlyphs}.features")
+		, '-fi', str((pathFontFamily / 'glyphs') / f"{filenameStemGlyphs}.cidfontinfo")
 		, '-cs', lookupAFDKOCharacterSet[locale]
-		, '-ch', str((pathFontFamily / 'metadata') / '.'.join(filter(notNone, [locale, style, fontFamily, 'UTF32', 'H'])))
-		, '-ci', str((pathFontFamily / 'metadata') / '.'.join(filter(notNone, [locale, style, fontFamily, 'sequences', 'txt'])))
+		, '-ch', str((pathFontFamily / 'metadata') / f"{filenameStemMetadata}.UTF32-H")
+		, '-ci', str((pathFontFamily / 'metadata') / f"{filenameStemMetadata}.sequences")
 		, '-omitMacNames'
 		, '-mf', str((pathFontFamily / 'metadata') / 'FontMenuNameDB')
 		, '-r'
@@ -191,8 +195,8 @@ def smithy_makeotf(fontFamily: str, locale: str, weight: str = 'Regular', style:
 
 	return pathFilename
 
-def smithyCastsGlyphs(pathFilename: Path, workersMaximum: int = 2, fontFormats: Iterable[str] = frozenset(['otf', 'ttf'])) -> None:
-	"""You can compile Fira Code fonts in both OTF and TTF formats from Glyphs source files.
+def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontFormats: Iterable[str] = frozenset(['otf', 'ttf'])) -> Path:
+	"""You can compile fonts in both OTF and TTF formats from Glyphs source files.
 
 	(AI generated docstring)
 
@@ -249,10 +253,11 @@ def smithyCastsGlyphs(pathFilename: Path, workersMaximum: int = 2, fontFormats: 
 
 	"""
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		concurrencyManager.starmap(smithyFontProject, zip(repeat(pathFilename), fontFormats))
+		listPaths: list[Path] = concurrencyManager.starmap(smithyFontProject, zip(repeat(pathFilename), fontFormats))
+	return listPaths.pop()
 
-def smithyFontProject(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> None:
-	"""You can compile Fira Code fonts from Glyphs source in a specified output format.
+def smithyFontProject(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> Path:
+	"""You can compile fonts from Glyphs source in a specified output format.
 
 	(AI generated docstring)
 
@@ -299,16 +304,14 @@ def smithyFontProject(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> 
 		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map
 
 	"""
-	settingsPackage.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
+	output_dir: Path = settingsPackage.pathWorkbench / pathFilename.stem
+	output_dir.mkdir(parents=True, exist_ok=True)
 	FontProject().run_from_glyphs(
-		glyphs_path=str(pathFilename)
+		glyphs_path=pathFilename
 		, output=(fontFormat,)
-		, output_dir=str(settingsPackage.pathWorkbenchFonts)
+		, output_dir=output_dir
 		, interpolate=True
 		, autohint=False
 	)
-
-if __name__ == '__main__':
-	smithyCastsGlyphs(pathFilenameFiraCodeGlyphs, 2)
-	smithyCasts_afdko('SourceHanMono', 14)
+	return output_dir
 

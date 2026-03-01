@@ -25,23 +25,12 @@ References
 	https://docs.python.org/3/library/shutil.html#shutil.copy2
 
 """
+# ruff: noqa: D103
 from Integrated_Code_Fire import settingsPackage
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING
 import shutil
 
-if TYPE_CHECKING:
-	from collections.abc import Sequence
-
-def librarianGetsUnicode() -> Sequence[str]:  # noqa: D103
-	fontFamilyName = 'SourceHanMono'
-	filename = 'Simplified_Chinese.UTF32.map'
-	pathFilename: Path = settingsPackage.pathRoot / fontFamilyName / 'metadata' / filename
-	# Getting fonttools to read inputs of unicodes is not easy. The best luck I've had requires prefixing "U+" and removing all
-	# leading zeros. For a range, only prefix the first number.
-	return ['U+' + line[1:9] for line in pathFilename.read_text(encoding='utf-8').splitlines()]
-
-def valetCopiesFilesToWorkbenchFonts(pathRoot: PurePath, theGlob: str = '*.*') -> None:
+def valetCopiesToWorkbench(pathRoot: PurePath, theGlob: str = '*.*') -> list[Path]:
 	"""You can create `pathWorkbenchFonts` and copy files matching `theGlob` from `pathRoot` into `pathWorkbenchFonts`.
 
 	(AI generated docstring)
@@ -92,58 +81,21 @@ def valetCopiesFilesToWorkbenchFonts(pathRoot: PurePath, theGlob: str = '*.*') -
 		Internal package reference.
 
 	"""
+	listPathFilenames: list[Path] = []
 	settingsPackage.pathWorkbenchFonts.mkdir(parents=True, exist_ok=True)
 	for pathFilename in Path(pathRoot).glob(theGlob):
-		shutil.copy2(pathFilename, settingsPackage.pathWorkbenchFonts)
+		listPathFilenames.append(Path(shutil.copy2(pathFilename, settingsPackage.pathWorkbenchFonts)))  # noqa: PERF401
+	return listPathFilenames
 
-# TODO removeWorkbench: smarter, but avoid nukes, or have some way of knowing it's ok to nuke it.
-def removeWorkbench(pathRemove: Path) -> None:
-	"""You can remove `pathWorkbenchFonts` and `pathWorkbench`.
-
-	(AI generated docstring)
-
-	This function deletes each file in `pathWorkbenchFonts`, removes the
-	`pathWorkbenchFonts` directory, deletes each file in `pathWorkbench`, and
-	removes the `pathWorkbench` directory.
-
-	Returns
-	-------
-	resultNone : None
-		This function returns `None`.
-
-	Raises
-	------
-	OSError
-		Raised if a filesystem operation fails while deleting files or directories.
-
-	Examples
-	--------
-	This function is invoked by `go`.
-
-	>>> from Integrated_Code_Fire.go import go
-	>>> go()
-
-	References
-	----------
-	[1] Integrated_Code_Fire.go.go
-		Internal package reference.
-
-	"""
-	for pathFilename in settingsPackage.pathWorkbenchFonts.iterdir():
-		pathFilename.unlink()
-
-	settingsPackage.pathWorkbenchFonts.rmdir()
-
+def valetRemovesFiles(pathRemove: Path) -> None:
 	for pathFilename in pathRemove.iterdir():
 		pathFilename.unlink()
 
 	pathRemove.rmdir()
 
+def valetRemovesWorkbench() -> None:
 	for pathFilename in settingsPackage.pathWorkbench.iterdir():
 		pathFilename.unlink()
 
 	settingsPackage.pathWorkbench.rmdir()
 
-if __name__ == '__main__':
-	zz = librarianGetsUnicode()
-	print(zz[0:50])  # noqa: T201

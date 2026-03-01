@@ -29,14 +29,6 @@ wheels = [
 ]
 
 [[package]]
-name = "afdko-python-modules"
-version = "0.1.dev239+g406ca5fcd"
-source = { git = "https://github.com/adobe-type-tools/python-modules#406ca5fcdaa41ecd820cadff659cab4e9ff78dc0" }
-dependencies = [
-    { name = "afdko" },
-]
-
-[[package]]
 name = "attrs"
 version = "25.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -357,14 +349,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ee/89/d82eaf3a0ae50e1abdd3fb608d32d584489e71de4fad9e4fac69bec8e79e/glyphslib-6.12.7-py3-none-any.whl", hash = "sha256:d0176f1910e930bfdb4342a0e0a524051f76fdeb99f24971984b51303b5f3322", size = 910615, upload-time = "2026-02-12T19:14:29.26Z" },
 ]
 
-[package.optional-dependencies]
-colr = [
-    { name = "skia-pathops" },
-]
-ufo-normalization = [
-    { name = "ufonormalizer" },
-]
-
 [[package]]
 name = "huntermakespy"
 version = "0.4.1"
@@ -383,52 +367,38 @@ wheels = [
 
 [[package]]
 name = "integrated-code-fire"
-version = "0.0.3"
+version = "0.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "afdko" },
-    { name = "afdko-python-modules" },
-    { name = "brotli" },
-    { name = "defcon", extra = ["lxml", "pens"] },
     { name = "fontmake", extra = ["all"] },
     { name = "fonttools", extra = ["unicode"] },
-    { name = "glyphslib", extra = ["colr", "ufo-normalization"] },
     { name = "huntermakespy" },
     { name = "more-itertools" },
     { name = "platformdirs" },
     { name = "toolz" },
-    { name = "toolz-stubs" },
     { name = "tqdm" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "lxml-stubs" },
-    { name = "pycparser-stubs" },
+    { name = "toolz-stubs" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "afdko", specifier = ">=4.0.3" },
-    { name = "afdko-python-modules", git = "https://github.com/adobe-type-tools/python-modules" },
-    { name = "brotli", specifier = ">=1.2" },
-    { name = "defcon", extras = ["lxml", "pens"], specifier = ">=0.12.2" },
     { name = "fontmake", extras = ["all"], specifier = ">=3.11.1" },
     { name = "fonttools", extras = ["ufo", "unicode"], specifier = ">=4.61.1" },
-    { name = "glyphslib", extras = ["colr", "ufo-normalization"], specifier = ">=6.12.6" },
     { name = "huntermakespy", specifier = ">=0.4.1" },
     { name = "more-itertools", specifier = ">=10.8.0" },
     { name = "platformdirs", specifier = ">=4.9.2" },
     { name = "toolz", specifier = ">=1.1.0" },
-    { name = "toolz-stubs", specifier = ">=0.3.1" },
     { name = "tqdm", specifier = ">=4.67.3" },
 ]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "lxml-stubs", specifier = ">=0.5.1" },
-    { name = "pycparser-stubs", specifier = ">=0.0.1" },
-]
+dev = [{ name = "toolz-stubs", specifier = ">=0.3.1" }]
 
 [[package]]
 name = "isort"
@@ -481,15 +451,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/0f/85/86766dfebfa87bea0ab78e9ff7a4b4b45225df4b4d3b8cc3c03c5cd68464/lxml-6.0.2-cp314-cp314t-win32.whl", hash = "sha256:da08e7bb297b04e893d91087df19638dc7a6bb858a954b0cc2b9f5053c922312", size = 3911420, upload-time = "2025-09-22T04:03:32.198Z" },
     { url = "https://files.pythonhosted.org/packages/fe/1a/b248b355834c8e32614650b8008c69ffeb0ceb149c793961dd8c0b991bb3/lxml-6.0.2-cp314-cp314t-win_amd64.whl", hash = "sha256:252a22982dca42f6155125ac76d3432e548a7625d56f5a273ee78a5057216eca", size = 4406837, upload-time = "2025-09-22T04:03:34.027Z" },
     { url = "https://files.pythonhosted.org/packages/92/aa/df863bcc39c5e0946263454aba394de8a9084dbaff8ad143846b0d844739/lxml-6.0.2-cp314-cp314t-win_arm64.whl", hash = "sha256:bb4c1847b303835d89d785a18801a883436cdfd5dc3d62947f9c49e24f0f5a2c", size = 3822205, upload-time = "2025-09-22T04:03:36.249Z" },
-]
-
-[[package]]
-name = "lxml-stubs"
-version = "0.5.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/99/da/1a3a3e5d159b249fc2970d73437496b908de8e4716a089c69591b4ffa6fd/lxml-stubs-0.5.1.tar.gz", hash = "sha256:e0ec2aa1ce92d91278b719091ce4515c12adc1d564359dfaf81efa7d4feab79d", size = 14778, upload-time = "2024-01-10T09:37:46.521Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/c9/e0f8e4e6e8a69e5959b06499582dca6349db6769cc7fdfb8a02a7c75a9ae/lxml_stubs-0.5.1-py3-none-any.whl", hash = "sha256:1f689e5dbc4b9247cb09ae820c7d34daeb1fdbd1db06123814b856dae7787272", size = 13584, upload-time = "2024-01-10T09:37:44.931Z" },
 ]
 
 [[package]]
@@ -623,17 +584,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1b/7d/92392ff7815c21062bea51aa7b87d45576f649f16458d78b7cf94b9ab2e6/pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29", size = 103492, upload-time = "2026-01-21T14:26:51.89Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992", size = 48172, upload-time = "2026-01-21T14:26:50.693Z" },
-]
-
-[[package]]
-name = "pycparser-stubs"
-version = "0.0.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pycparser" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/ad/8ab1fe8c587d8eed762c95955e67ef1b7ed3d504ddffc69b14f335bb81c1/pycparser_stubs-0.0.1-py3-none-any.whl", hash = "sha256:da151eeadd011073f43c60b3c79550ffd4ede9d8740b7c0ef3e1ce2337fdc7d0", size = 9971, upload-time = "2024-03-01T12:59:08.144Z" },
 ]
 
 [[package]]

@@ -44,14 +44,12 @@ References
 """
 # ruff: noqa: D103
 from fontTools.ttLib import TTFont
-from Integrated_Code_Fire import name, settingsPackage
-from pathlib import Path
-from typing import TYPE_CHECKING
-import re as regex
+from Integrated_Code_Fire import settingsPackage, WeightIn
+from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from collections.abc import Iterable
 	from pathlib import Path
-
 def getMetadataByFontWeight(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
 	"""You can build a name record mapping for a given `weight`.
 
@@ -102,6 +100,12 @@ def getMetadataByFontWeight(weight: str, filenameFontFamily: str, fontFamily: st
 		16: fontFamily,
 		17: weight,
 	}
+
+name: dict[str, int] = {
+	'platformID' : 3,
+	'platEncID' : 1,
+	'langID' : 0x0409,
+}
 
 def updateFontFile(pathFilenameFont: Path) -> None:
 	"""You can update a `.ttf` font file in place.
@@ -158,7 +162,7 @@ def updateFontFile(pathFilenameFont: Path) -> None:
 	with TTFont(pathFilenameFont) as font:
 		font['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
 		font['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
-		for nameID in sorted(dictionaryNameIDToNameRecordValue):
+		for nameID in dictionaryNameIDToNameRecordValue:
 			font['name'].removeNames(nameID, name['platformID'], name['platEncID'], name['langID'])
 			font['name'].setName(dictionaryNameIDToNameRecordValue[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
 		font.save(pathFilenameFont)
@@ -198,14 +202,94 @@ def writeMetadata(listPathFilenames: list[Path]) -> None:
 	"""
 	set(map(updateFontFile, listPathFilenames))
 
-def scribeUpdatesFontMetadata(fontFamily: str = 'FrankenFont') -> None:
-	regexVersion: regex.Pattern[str] = regex.compile(r'^version\s+\([\d.]+\)', regex.MULTILINE)
+"""filenameSuffix
+cidfont.ps
+cidfontinfo
+features
+gids
+map
+otf
+sequences
+ttf
+UTF16-H
+UTF32-H
+"""
 
-	for pathFilename in sorted((settingsPackage.pathRoot / fontFamily).glob('glyphs/*.cidfontinfo')):
-		pathFilename.write_text(
-			regexVersion.sub(
-				f'version{" " * 20} ({settingsPackage.fontVersion})\n',
-				pathFilename.read_text(encoding='utf-8')
-			),
-			encoding='utf-8'
-		)
+def getFilenameStem(fontFamily: str, locale: str | None = None, style: Literal['Italic'] | None = None, weight: str | None = None) -> str:
+	notNone = None # Ironic, no?
+	return '.'.join(filter(notNone, [fontFamily, locale, style, weight]))
+
+def getGids(pathFilename: Path, *, floor: int = 0, ceiling: int | None = None, exclude: Iterable[int] = frozenset()) -> None:
+	# floor, ceiling, and exclude are unicode values
+	# floor and ceiling are inclusive
+	# 100 begincidchar
+	# <000000a0> 1
+	# 100 begincidrange
+	# <00000020> <0000007e> 1
+
+	pass
+
+dictionaryWeights: dict[str, WeightIn] = {
+	'Light': WeightIn('Light', 'Light', 'Light'),
+	'Regular': WeightIn('Regular', 'Regular', 'Regular'),
+	'Normal': WeightIn('Retina', 'Retina', 'Normal'),
+	'Medium': WeightIn('Medium', 'Medium', 'Medium'),
+	'Bold': WeightIn('SemiBold', 'SemiBold', 'Bold'),
+	'Heavy': WeightIn('Bold', 'Bold', 'Heavy'),
+}
+unicodeFiraCodeAbove0x3000: tuple[int, ...] = (12300, 12301, 57344, 57345, 57346, 57347, 57504, 57505, 57506, 57520, 57521, 57522, 57523, 60928, 60929, 60930, 60931, 60932, 60933, 60934, 60935, 60936, 60937, 60938, 60939, 65279, 65378, 65379, 65533, 120121, 127245, 127246, 127247, 127341, 127342, 127343, 127405, 127760, 129904, 129905, 129906, 129907, 129908, 129909, 129910, 129911, 129912, 129913, 129914, 129915, 129916, 129917, 129918, 129919, 129920, 129921, 129922, 129923, 129924, 129925, 129926, 129927, 129928, 129929, 129930, 129931)
+
+hmtx: dict[str, int] = {
+	'width' : 0,
+	'bearingLeft' : 1,
+	'increment' : 100,
+}
+"""Horizontal increment in font units added to left bearings and advance
+widths when integrating Source Han glyphs.
+
+(AI generated docstring)
+
+The `bearingIncrement` value is used by `applyBearingIncrementToFont` to
+translate glyph coordinates and to increase left side bearings and advance
+widths so that merged CJK glyphs have an appropriate visual offset when
+combined with Latin monospace glyphs.
+
+References
+----------
+[1] fontTools - Read the Docs
+	https://fonttools.readthedocs.io/en/latest/
+"""
+lookupAFDKOCharacterSet: dict[str, str] = {
+	'Hong_Kong': '2',
+	'Japan': '1',
+	'Korea': '3',
+	'Simplified_Chinese': '25',
+	'Taiwan': '2',
+}
+"""Locale identifiers to AFDKO makeotf character set identifiers.
+
+Maps font locale identifiers to Adobe CID character collection ROS
+(Registry-Ordering-Supplement) identifiers for use with AFDKO makeotf -cs
+argument [1].
+
+The character set identifiers correspond to:
+- '1': Adobe-Japan1 (Japanese)
+- '2': Adobe-CNS1 (Traditional Chinese: Hong Kong, Taiwan)
+- '3': Adobe-Korea1 (Korean)
+- '25': Adobe-GB1 (Simplified Chinese)
+
+References
+----------
+[1] AFDKO makeotf - Read the Docs
+	https://adobe-type-tools.github.io/afdko/AFDKO-Overview.html#makeotf
+[2] Adobe CMap Resources - GitHub
+	https://github.com/adobe-type-tools/cmap-resources
+"""
+
+if __name__ == '__main__':
+	fontFamily: str = 'SourceHanMono'
+	pathFilename: Path = settingsPackage.pathRoot / fontFamily / 'metadata' / f"{getFilenameStem(fontFamily, 'Simplified_Chinese')}.UTF32-H"
+	gids = getGids(pathFilename, floor=0x3000, ceiling=None, exclude=unicodeFiraCodeAbove0x3000)
+
+	pathFilenameHandMade: Path = settingsPackage.pathRoot / fontFamily / 'metadata' / f"{getFilenameStem(fontFamily, 'Simplified_Chinese')}.gids"
+

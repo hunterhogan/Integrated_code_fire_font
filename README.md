@@ -4,30 +4,15 @@ Integrated Code 火 is a code-centric font combining [Fira Code](https://github.
 
 （机器翻译） Integrated Code 火是一款以代码为核心设计的字体，融合了[Fira Code](https://github.com/tonsky/FiraCode)与[Source Han Mono](https://github.com/adobe-fonts/source-han-mono)的特性。其双倍间距的Source™ Han Mono字符宽度是等宽Fira Code字符的两倍，从而实现统一的代码对齐效果。
 
-## Download Integrated Code 火 简化字
+## Download 下载 Integrated Code 火 简化字
 
 Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) because they are not in the repository source code.
 
-从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译后的字体。编译后的字体不在仓库源代码中。
+请从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译后的字体，因为它们并未包含在仓库源代码中。
 
 ## Why?
 
 You want a Western and Han mono-/duospaced programming font with ligatures and consistent alignment.
-
-## Some alternative programming fonts
-
-The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
-
-### With only Western glyphs
-
-- [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
-- As of 2026 February 13, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
-
-### With CJK / Han / Unihan glyphs
-
-- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
-- [Maple Mono](https://github.com/subframe7536/maple-font)
-- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
 
 ## Font genealogy
 
@@ -41,6 +26,38 @@ The website "[Programming Fonts](https://www.programmingfonts.org/)" has preview
 
                ↘️                      ↙️
                    Integrated Code 火
+
+## The future?
+
+1. You contribute to the project?
+2. Improve configuration management.
+3. Improve and generalize flow.
+4. Weights:
+   1. Fira Code has six different weights.
+   2. Source Han Mono has seven different weights.
+   3. Monospaced Noto Sans CJK has two different weights.
+   4. Replace English-language weight names with weight values. "Regular", for example, may become "400".
+5. Investigate: some monospaced glyphs in Noto Sans CJK are updated replacements for the glyphs in Source Han Mono.
+6. Investigate: some monospaced glyphs in Source Han Code JP are updated replacements for the glyphs in Source Han Mono.
+7. Investigate: can adobe-type-tools / [CMap-resources](https://github.com/adobe-type-tools/cmap-resources) help find updated and/or new glyphs?
+8. Reduce font file size.
+9. Create versions for other languages and writing systems.
+   1. If this project were to have a well-designed process for compiling a code-centric font with Latin and simplified Chinese glyphs, it would be _relatively_ easy to expand the process to some other languages and writing systems.
+   2. There seem to be tens of thousands of compatible glyphs in Source Han Mono, Source Han Code JP, and Noto Sans CJK.
+   3. I strongly oppose forcing all writing systems to use Latin characters as the name of the writing system.
+10. Create one file: updated pan-CJK with Fira Code.
+
+### Potential font collections
+
+A tentative list of font collections and names:
+
+| Font name                 | Language              | Writing system(s)                                  |
+| ------------------------- | --------------------- | -------------------------------------------------- |
+| Integrated Code 火 日本   | Japanese              | 漢字, ひらがな, カタカナ Kanji, Hiragana, Katakana |
+| Integrated Code 火 한국인 | Hangugeo Korean       | 한글, 漢字 Hangul, Hanja                           |
+| Integrated Code 火 简化字 | Mandarin and "爱国文" | 简化字 Simplified Chinese characters               |
+| Integrated Code 火 台灣   | Mandarin              | 正體字 Straight Traditional Chinese characters     |
+| Integrated Code 火 香港   | Yue/Cantonese         | 繁體字 Complicated Traditional Chinese characters  |
 
 ## Working with the files in the repository
 
@@ -86,38 +103,20 @@ Based on the out-of-date instructions in the Source Han Mono repository, this pr
 1. Run `foundry.smithyCastsFontFamily('SourceHanMono')`.
 2. Run makeTTCLocale.cmd.
 
-## The future?
+## Some alternative programming fonts
 
-1. You contribute to the project?
-2. Improve configuration management.
-3. Improve and generalize flow.
-4. Weights:
-   1. Fira Code has six different weights.
-   2. Source Han Mono has seven different weights.
-   3. Monospaced Noto Sans CJK has two different weights.
-   4. Replace English-language weight names with weight values. "Regular", for example, may become "400".
-5. Investigate: some monospaced glyphs in Noto Sans CJK are updated replacements for the glyphs in Source Han Mono.
-6. Investigate: some monospaced glyphs in Source Han Code JP are updated replacements for the glyphs in Source Han Mono.
-7. Improve font file "packaging", such as:
-   1. One file instead of six.
-   2. Smaller total size.
-8. Create versions for other languages and writing systems.
-   1. If this project were to have a well-designed process for compiling a code-centric font with Latin and simplified Chinese glyphs, it would be _relatively_ easy to expand the process to some other languages and writing systems.
-   2. There seem to be tens of thousands of compatible glyphs in Source Han Mono, Source Han Code JP, and Noto Sans CJK.
-   3. I strongly oppose forcing all writing systems to use Latin characters as the name of the writing system.
-9. Create one file: updated pan-CJK with Fira Code.
+The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
 
-### Potential font collections
+### With only Western glyphs
 
-A tentative list of font collections and names:
+- [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
+- As of 2026 February 13, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
 
-| Font name                 | Language              | Writing system(s)                                  |
-| ------------------------- | --------------------- | -------------------------------------------------- |
-| Integrated Code 火 日本   | Japanese              | 漢字, ひらがな, カタカナ Kanji, Hiragana, Katakana |
-| Integrated Code 火 한국인 | Hangugeo Korean       | 한글, 漢字 Hangul, Hanja                           |
-| Integrated Code 火 简化字 | Mandarin and "爱国文" | 简化字 Simplified Chinese characters               |
-| Integrated Code 火 台灣   | Mandarin              | 正體字 Straight Traditional Chinese characters     |
-| Integrated Code 火 香港   | Yue/Cantonese         | 繁體字 Complicated Traditional Chinese characters  |
+### With CJK / Han / Unihan glyphs
+
+- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
+- [Maple Mono](https://github.com/subframe7536/maple-font)
+- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
 
 ## Legal stuff
 

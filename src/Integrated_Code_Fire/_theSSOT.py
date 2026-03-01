@@ -1,6 +1,6 @@
 from fontTools import subset
 from hunterMakesPy import PackageSettings as humpy_PackageSettings
-from Integrated_Code_Fire import WeightIn
+from Integrated_Code_Fire import LocaleIn
 from pathlib import Path
 from socket import gethostname
 from sys import modules as sysModules
@@ -9,7 +9,7 @@ import dataclasses
 import platformdirs
 
 #======== Eliminate hardcoding, which sometimes means adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.003
+fontVersionHARDCODED: float = 0.004
 # NOTE Update this? ^^^^^^^^^^^^^^^
 
 fontLocale한국인HARDCODED: str = '한국인'
@@ -19,15 +19,15 @@ fontLocale简化字HARDCODED: str = '简化字'
 fontLocale香港HARDCODED: str = '香港'
 
 subsetOptionsHARDCODED = subset.Options(
-	glyph_names = True,
+	drop_tables = [],
+	glyph_names = False,
+	layout_features='*',
 	legacy_cmap = True,
 	name_IDs='*',
 	name_languages='*',
 	name_legacy = True,
 	passthrough_tables = True,
-	drop_tables = [],
 	symbol_cmap = True,
-	layout_features='*',
 )
 
 if 'google.colab' in sysModules:
@@ -47,9 +47,9 @@ class PackageSettings(humpy_PackageSettings):
 	unitsPerEm: int = 1000
 	fontVersion: float = fontVersionHARDCODED
 	pathRoot: Path = pathRootHARDCODED
-	listLocales: ClassVar[list[str]] = ['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan']
-	listWeights: ClassVar[list[str]] = ['ExtraLight', 'Light', 'Normal', 'Regular', 'Medium', 'Bold', 'Heavy']
-	listStyles: ClassVar[list[Literal['Italic'] | None]] = [None, 'Italic']
+	listLocales: ClassVar[list[str]] = ['Simplified_Chinese'] #, 'Hong_Kong', 'Japan', 'Korea', 'Taiwan']
+	listWeights: ClassVar[list[str]] = ['Light', 'Normal', 'Regular', 'Medium', 'Bold', 'Heavy'] #, 'ExtraLight']
+	listStyles: ClassVar[list[Literal['Italic'] | None]] = [None] #, 'Italic']
 
 	fontLocale한국인: dataclasses.InitVar[str] = fontLocale한국인HARDCODED
 	fontLocale台湾: dataclasses.InitVar[str] = fontLocale台湾HARDCODED
@@ -74,7 +74,7 @@ class PackageSettings(humpy_PackageSettings):
 	filenameFontFamilyLocale香港: str = dataclasses.field(init=False)
 	filenameFontFamily: str = dataclasses.field(init=False)
 
-	def __post_init__( self, identifierPackageFALLBACK: str, fontLocale한국인: str, fontLocale台湾: str, fontLocale日本: str, fontLocale简化字: str, fontLocale香港: str ) -> None:
+	def __post_init__(self, identifierPackageFALLBACK: str, fontLocale한국인: str, fontLocale台湾: str, fontLocale日本: str, fontLocale简化字: str, fontLocale香港: str) -> None:
 		super().__post_init__(identifierPackageFALLBACK)
 
 		self.pathRoot = self.pathRoot / self.identifierPackage
@@ -98,91 +98,12 @@ class PackageSettings(humpy_PackageSettings):
 		self.filenameFontFamilyLocale香港 = self.fontFamilyLocale香港.replace(' ', '')
 		self.filenameFontFamily = self.fontFamily.replace(' ', '')
 
-
 #-------- Package settings. ---------------------------------------------
 
 settingsPackage = PackageSettings('Integrated_Code_Fire')
 
 #======== Centralized settings that have not yet found their home, such as in `settingsPackage`. ========
 
-# TODO These ranges are incomplete. Figure out the correct way to subset Source Han Mono.
-unicodeSC: tuple[str, ...] = (
-	'3000-300B',
-	'300E-DFFF',
-	'E004-E09F',
-	'E0A3-E0AF',
-	'E0B4-EDFF',
-	'EE0C-FEFE',
-	'FF00-FF61',
-	'FF64-FFFC',
-	'FFFE-FFFF',
-	)
-
-dictionaryWeights: dict[str, WeightIn] = {
-	'Light': WeightIn('Light', 'Light'),
-	'Regular': WeightIn('Regular', 'Regular'),
-	'Retina': WeightIn('Retina', 'Normal'),
-	'Medium': WeightIn('Medium', 'Medium'),
-	'SemiBold': WeightIn('SemiBold', 'Bold'),
-	'Bold': WeightIn('Bold', 'Heavy'),
-}
-
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 pathFilenameFiraCodeGlyphs: Path = settingsPackage.pathRoot / 'FiraCode' / 'FiraCode.glyphs'
-name: dict[str, int] = {
-	'platformID' : 3,
-	'platEncID' : 1,
-	'langID' : 0x0409,
-}
-hmtx: dict[str, int] = {
-	'width' : 0,
-	'bearingLeft' : 1,
-	'increment' : 100,
-}
-"""Horizontal increment in font units added to left bearings and advance
-widths when integrating Source Han glyphs.
-
-(AI generated docstring)
-
-The `bearingIncrement` value is used by `applyBearingIncrementToFont` to
-translate glyph coordinates and to increase left side bearings and advance
-widths so that merged CJK glyphs have an appropriate visual offset when
-combined with Latin monospace glyphs.
-
-References
-----------
-[1] fontTools - Read the Docs
-	https://fonttools.readthedocs.io/en/latest/
-"""
-maximumErrorUnitsPerEm: float = 1.0
-reverseContourDirection: bool = True
-
-postTableFormat: float = 2.0
-
-lookupAFDKOCharacterSet: dict[str, str] = {
-	'Hong_Kong': '2',
-	'Japan': '1',
-	'Korea': '3',
-	'Simplified_Chinese': '25',
-	'Taiwan': '2',
-}
-"""Locale identifiers to AFDKO makeotf character set identifiers.
-
-Maps font locale identifiers to Adobe CID character collection ROS
-(Registry-Ordering-Supplement) identifiers for use with AFDKO makeotf -cs
-argument [1].
-
-The character set identifiers correspond to:
-- '1': Adobe-Japan1 (Japanese)
-- '2': Adobe-CNS1 (Traditional Chinese: Hong Kong, Taiwan)
-- '3': Adobe-Korea1 (Korean)
-- '25': Adobe-GB1 (Simplified Chinese)
-
-References
-----------
-[1] AFDKO makeotf - Read the Docs
-	https://adobe-type-tools.github.io/afdko/AFDKO-Overview.html#makeotf
-[2] Adobe CMap Resources - GitHub
-	https://github.com/adobe-type-tools/cmap-resources
-"""

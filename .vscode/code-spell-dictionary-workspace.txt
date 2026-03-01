@@ -9,6 +9,8 @@ autohinting
 axisregistry
 babelfont
 bbox
+begincidchar
+begincidrange
 bopomofo
 byteord
 Carrois
@@ -17,8 +19,10 @@ charstring
 Charstring
 charstrings
 checkoutlinesufo
+cidchar
 cidfont
 cidfontinfo
+cidrange
 cids
 Cmap
 Codepoint
@@ -36,6 +40,8 @@ duda
 duospaced
 Edenspiekermann
 eexec
+endcidchar
+endcidrange
 FMNDB
 fontbakery
 fontforge
