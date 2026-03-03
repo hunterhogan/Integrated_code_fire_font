@@ -104,7 +104,7 @@ def smithyCasts_afdko(fontFamily: str = 'SourceHanMono', workersMaximum: int = 1
 	"""  # noqa: RUF002
 	with Pool(processes=workersMaximum) as concurrencyManager:
 		listPathFilename: list[Path] = concurrencyManager.starmap(smithy_makeotf
-			, CartesianProduct([fontFamily], settingsPackage.listLocales, settingsPackage.listStyles, settingsPackage.listWeights))
+			, CartesianProduct([fontFamily], settingsPackage.theLocales, settingsPackage.theStyles, settingsPackage.theWeights))
 
 	return listPathFilename
 

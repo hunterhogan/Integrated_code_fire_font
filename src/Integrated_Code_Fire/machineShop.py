@@ -1,18 +1,20 @@
-# ruff: noqa D100
 from afdko.otf2ttf import otf_to_ttf
 from fontTools import subset
 from fontTools.ttLib import scaleUpem, TTFont
-from fontTools.ttLib.tables._g_l_y_f import Glyph
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import settingsPackage
 from Integrated_Code_Fire._theSSOT import subsetOptionsHARDCODED
 from Integrated_Code_Fire.archivist import hmtx
-from pathlib import Path
 from tlz.dicttoolz import merge  # pyright: ignore[reportMissingModuleSource]
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+	from fontTools.ttLib.tables._g_l_y_f import Glyph
+	from pathlib import Path
 
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 
-def getDictionaryFontsScaled(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
+def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 	"""weight: TTFont."""
 	dictionaryFontsScaled: dict[str, TTFont] = {}
 	for pathFilename in pathFonts.glob(theGlob):
@@ -21,7 +23,7 @@ def getDictionaryFontsScaled(pathFonts: Path, theGlob: str) -> dict[str, TTFont]
 		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
 	return dictionaryFontsScaled
 
-def machinistSubsetsOTF(pathFilename: Path, gids: list[int], unicodes: list[int]) -> TTFont:
+def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]) -> TTFont:
 	ttFont: TTFont = TTFont(pathFilename)
 	subsetter = subset.Subsetter(subsetOptions)
 	subsetter.populate(gids = gids, unicodes = unicodes)
@@ -86,26 +88,20 @@ def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
 	"""
 	GlyphOrder: list[str] = ttFont.getGlyphOrder()
 	glyphsAppend: list[str] = [glyph for glyph in fontAppend.getGlyphOrder() if glyph not in frozenset(GlyphOrder)]
-	cmapHan: dict[int, str] = raiseIfNone(fontAppend.getBestCmap())
+	cmapAppend: dict[int, str] = raiseIfNone(fontAppend.getBestCmap())
 
 	for glyph in glyphsAppend:
-		ttFont['glyf'].glyphs[glyph] = fontAppend['glyf'].glyphs[glyph]
 		ttFont['hmtx'][glyph] = fontAppend['hmtx'][glyph]
+
+	ttFont['glyf'].glyphs = merge(fontAppend['glyf'].glyphs, ttFont['glyf'].glyphs)
 
 	ttFont.setGlyphOrder(GlyphOrder + glyphsAppend)
 	ttFont['maxp'].numGlyphs = len(ttFont.getGlyphOrder())
 
 	for table in ttFont['cmap'].tables:
 		if table.format == 4:
+			del table
 			continue
 		if not table.isUnicode():
 			continue
-		table.cmap = merge(cmapHan, table.cmap)
-
-	ttFont['OS/2'].recalcAvgCharWidth(ttFont)
-	ttFont['OS/2'].recalcUnicodeRanges(ttFont)
-	ttFont['OS/2'].recalcCodePageRanges(ttFont)
-
-	ttFont.recalcBBoxes = True
-	ttFont.recalcTimestamp = True
-	ttFont['hhea'].recalc(ttFont)
+		table.cmap = merge(cmapAppend, table.cmap)

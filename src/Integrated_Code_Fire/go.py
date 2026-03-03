@@ -1,4 +1,3 @@
-# ruff: noqa: D103
 """You can use this module to run the Integrated_Code_Fire build assembly line.
 
 (AI generated docstring)
@@ -34,13 +33,13 @@ References
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import pathFilenameFiraCodeGlyphs, settingsPackage
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
-from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
-from Integrated_Code_Fire.machineShop import getDictionaryFontsScaled
+from Integrated_Code_Fire.logistics import makeAssets, valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
+from Integrated_Code_Fire.machineShop import machinistScalesFonts
 from Integrated_Code_Fire.mergeFonts import mergeFonts
-from Integrated_Code_Fire.shipping import makeAssets
 from pathlib import Path
 from typing import TYPE_CHECKING
 import sys
+import time
 
 if TYPE_CHECKING:
 	from fontTools.ttLib.ttFont import TTFont
@@ -53,22 +52,24 @@ def go(workersMaximum: int = 1) -> None:
 	fontFormatFiraCode: str = 'ttf'
 	pathFiraCode: Path = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphs, workersMaximum, [fontFormatFiraCode])
 
-	fontFamilyOTC: str = 'SourceHanMono'
-	listPathFilenames: list[Path] = smithyCasts_afdko(fontFamilyOTC, workersMaximum)
+	fontFamilyCID: str = 'SourceHanMono'
+	listPathFilenames: list[Path] = smithyCasts_afdko(fontFamilyCID, workersMaximum)
 	pathWorkbenchFontFamily: Path = listPathFilenames[0].parent
 	listPathFilenames = valetCopiesToWorkbench(pathWorkbenchFontFamily, "*.otf")
 	valetRemovesFiles(pathWorkbenchFontFamily)
 
-	dictionaryFontsScaled: dict[str, TTFont] = getDictionaryFontsScaled(pathFiraCode, f"*.{fontFormatFiraCode}")
+	dictionaryFontsScaled: dict[str, TTFont] = machinistScalesFonts(pathFiraCode, f"*.{fontFormatFiraCode}")
 	valetRemovesFiles(pathFiraCode)
 
-	listPathFilenames = mergeFonts(fontFamilyOTC, dictionaryFontsScaled, workersMaximum)
+	listPathFilenames = mergeFonts(fontFamilyCID, dictionaryFontsScaled, workersMaximum)
 
-	filenameZIP: str = "IntegratedCodeFire"
-	makeAssets(listPathFilenames, filenameZIP)
+	filenameStemZIP: str = "IntegratedCodeFire"
+	makeAssets(listPathFilenames, filenameStemZIP, workersMaximum)
 
 	valetRemovesFiles(settingsPackage.pathWorkbenchFonts)
 	valetRemovesWorkbench()
 
 if __name__ == '__main__':
+	timeStart = time.perf_counter()
 	go(14)
+	sys.stdout.write(f"{ansiColors.BlackOnYellow}Done in {time.perf_counter() - timeStart:.2f} seconds.{ansiColorReset}\n")

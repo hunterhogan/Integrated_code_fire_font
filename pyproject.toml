@@ -1,6 +1,6 @@
 [project]
 name = "Integrated_Code_Fire"
-version = "0.0.6"
+version = "0.0.7"
 description = "Integrated Code 火 is a code-centric font combining Fira Code and Source Han Mono."
 readme = "README.md"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
@@ -13,7 +13,6 @@ dependencies = [
     "fonttools[ufo,unicode]>=4.61.1",
     "hunterMakesPy>=0.4.1",
     "more-itertools>=10.8.0",
-    "platformdirs>=4.9.2",
     "toolz>=1.1.0",
     "tqdm>=4.67.3",
 ]

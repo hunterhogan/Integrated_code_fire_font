@@ -65,6 +65,7 @@ gname
 GOADB
 GPOS
 GSUB
+Halfwidth
 Hangugeo
 Hanja
 Hasklig
@@ -74,8 +75,10 @@ hmtx
 hotconv
 hsbw
 Iosevka
+Jamo
 JANG
 KANG
+Kangxi
 keepends
 layercontents
 Layercontents
@@ -124,7 +127,9 @@ shutil
 sidebearing
 Sidebearing
 skco
+sofunty
 statmake
+subfont
 subroutinization
 subroutinize
 Subsetter

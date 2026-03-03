@@ -1,40 +1,26 @@
 # Integrated Code 火
 
-Integrated Code 火 is a code-centric monospaced font combining [Fira Code](https://github.com/tonsky/FiraCode) and one of five locales from [Source™ Han Mono](https://github.com/adobe-fonts/source-han-mono).
-
-(机器翻译) Integrated Code 火是一款以代码为核心的等宽字体，融合了[Fira Code](https://github.com/tonsky/FiraCode)与[Source™ Han Mono](https://github.com/adobe-fonts/source-han-mono)的五种字形方案之一。
-
-통합 코드 火는 [Fira Code](https://github.com/tonsky/FiraCode)와 [Source™ Han Mono](https://github.com/adobe-fonts/source-han-mono)의 다섯 가지 로케일 중 하나를 결합한 코드 중심의 고정폭 폰트입니다.
-
-統合コード火は、コード中心の等幅フォントであり、[Fira Code](https://github.com/tonsky/FiraCode) と [Source™ Han Mono](https://github.com/adobe-fonts/source-han-mono) の5つのロケールのうち1つを組み合わせたものです。
-
-(機器翻譯。) Integrated Code 火 是一款以程式碼為核心的等寬字型，融合了 [Fira Code](https://github.com/tonsky/FiraCode) 與 [Source™ Han Mono](https://github.com/adobe-fonts/source-han-mono) 五種地區字型之一。
-
-（機器翻譯。）Integrated Code 火是一款以程式碼為中心的等寬字體，結合了 [Fira Code](https://github.com/tonsky/FiraCode) 和 [Source™ Han Mono](https://github.com/adobe-fonts/source-han-mono) 的五個語言版本之一。
+| Integrated Code 火 ➡️     | ➡️ is a monospaced programming font ➡️                | ➡️ plus  ⤵️          |
+| ------------------------- | ----------------------------------------------------- | -------------------- |
+| Integrated Code 火 日本   | 日本語スクリプトを備えた等幅プログラミング フォント。 | Japanese.            |
+| Integrated Code 火 한국인 | 한글과 한자를 포함하는 고정폭 프로그래밍 폰트.        | Korean.              |
+| Integrated Code 火 简化字 | 一款采用简体中文字符的等宽编程字体。                  | simplified Chinese.  |
+| Integrated Code 火 台灣   | 一款包含繁體中文字元的等寬程式設計字型。              | traditional Chinese. |
+| Integrated Code 火 香港   | 一個等間隔嘅編程字體，有傳統嘅粵語字。                | Cantonese.           |
 
 ## Download 下载 다운로드 ダウンロード 下載 Integrated Code 火
 
-Download the compiled fonts from the [latest release](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) because they are not in the repository source code.
+Download fonts from ["Releases"](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest), not the repository source code.
 
-请从[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下载编译后的字体，因为它们并未包含在仓库源代码中。
+請從 ["Releases" / 發行版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下載字型，而非儲存庫的原始碼。
 
-리포지토리 소스 코드에는 포함되어 있지 않으므로 [최신 릴리스](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)에서 컴파일된 글꼴을 다운로드하십시오.
+["Releases" / 릴리스](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 에서 글꼴을 다운로드하십시오. 저장소 소스 코드가 아닙니다.
 
-コンパイル済みフォントはリポジトリのソースコードに含まれていないため、[最新版](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)からダウンロードしてください。
+フォントはリポジトリのソースコードではなく、["Releases" / リリース](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) からダウンロードしてください。
 
-請從[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下載編譯後的字型，因為它們並未包含在儲存庫的原始碼中。
+请从 ["Releases" / 发布](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下载字体，而非仓库源代码。
 
-喺[最新版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest)下載編譯咗嘅字體，因為佢哋唔喺存儲庫源碼入面。
-
-### Locale variants
-
-| Font name                 | ascii name         | Language              | Writing system(s)                                  |
-| ------------------------- | ------------------ | --------------------- | -------------------------------------------------- |
-| Integrated Code 火 日本   | Japan              | Japanese              | 漢字, ひらがな, カタカナ Kanji, Hiragana, Katakana |
-| Integrated Code 火 한국인 | Korea              | Hangugeo Korean       | 한글, 漢字 Hangul, Hanja                           |
-| Integrated Code 火 简化字 | Simplified_Chinese | Mandarin and "爱国文" | 简化字 Simplified Chinese characters               |
-| Integrated Code 火 台灣   | Taiwan             | Mandarin              | 正體字 Straight Traditional Chinese characters     |
-| Integrated Code 火 香港   | Hong_Kong          | Yue/Cantonese         | 繁體字 Complicated Traditional Chinese characters  |
+請喺 ["Releases" / 發佈版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 度下載字體,唔好喺 原始碼 倉庫度攞。
 
 ## Font genealogy
 
@@ -52,18 +38,29 @@ Download the compiled fonts from the [latest release](https://github.com/hunterh
 ## The future?
 
 1. You contribute to the project?
-2. Improve configuration management.
-3. Improve and generalize flow.
-4. Weights:
+2. Improve non-English text.
+3. Improve configuration management.
+4. Improve and generalize flow.
+5. Weights:
    1. Fira Code has six different weights.
    2. Source Han Mono has seven different weights.
    3. Monospaced Noto Sans CJK has two different weights.
    4. Replace English-language weight names with weight values. "Regular", for example, may become "400".
-5. Investigate: some monospaced glyphs in Noto Sans CJK are updated replacements for the glyphs in Source Han Mono.
-6. Investigate: some monospaced glyphs in Source Han Code JP are updated replacements for the glyphs in Source Han Mono.
-7. Investigate: can adobe-type-tools / [CMap-resources](https://github.com/adobe-type-tools/cmap-resources) help find updated and/or new glyphs?
-8. Reduce font file size.
-9. Create one file: updated pan-CJK with Fira Code.
+6. Glyphs:
+   1. Noto Sans CJK may have updated and/or new glyphs.
+   2. Source Han Code JP likely has updated and new glyphs.
+   3. Investigate: can adobe-type-tools / [CMap-resources](https://github.com/adobe-type-tools/cmap-resources) help find updated and/or new glyphs?
+7. Reduce font file size.
+8. Formats:
+   1. ❓.otf
+   2. ❓.woff2
+   3. ❓Keep .ttc
+   4. ❓abc
+   5. ❓CMap
+   6. ❓abbr.
+   7. ❓cmap
+   8. ❓idk wtf
+9. Create a pan-CJK variant.
 
 ## Working with the files in the repository
 
@@ -99,15 +96,17 @@ Run go.py.
 
 I followed the instructions seven-year-old instructions in the Source Han Mono repository as closely as possible, except I didn't "subroutinize", which should hypothetically produce a similar file to their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger, which is expected, but I can't figure out if my file is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
 
-1. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
-2. Run makeTTCSuper.cmd.
+1. Maximize locales, styles, and weights in "_theSSOT.py".
+2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
+3. Run makeTTCSuper.cmd.
 
 ### Make Five Source Han Mono Locale TTC files
 
 Based on the out-of-date instructions in the Source Han Mono repository, this process produces one TTC file for each of the five locales in Source Han Mono. The files seem to work, and they are far smaller than the comprehensive TTC file.
 
-1. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
-2. Run makeTTCLocale.cmd.
+1. Maximize locales, styles, and weights in "_theSSOT.py".
+2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
+3. Run makeTTCLocale.cmd.
 
 ## Some other programming fonts
 

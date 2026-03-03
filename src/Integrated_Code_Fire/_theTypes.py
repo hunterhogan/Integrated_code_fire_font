@@ -2,9 +2,10 @@ from typing import NamedTuple
 
 class LocaleIn(NamedTuple):
 	ascii: str
-	IntegratedCode: str
+	IntegratedCode火: str
 
 class WeightIn(NamedTuple):
-	IntegratedCode: str
 	FiraCode: str
+	fontFamilyCID: str
+	IntegratedCode火: str
 	SourceHanMono: str
