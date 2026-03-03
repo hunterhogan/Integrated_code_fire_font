@@ -94,7 +94,7 @@ Run go.py.
 
 ### Make Source Han Mono Comprehensive TTC file
 
-I followed the instructions seven-year-old instructions in the Source Han Mono repository as closely as possible, except I didn't "subroutinize", which should hypothetically produce a similar file to their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger, which is expected, but I can't figure out if my file is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
+I followed the seven-year-old instructions in the Source Han Mono repository as closely as possible, except I didn't "subroutinize", which should hypothetically produce a similar file to their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger, which is expected, but I can't figure out if my file is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
 
 1. Maximize locales, styles, and weights in "_theSSOT.py".
 2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
@@ -102,7 +102,7 @@ I followed the instructions seven-year-old instructions in the Source Han Mono r
 
 ### Make Five Source Han Mono Locale TTC files
 
-Based on the out-of-date instructions in the Source Han Mono repository, this process produces one TTC file for each of the five locales in Source Han Mono. The files seem to work, and they are far smaller than the comprehensive TTC file.
+Based on the out-of-date instructions in the Source Han Mono repository, this process produces one TTC file for each of the five locales in Source Han Mono. The files seem to work, and they are far smaller than the comprehensive TTC file. These files could be useful to you, and [you can download the fonts](https://github.com/hunterhogan/Integrated_code_fire_font/releases/tag/SourceHanMono1.002) from the "Release."
 
 1. Maximize locales, styles, and weights in "_theSSOT.py".
 2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
