@@ -92,14 +92,6 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 
 Run go.py.
 
-### Make Source Han Mono Comprehensive TTC file
-
-I followed the seven-year-old instructions in the Source Han Mono repository as closely as possible, except I didn't "subroutinize", which should hypothetically produce a similar file to their [Release](https://github.com/adobe-fonts/source-han-mono/releases/tag/1.002). My file is larger, which is expected, but I can't figure out if my file is fully functional or in what other ways it differs from the official release. I created this unnecessary process to learn how to make TTC files.
-
-1. Maximize locales, styles, and weights in "_theSSOT.py".
-2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
-3. Run makeTTCSuper.cmd.
-
 ### Make Five Source Han Mono Locale TTC files
 
 Based on the out-of-date instructions in the Source Han Mono repository, this process produces one TTC file for each of the five locales in Source Han Mono. The files seem to work, and they are far smaller than the comprehensive TTC file. These files could be useful to you, and [you can download the fonts](https://github.com/hunterhogan/Integrated_code_fire_font/releases/tag/SourceHanMono1.002) from the "Release."
@@ -115,7 +107,7 @@ The website "[Programming Fonts](https://www.programmingfonts.org/)" has preview
 ### With only Western glyphs
 
 - [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
-- As of 2026 February 13, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
+- As of 2026 March 3, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
 
 ### With CJK / Han / Unihan glyphs
 
