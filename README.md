@@ -6,7 +6,7 @@
 | Integrated Code 火 한국인 | 한글과 한자를 포함하는 고정폭 프로그래밍 폰트.        | Korean.              |
 | Integrated Code 火 简化字 | 一款采用简体中文字符的等宽编程字体。                  | simplified Chinese.  |
 | Integrated Code 火 台灣   | 一款包含繁體中文字元的等寬程式設計字型。              | traditional Chinese. |
-| Integrated Code 火 香港   | 一個等間隔嘅編程字體，有傳統嘅粵語字。                | Cantonese.           |
+| Integrated Code 火 香港   | 一個等間隔嘅編程字體, 有傳統嘅粵語字。                | Cantonese.           |
 
 ## Download 下载 다운로드 ダウンロード 下載 Integrated Code 火
 
@@ -75,6 +75,9 @@ The website "[Programming Fonts](https://www.programmingfonts.org/)" has preview
    8. ❓cmap
    9. ❓wolf9
 9. Create a pan-CJK variant.
+10. Spacing:
+    1. ❓Eliminate all full width spaces?
+    2. In "words" with mixed Latin and CJK, shift the CJK towards the Latin.
 
 ## Working with the files in the repository
 

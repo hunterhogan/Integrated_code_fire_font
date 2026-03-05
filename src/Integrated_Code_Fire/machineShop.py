@@ -53,7 +53,7 @@ def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 
 	(AI generated docstring)
 
-	You can use this function to load font files matching `theGlob` from `pathFonts` and scale each font to
+	You can load font files matching `theGlob` from `pathFonts` and scale each font to
 	`settingsPackage.unitsPerEm` [1]. The function returns a mapping from weight identifier to scaled `TTFont` [2] instance.
 	Weight identifiers are extracted from filenames by removing the `pathFonts.name` prefix.
 
@@ -91,7 +91,7 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 
 	(AI generated docstring)
 
-	You can use this function to load a CID font file, subset the font to specified glyph IDs and Unicode codepoints using
+	You can load a CID font file, subset the font to specified glyph IDs and Unicode codepoints using
 	`fontTools.subset.Subsetter` [1], convert the result to TrueType format using `afdko.otf2ttf.otf_to_ttf` [2], and adjust
 	horizontal side bearings by the increment specified in `hmtx['increment']`.
 
@@ -132,7 +132,7 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 
 	(AI generated docstring)
 
-	You can use this function to adjust the horizontal side bearings of all glyphs in a font by adding `modifyPerSide` to both the
+	You can adjust the horizontal side bearings of all glyphs in a font by adding `modifyPerSide` to both the
 	left and right side bearings. The function translates glyph coordinates for simple glyphs, adjusts component positions for
 	composite glyphs, recalculates bounds, and updates the `hmtx` table [1].
 
@@ -167,7 +167,7 @@ def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
 
 	(AI generated docstring)
 
-	You can use this function to merge glyphs, metrics, and Unicode mappings from `fontAppend` into `ttFont`. The function appends
+	You can merge glyphs, metrics, and Unicode mappings from `fontAppend` into `ttFont`. The function appends
 	glyphs that do not already exist in `ttFont`, copies horizontal metrics from the `hmtx` table [1], merges the `glyf` table
 	[1], updates the glyph order, and merges Unicode codepoint mappings from all `cmap` subtables [1].
 

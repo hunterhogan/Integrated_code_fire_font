@@ -46,7 +46,7 @@ def mergeFonts(fontFamilyCID: str, dictionaryFontsScaled: dict[str, TTFont], wor
 
 	(AI generated docstring)
 
-	You can use this function to create the merged Integrated Code 火 font files. The function loads character subset definitions,
+	You can create the merged Integrated Code 火 font files. The function loads character subset definitions,
 	creates copies of scaled Fira Code fonts, subsets Source Han Mono fonts for each locale and style combination, merges the
 	fonts, updates OpenType metadata, recalculates font metrics, and writes the result to disk. The function uses
 	`concurrent.futures.ProcessPoolExecutor` [1] to parallelize merging operations across all locale, style, and weight

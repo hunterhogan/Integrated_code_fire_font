@@ -47,7 +47,7 @@ def packerMakesAssets(listPathFilenames: Iterable[Path], filenameStem: str, work
 
 	(AI generated docstring)
 
-	You can use this function to create locale-specific ZIP archives containing merged Integrated Code 火 fonts. The function
+	You can create locale-specific ZIP archives containing merged Integrated Code 火 fonts. The function
 	creates `pathAssets` [1], uses `concurrent.futures.ProcessPoolExecutor` [2] to invoke `packerMakesAssetsLocale` for each
 	locale in parallel, and returns the set of created ZIP archive paths.
 
@@ -104,7 +104,7 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 
 	(AI generated docstring)
 
-	You can use this function to create a ZIP archive containing all merged font files for a specific locale. The function filters
+	You can create a ZIP archive containing all merged font files for a specific locale. The function filters
 	`listPathFilenames` to include only files whose stems contain `localeIn.IntegratedCode火` and writes the filtered files to
 	`pathFilenameZIP` [1].
 
@@ -201,7 +201,7 @@ def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemov
 
 	(AI generated docstring)
 
-	You can use this function to remove files specified in `listPathFilenames` or all files in the directory `pathRemove`. If
+	You can remove files specified in `listPathFilenames` or all files in the directory `pathRemove`. If
 	`pathRemove` is provided, the function removes all files in `pathRemove` and then removes the directory itself.
 
 	Parameters
@@ -231,7 +231,7 @@ def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemov
 def valetRemovesWorkbench() -> None:
 	"""Remove the workbench directory and all contained files.
 
-	You can use this function to remove `settingsPackage.pathWorkbench` [1] and all files within the workbench directory. The
+	You can remove `settingsPackage.pathWorkbench` [1] and all files within the workbench directory. The
 	function unlinks all files in the directory and then removes the directory itself. The function intentionally cannot remove
 	subdirectories, so if a subdirectory is present in the workbench, an exception will be raised. If that happens, it is a signal
 	that something is flawed in the font creation process or that something went wrong during this creation process.

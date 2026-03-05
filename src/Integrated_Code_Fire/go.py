@@ -45,7 +45,7 @@ def go(workersMaximum: int = 1) -> None:
 
 	(AI generated docstring)
 
-	You can use this function to execute all stages of the font build process: compile Fira Code from Glyphs source using
+	You can execute all stages of the font build process: compile Fira Code from Glyphs source using
 	`smithyCastsFromGlyphs` [1], compile Source Han Mono from CIDFont source using `smithyCasts_afdko` [1], stage compiled CID
 	fonts to the workbench, scale Fira Code fonts to the target units-per-em value using `machinistScalesFonts` [2], merge scaled
 	Fira Code with subsetted Source Han Mono using `mergeFonts` [3], package merged fonts into locale-specific ZIP archives using
