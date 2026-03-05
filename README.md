@@ -1,6 +1,6 @@
 # Integrated Code 火
 
-| Integrated Code 火 ➡️     | ➡️ is a monospaced programming font ➡️                | ➡️ plus  ⤵️          |
+| Integrated Code 火 🡲      | 🡲 is a monospaced programming font 🡲                  | 🡲 plus 🡳             |
 | ------------------------- | ----------------------------------------------------- | -------------------- |
 | Integrated Code 火 日本   | 日本語スクリプトを備えた等幅プログラミング フォント。 | Japanese.            |
 | Integrated Code 火 한국인 | 한글과 한자를 포함하는 고정폭 프로그래밍 폰트.        | Korean.              |
@@ -10,30 +10,41 @@
 
 ## Download 下载 다운로드 ダウンロード 下載 Integrated Code 火
 
-Download fonts from ["Releases"](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest), not the repository source code.
-
-請從 ["Releases" / 發行版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下載字型，而非儲存庫的原始碼。
-
-["Releases" / 릴리스](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 에서 글꼴을 다운로드하십시오. 저장소 소스 코드가 아닙니다.
-
-フォントはリポジトリのソースコードではなく、["Releases" / リリース](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) からダウンロードしてください。
-
-请从 ["Releases" / 发布](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下载字体，而非仓库源代码。
-
-請喺 ["Releases" / 發佈版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 度下載字體,唔好喺 原始碼 倉庫度攞。
+| Download fonts from ["Releases"](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest), not the repository source code.                                  |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 請從 ["Releases" / 發行版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下載字型，而非儲存庫的原始碼。                                        |
+| ["Releases" / 릴리스](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 에서 글꼴을 다운로드하십시오. 저장소 소스 코드가 아닙니다.                   |
+| フォントはリポジトリのソースコードではなく、["Releases" / リリース](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) からダウンロードしてください。 |
+| 请从 ["Releases" / 发布](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下载字体，而非仓库源代码。                                                |
+| 請喺 ["Releases" / 發佈版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 度下載字體,唔好喺 原始碼 倉庫度攞。                                   |
 
 ## Font genealogy
 
 | "Fira"                                                  | "Source"                                                          |     | "Source Han"                                                            |     | "Noto"                                                      |
 | ------------------------------------------------------- | ----------------------------------------------------------------- | --- | ----------------------------------------------------------------------- | --- | ----------------------------------------------------------- |
-| [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ↔️  | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
-| ⬇️                                                      | ⬇️                                                                |     | ⬇️                                                                      |     | ⬇️                                                          |
-| [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | ➡️  | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
-| ⬇️                                                      |                                                                   | ↘️  | ⬇️                                                                      |     |                                                             |
+| [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ⮀   | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
+| 🡳                                                       | 🡳                                                                 |     | 🡳                                                                       |     | 🡳                                                           |
+| [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | 🡲   | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
+| 🡳                                                       |                                                                   | 🡮   | 🡳                                                                       |     |                                                             |
 | [Fira Code HH](https://github.com/hunterhogan/FiraCode) |                                                                   |     | [Source Han Mono](https://github.com/adobe-fonts/source-han-mono)       |     |                                                             |
 
-               ↘️                      ↙️
+               🡮                      🡷
                    Integrated Code 火
+
+## Some other programming fonts
+
+The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
+
+### With only Western glyphs
+
+- [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
+- As of 2026 March 3, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
+
+### With CJK / Han / Unihan glyphs
+
+- [Maple Mono](https://github.com/subframe7536/maple-font)
+- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
+- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
 
 ## The future?
 
@@ -45,21 +56,24 @@ Download fonts from ["Releases"](https://github.com/hunterhogan/Integrated_code_
    1. Fira Code has six different weights.
    2. Source Han Mono has seven different weights.
    3. Monospaced Noto Sans CJK has two different weights.
-   4. Replace English-language weight names with weight values. "Regular", for example, may become "400".
+   4. Replace English-language weight names with weight values. "Regular", for example, may become "400". Or maybe this would break something I don't understand.
 6. Glyphs:
    1. Noto Sans CJK may have updated and/or new glyphs.
    2. Source Han Code JP likely has updated and new glyphs.
-   3. Investigate: can adobe-type-tools / [CMap-resources](https://github.com/adobe-type-tools/cmap-resources) help find updated and/or new glyphs?
+   3. [GB 18030-2022](https://github.com/adobe-type-tools/Adobe-GB1/?tab=readme-ov-file#supplement-6adobe-gb1-6) defines new simplified Chinese glyphs. I suspect some of them are in Noto Sans CJK.
+   4. Investigate: [Adobe-Manga1-0 Character Collection](https://github.com/adobe-type-tools/Adobe-Manga1/).
+   5. Investigate: can adobe-type-tools / [CMap-resources](https://github.com/adobe-type-tools/cmap-resources) help find updated and/or new glyphs?
 7. Reduce font file size.
 8. Formats:
    1. ❓.otf
-   2. ❓.woff2
-   3. ❓Keep .ttc
-   4. ❓abc
-   5. ❓CMap
-   6. ❓abbr.
-   7. ❓cmap
-   8. ❓idk wtf
+   2. ❓variable font
+   3. ❓.woff2
+   4. ❓Keep .ttc
+   5. ❓abc
+   6. ❓CMap
+   7. ❓abbr.
+   8. ❓cmap
+   9. ❓wolf9
 9. Create a pan-CJK variant.
 
 ## Working with the files in the repository
@@ -99,21 +113,6 @@ Based on the out-of-date instructions in the Source Han Mono repository, this pr
 1. Maximize locales, styles, and weights in "_theSSOT.py".
 2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
 3. Run makeTTCLocale.cmd.
-
-## Some other programming fonts
-
-The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
-
-### With only Western glyphs
-
-- [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
-- As of 2026 March 3, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
-
-### With CJK / Han / Unihan glyphs
-
-- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
-- [Maple Mono](https://github.com/subframe7536/maple-font)
-- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
 
 ## Legal stuff
 

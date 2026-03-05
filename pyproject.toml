@@ -1,7 +1,7 @@
 [project]
 name = "Integrated_Code_Fire"
-version = "0.0.7"
-description = "Integrated Code 火 is a code-centric font combining Fira Code and Source Han Mono."
+version = "0.0.8"
+description = "Integrated Code 火 is a monospaced programming font with CJK languages. | 简化字 | 日本 | 한국인 | 香港 | 台灣"
 readme = "README.md"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 license = "CC-BY-NC-4.0"

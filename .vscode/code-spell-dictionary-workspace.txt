@@ -132,8 +132,11 @@ statmake
 subfont
 subroutinization
 subroutinize
+subsetted
 Subsetter
+subsetting
 Subtable
+subtables
 tcommaaccent
 Tcommaaccent
 ttfautohint
