@@ -16,6 +16,8 @@ class LocaleIn(NamedTuple):
 	"""
 	ascii: str
 	IntegratedCode火: str
+	SourceHanMono: str
+	SourceHanMonoOTC: str
 
 class WeightIn(NamedTuple):
 	"""Equivalent weight identifiers in different contexts.
@@ -37,5 +39,6 @@ class WeightIn(NamedTuple):
 	"""
 	FiraCode: str
 	fontFamilyCID: str
+	fontFamilyScaled: str
 	IntegratedCode火: str
 	SourceHanMono: str

@@ -1,10 +1,10 @@
-"""Stage files to the workbench, package release assets, and manage build artifact cleanup.
+"""Stage files to the workbench, package release assets, and manage assembly line artifact cleanup.
 
 (AI generated docstring)
 
 You can use this module to copy compiled font files to the workbench directory, package merged fonts into locale-specific ZIP
-archives, and remove temporary build artifacts. The module provides the file staging and cleanup operations used in the Integrated
-Code 火 build assembly line.
+archives, and remove temporary assembly line artifacts. The module provides the file staging and cleanup operations used in the Integrated
+Code 火 assembly line.
 
 Contents
 --------
@@ -31,8 +31,9 @@ References
 
 """
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
-from Integrated_Code_Fire import LocaleIn, settingsPackage
-from Integrated_Code_Fire.archivist import archivistGetsLocales
+from fontTools.ttLib import TTFont
+from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
+from Integrated_Code_Fire.archivist import archivistGetsLocales, archivistGetsWeights
 from pathlib import Path, PurePath
 from tqdm import tqdm
 from typing import TYPE_CHECKING
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
 	from collections.abc import Iterable
 
 # SEMIOTICS `packer`.
-def packerMakesAssets(listPathFilenames: Iterable[Path], filenameStem: str, workersMaximum: int) -> frozenset[Path]:
+def packerMakesAssets(listPathFilenames: Iterable[Path], workersMaximum: int) -> frozenset[Path]:
 	"""Package merged fonts into locale-specific ZIP archives.
 
 	(AI generated docstring)
@@ -83,22 +84,15 @@ def packerMakesAssets(listPathFilenames: Iterable[Path], filenameStem: str, work
 	with ProcessPoolExecutor(workersMaximum) as concurrencyManager:
 		for locale in settingsPackage.theLocales:
 			localeIn: LocaleIn = dictionaryLocales[locale]
-			pathFilenameZIP: Path = settingsPackage.pathAssets / f"{filenameStem}_{localeIn.ascii}.zip"
+			pathFilenameZIP: Path = settingsPackage.pathAssets / f"{settingsPackage.fontFamilyASCII.replace(' ', '')}_{localeIn.ascii}.zip"
 			listClaimTickets.append(concurrencyManager.submit(packerMakesAssetsLocale, listPathFilenames, pathFilenameZIP, localeIn))
 
 		for claimTicket in tqdm(as_completed(listClaimTickets), total = len(listClaimTickets), desc = "Making assets"):
 			listPathFilenamesAssets.extend(claimTicket.result())
 
-	"""
-	pathFilenameZIP: Path = settingsPackage.pathAssets / f"{filenameStem}.zip"
-	with ZipFile(pathFilenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipWrite:
-		for pathFilename in tqdm(listPathFilenames, desc="zipping unified font"):
-			zipWrite.write(pathFilename, arcname = pathFilename.name)
-	listPathFilenamesAssets.append(pathFilenameZIP)
-	"""
-
 	return frozenset(listPathFilenamesAssets)
 
+# TODO Learn how to create one family with all locales and weights.
 def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: Path, localeIn: LocaleIn) -> frozenset[Path]:
 	"""Package merged fonts for a single locale into a ZIP archive.
 
@@ -134,17 +128,6 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 	with ZipFile(pathFilenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipWrite:
 		for pathFilename in filter(lambda pathFilename: localeIn.IntegratedCode火 in pathFilename.stem, listPathFilenames):
 			zipWrite.write(pathFilename, arcname = pathFilename.name)
-
-			"""
-			# TODO This concept fails because I don't understand how to create one family with all locales and weights.
-			style_weight: str = pathFilename.stem.removeprefix(settingsPackage.filenameFontFamily).removeprefix(localeIn.IntegratedCode火)
-			# TODO This line fails because of Retina.
-			weight: str = next((weight for weight in settingsPackage.theWeights if weight in style_weight), 'WEIGHT')
-			style: str | None = style_weight.removesuffix(weight) or None
-			nameIDmetadata: dict[int, str] = getNameIDMetadata(getFilenameStem(None, localeIn.IntegratedCode火, style, weight, separator = ' ')
-				, settingsPackage.filenameFontFamily, settingsPackage.fontFamily)
-			updateFontFileMetadata(pathFilename, nameIDmetadata)
-			"""
 
 	return frozenset([pathFilenameZIP]) # NOTE In the future, there may be more than one asset.
 
@@ -195,6 +178,15 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 			listPathFilenamesCopied.append(pathFilename.copy_into(settingsPackage.pathWorkbenchFonts))  # noqa: PERF401
 
 	return frozenset(listPathFilenamesCopied)
+# ruff: noqa: D103
+
+def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:
+	dictionaryFontsScaled: dict[str, TTFont] = {}
+	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
+	for weight in settingsPackage.theWeights:
+		pathFilename = settingsPackage.pathWarehouse / 'scaled' / f"{dictionaryWeights[weight].fontFamilyScaled}.{fontFormat}"
+		dictionaryFontsScaled[dictionaryWeights[weight].fontFamilyScaled] = TTFont(pathFilename)
+	return dictionaryFontsScaled
 
 def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemove: Path | None = None) -> None:
 	"""Remove files from a list or directory.

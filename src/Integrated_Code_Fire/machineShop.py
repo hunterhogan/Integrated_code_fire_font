@@ -2,7 +2,7 @@
 
 (AI generated docstring)
 
-You can use this module to perform font manipulation operations in the Integrated Code 火 build assembly line. The module provides
+You can use this module to perform font manipulation operations in the Integrated Code 火 assembly line. The module provides
 functions to scale fonts to a target units-per-em value, subset CID fonts to specified glyph IDs and Unicode codepoints, adjust
 horizontal side bearings, and merge glyph outlines and metrics from one font into another.
 
@@ -37,7 +37,6 @@ from fontTools import subset
 from fontTools.ttLib import scaleUpem, TTFont
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import settingsPackage
-from Integrated_Code_Fire._theSSOT import subsetOptionsHARDCODED
 from Integrated_Code_Fire.archivist import hmtx
 from tlz.dicttoolz import merge  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING
@@ -45,8 +44,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from fontTools.ttLib.tables._g_l_y_f import Glyph
 	from pathlib import Path
-
-subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 	"""Scale multiple font files to the target units-per-em value.
@@ -86,7 +83,7 @@ def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
 	return dictionaryFontsScaled
 
-def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]) -> TTFont:
+def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
 	"""Subset a CID font to specified glyph IDs and Unicode codepoints, convert to TrueType, and adjust side bearings.
 
 	(AI generated docstring)
@@ -127,6 +124,7 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 	machinistModifiesSideBearings(ttFont, hmtx['increment'])
 	return ttFont
 
+# TODO modify without converting to TTF.
 def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 	"""Modify horizontal side bearings for all glyphs in a font.
 

@@ -4,19 +4,19 @@
 
 You can use this module to access locale and weight identifier mappings, generate standardized filename stems, create OpenType
 name record metadata, load character subset definitions, and update font file metadata. The module provides the core configuration
-and metadata management functions used throughout the Integrated Code 火 build assembly line.
+and metadata management functions used throughout the Integrated Code 火 assembly line.
 
 Contents
 --------
 Functions
 	archivistGetsLocales
-		Build mapping from locale identifiers to `LocaleIn` instances.
+		Get mapping from locale identifiers to `LocaleIn` instances.
 	archivistGetsWeights
-		Build mapping from weight identifiers to `WeightIn` instances.
+		Get mapping from weight identifiers to `WeightIn` instances.
 	archivistMakesFilenameStem
 		Generate filename stems from font family, locale, style, and weight components.
 	archivistMakesNameIDMetadata
-		Build OpenType name record mapping for a given weight.
+		Make OpenType name record mapping for a given weight.
 	archivistGetsSubsetCharacters
 		Load character subset definitions from metadata files for all locale and style combinations.
 	archivistGetsUnicodeFiraCode
@@ -50,17 +50,21 @@ from fontTools import subset
 from fontTools.ttLib import TTFont
 from hunterMakesPy import Ordinals
 from hunterMakesPy.filesystemToolkit import writeStringToHere
+from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import LocaleIn, PackageSettings, settingsPackage, WeightIn
 from itertools import filterfalse, product as CartesianProduct
 from pathlib import Path
 from tlz.dicttoolz import keyfilter, keymap  # pyright: ignore[reportMissingModuleSource]
 from tlz.functoolz import complement, compose, curry as syntacticCurry  # pyright: ignore[reportMissingModuleSource]
-from typing import TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING
+import sys
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable, Iterator
 	from hunterMakesPy import identifierDotAttribute
 	from pathlib import Path
+
+ansiColors = AnsiColors()
 
 """Notes in case I run out of sofunty IDs.
 
@@ -115,13 +119,7 @@ name: dict[str, int] = {
 }
 
 # TODO I'd rather get this from an authoritative source.
-lookupAFDKOCharacterSet: dict[str, str] = {
-	'Hong_Kong': '2',
-	'Japan': '1',
-	'Korea': '3',
-	'Simplified_Chinese': '25',
-	'Taiwan': '2',
-}
+lookupAFDKOCharacterSet: dict[str, str] = {'HK': '2', 'JP': '1', 'KR': '3', 'CN': '25', 'TW': '2'}
 """Locale identifiers to AFDKO makeotf character set identifiers.
 
 Maps font locale identifiers to Adobe CID character collection ROS
@@ -145,7 +143,7 @@ References
 #======== Font-construction functions ===============================================
 
 def archivistGetsLocales() -> dict[str, LocaleIn]:
-	"""Build mapping from locale identifiers to `LocaleIn` instances.
+	"""Get mapping from locale identifiers to `LocaleIn` instances.
 
 	(AI generated docstring)
 
@@ -167,15 +165,15 @@ def archivistGetsLocales() -> dict[str, LocaleIn]:
 
 	"""
 	return {
-		'Hong_Kong': LocaleIn('Hong_Kong', '香港'),
-		'Japan': LocaleIn('Japan', '日本'),
-		'Korea': LocaleIn('Korea', '한국인'),
-		'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字'),
-		'Taiwan': LocaleIn('Taiwan', '台灣'),
+		'Hong_Kong': LocaleIn('Hong_Kong', '香港', SourceHanMono='HK', SourceHanMonoOTC='HC'),
+		'Japan': LocaleIn('Japan', '日本', SourceHanMono='JP', SourceHanMonoOTC='J'),
+		'Korea': LocaleIn('Korea', '한국인', SourceHanMono='KR', SourceHanMonoOTC='K'),
+		'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字', SourceHanMono='CN', SourceHanMonoOTC='SC'),
+		'Taiwan': LocaleIn('Taiwan', '台灣', SourceHanMono='TW', SourceHanMonoOTC='TC'),
 	}
 
 def archivistGetsWeights() -> dict[str, WeightIn]:
-	"""Build mapping from weight identifiers to `WeightIn` instances.
+	"""Get mapping from weight identifiers to `WeightIn` instances.
 
 	(AI generated docstring)
 
@@ -197,16 +195,17 @@ def archivistGetsWeights() -> dict[str, WeightIn]:
 
 	"""
 	return {
-		'Bold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyCID='Bold', SourceHanMono='Bold'),
-		'Heavy': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyCID='Heavy', SourceHanMono='Heavy'),
-		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyCID='Light', SourceHanMono='Light'),
-		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyCID='Medium', SourceHanMono='Medium'),
-		'Normal': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyCID='Normal', SourceHanMono='Normal'),
-		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyCID='Regular', SourceHanMono='Regular'),
+		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyScaled='SemiBold', fontFamilyCID='Bold', SourceHanMono='Bold'),
+		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyScaled='', fontFamilyCID='ExtraLight', SourceHanMono='ExtraLight'),
+		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyScaled='Bold', fontFamilyCID='Heavy', SourceHanMono='Heavy'),
+		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyScaled='Light', fontFamilyCID='Light', SourceHanMono='Light'),
+		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyScaled='Medium', fontFamilyCID='Medium', SourceHanMono='Medium'),
+		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyScaled='Retina', fontFamilyCID='Normal', SourceHanMono='Normal'),
+		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyScaled='Regular', fontFamilyCID='Regular', SourceHanMono='Regular'),
 	}
 
 def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None = None, style: str | None = None, weight: str | None = None, separator: str = '.') -> str:
-	"""Generate filename stems by joining `fontFamily`, `locale`, `style`, and `weight` components.
+	"""Make filename stems by joining `fontFamily`, `locale`, `style`, and `weight` components.
 
 	(AI generated docstring)
 
@@ -259,7 +258,7 @@ def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None
 	return separator.join(filter(notNone, [fontFamily, locale, style, weight]))
 
 def archivistMakesNameIDMetadata(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
-	"""You can build a name record mapping for a given `weight`.
+	"""Make a name record mapping for a given `weight`.
 
 	(AI generated docstring)
 
@@ -307,61 +306,6 @@ def archivistMakesNameIDMetadata(weight: str, filenameFontFamily: str, fontFamil
 		16: fontFamily,
 		17: weight,
 	}
-
-# TODO At the very least, store this data in Python structures.
-def archivistGetsSubsetCharacters() -> dict[identifierDotAttribute, dict[str, list[int]]]:
-	"""Load character subset definitions from metadata files for all locale and style combinations.
-
-	(AI generated docstring)
-
-	You can load glyph IDs and Unicode codepoints for each Source Han Mono locale and style combination. The
-	function reads `.gids` and `.unicodes` files from the metadata directory and returns a nested mapping from filename stem to
-	format identifier to character identifier list.
-
-	Returns
-	-------
-	subsetCharacters : dict[identifierDotAttribute, dict[str, list[int]]]
-		Nested mapping from filename stem to format identifier to list of character identifiers. Format identifiers are `'gids'`
-		and `'unicodes'`. Character identifiers are integers representing glyph IDs or Unicode codepoints.
-
-	References
-	----------
-	[1] fontTools.subset.parse_unicodes
-		https://fonttools.readthedocs.io/en/latest/subset/index.html
-	[2] Integrated_Code_Fire.settingsPackage
-		Internal package reference.
-
-	"""
-	subsetCharacters: dict[identifierDotAttribute, dict[str, list[int]]] = {}
-
-	fontFamilyCID: str = 'SourceHanMono'
-	pathMetadata: Path = settingsPackage.pathRoot / fontFamilyCID / 'metadata'
-	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
-
-	for locale, style in CartesianProduct(settingsPackage.theLocales, settingsPackage.theStyles):
-		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
-		subsetCharacters[filenameStem] = {}
-
-		formatCharacterIDs: str = 'gids'
-		pathFilename: Path = pathMetadata / f"{filenameStem}.{formatCharacterIDs}"
-		subsetCharacters[filenameStem][formatCharacterIDs] = list(map(int, pathFilename.read_text('utf-8').splitlines()))
-
-		formatCharacterIDs: str = 'unicodes'
-		pathFilename: Path = pathMetadata / f"{filenameStem}.{formatCharacterIDs}"
-		subsetCharacters[filenameStem][formatCharacterIDs] = subset.parse_unicodes(','.join(pathFilename.read_text('utf-8').splitlines()))
-
-	return subsetCharacters
-
-def archivistGetsUnicodeFiraCode() -> frozenset[int]:
-	"""Get the Fira Code Unicode codepoints to use in Integrated Code 火.
-
-	Returns
-	-------
-	unicodeFiraCode : frozenset[int]
-		Fira Code Unicode codepoints used in Integrated Code 火.
-	"""
-	from Integrated_Code_Fire._dataCenter import unicodesLigatures  # noqa: PLC0415
-	return frozenset(unicodesLigatures())
 
 def archivistUpdatesFontFileMetadata(pathFilename: Path, nameIDmetadata: dict[int, str]) -> Path:
 	"""Update OpenType metadata in a font file on disk.
@@ -424,9 +368,99 @@ def archivistUpdatesMetadata(ttFont: TTFont, nameIDmetadata: dict[int, str]) -> 
 	for nameID in nameIDmetadata:
 		ttFont['name'].setName(nameIDmetadata[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
 
+#======== SHM SME ========
+# ruff: noqa: D103
+def Z0Z_makeSourceHanMonoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', locale: str = 'Simplified_Chinese', style: Literal['Italic'] | None = None, weight: str = 'Regular') -> tuple[str, ...]:
+	styleA: Literal['.It', ''] = ''
+	styleB: Literal['It', ''] = ''
+	styleC: Literal['_italic', ''] = ''
+	if style == 'Italic':
+		styleA = '.It'
+		styleB = 'It'
+		styleC = '_italic'
+
+	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
+	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
+	if fontFamilyCID == 'SourceHanMono':
+		aLocaleOTC: str = dictionaryLocales[locale].SourceHanMonoOTC
+		aLocale: str = dictionaryLocales[locale].SourceHanMono
+		aWeight: str = dictionaryWeights[weight].SourceHanMono
+	else:
+		aLocaleOTC = dictionaryLocales[locale].ascii
+		aLocale = dictionaryLocales[locale].ascii
+		aWeight = dictionaryWeights[weight].fontFamilyCID
+		message: str = f"I received {fontFamilyCID = }. This is a reminder to check the flow from start to finish."
+		sys.stdout.write(f"{ansiColors.CyanOnMagenta}{message}{ansiColorReset}\n")
+
+	return (
+		'-f',	str(pathRoot / aWeight / 'OTC' / f"cidfont.ps.OTC{styleA}.{aLocaleOTC}"),
+		'-ff',	str(pathRoot / aWeight / 'OTC' / f"features.OTC{styleA}.{aLocaleOTC}"),
+		'-fi',	str(pathRoot / aWeight / 'OTC' / f"cidfontinfo.OTC{styleA}.{aLocaleOTC}"),
+
+		'-ch',	str(pathRoot / f"Uni{fontFamilyCID}{styleB}{aLocale}-UTF32-H"),
+		'-ci',	str(pathRoot / f"{fontFamilyCID}_{aLocale}_sequences{styleC}.txt"),
+		'-mf',	str(pathRoot / 'FontMenuNameDB'),
+
+		'-cs',	lookupAFDKOCharacterSet[aLocale],
+	)
+
 #======== Rarely Used Functions ========
 
-def archivistMakesCharacterSubsets(pathFilename: Path) -> list[Path]:
+# TODO At the very least, store this data in Python structures.
+def archivistGetsSubsetCharacters(fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None) -> dict[identifierDotAttribute, dict[str, list[int]]]:
+	"""Load character subset definitions from metadata files for all locale and style combinations.
+
+	(AI generated docstring)
+
+	You can load glyph IDs and Unicode codepoints for each Source Han Mono locale and style combination. The
+	function reads `.gids` and `.unicodes` files from the metadata directory and returns a nested mapping from filename stem to
+	format identifier to character identifier list.
+
+	Returns
+	-------
+	subsetCharacters : dict[identifierDotAttribute, dict[str, list[int]]]
+		Nested mapping from filename stem to format identifier to list of character identifiers. Format identifiers are `'gids'`
+		and `'unicodes'`. Character identifiers are integers representing glyph IDs or Unicode codepoints.
+
+	References
+	----------
+	[1] fontTools.subset.parse_unicodes
+		https://fonttools.readthedocs.io/en/latest/subset/index.html
+	[2] Integrated_Code_Fire.settingsPackage
+		Internal package reference.
+
+	"""
+	subsetCharacters: dict[identifierDotAttribute, dict[str, list[int]]] = {}
+
+	pathDatacenter: Path = settingsPackage.pathPackage / 'dataCenter'
+	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
+
+	for locale, style in CartesianProduct(theLocales or settingsPackage.theLocales, theStyles or settingsPackage.theStyles):
+		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
+		subsetCharacters[filenameStem] = {}
+
+		formatCharacterIDs: str = 'gids'
+		pathFilename: Path = pathDatacenter / f"{filenameStem}.{formatCharacterIDs}"
+		subsetCharacters[filenameStem][formatCharacterIDs] = subset.parse_gids(','.join(pathFilename.read_text('utf-8').splitlines()))
+
+		formatCharacterIDs: str = 'unicodes'
+		pathFilename: Path = pathDatacenter / f"{filenameStem}.{formatCharacterIDs}"
+		subsetCharacters[filenameStem][formatCharacterIDs] = subset.parse_unicodes(','.join(pathFilename.read_text('utf-8').splitlines()))
+
+	return subsetCharacters
+
+def archivistGetsUnicodeFiraCode() -> frozenset[int]:
+	"""Get the Fira Code Unicode codepoints to use in Integrated Code 火.
+
+	Returns
+	-------
+	unicodeFiraCode : frozenset[int]
+		Fira Code Unicode codepoints used in Integrated Code 火.
+	"""
+	from Integrated_Code_Fire.dataCenter import unicodesLigatures  # noqa: PLC0415
+	return frozenset(unicodesLigatures())
+
+def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filenameStemWrite: str) -> list[Path]:
 	"""Generate glyph ID and Unicode subset files from a UTF-32 character map.
 
 	(AI generated docstring)
@@ -467,9 +501,8 @@ def archivistMakesCharacterSubsets(pathFilename: Path) -> list[Path]:
 	gids: list[str] = sorted({g for u, g in intMAPstr.items() if 0xFFFF < u}, key=int)  # ty:ignore[invalid-assignment]
 	gids.append('')
 
-	pathFilenameGids: Path = pathFilename.with_suffix('.gids')
-	writeStringToHere('\n'.join(gids), pathFilenameGids)
-	listPathFilenames.append(pathFilenameGids)
+	suffix: str = 'gids'
+	listPathFilenames.append(writeStringToHere('\n'.join(gids), pathWrite / f"{filenameStemWrite}.{suffix}"))
 
 # TODO These ranges need to be less hardcoded-ish and/or more semantic (e.g., what is 0x1200?)
 # TODO Configuration settings.
@@ -479,9 +512,8 @@ def archivistMakesCharacterSubsets(pathFilename: Path) -> list[Path]:
 			, filter(between吗(0x1100, 0xFFFF), intMAPstr.keys())
 	)))
 
-	pathFilenameUnicodes: Path = pathFilename.with_suffix('.unicodes')
-	writeStringToHere('\n'.join(unicodes) + '\n', pathFilenameUnicodes)
-	listPathFilenames.append(pathFilenameUnicodes)
+	suffix: str = 'unicodes'
+	listPathFilenames.append(writeStringToHere('\n'.join(unicodes) + '\n', pathWrite / f"{filenameStemWrite}.{suffix}"))
 
 	return listPathFilenames
 
@@ -522,6 +554,8 @@ def archivistMakesAllCharacterSubsets(fontFamilyCID: str = 'SourceHanMono', theL
 
 	listPathFilenames: list[Path] = []
 
+	pathWrite: Path = settingsPackage.pathPackage / 'dataCenter'
+
 	pathMetadata: Path = settingsPackage.pathRoot / fontFamilyCID / 'metadata'
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 
@@ -529,7 +563,7 @@ def archivistMakesAllCharacterSubsets(fontFamilyCID: str = 'SourceHanMono', theL
 		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
 		suffix: str = 'UTF32-map'
 		pathFilename: Path = pathMetadata / f"{filenameStem}.{suffix}"
-		listPathFilenames.extend(archivistMakesCharacterSubsets(pathFilename))
+		listPathFilenames.extend(archivistMakesCharacterSubsets(pathFilename, pathWrite, filenameStem))
 
 	return listPathFilenames
 

@@ -1,9 +1,9 @@
-"""Build Integrated Code 火 monospace programming fonts with CJK languages.
+"""Compile Integrated Code 火 monospace programming fonts with CJK languages.
 
 (AI generated docstring)
 
-You can use this package to compile Integrated Code 火 fonts with a complete build assembly line that compiles source fonts,
-scales and merges glyphs, updates metadata, and produces distributable font files for multiple languages, scripts, and weights.
+You can compile Integrated Code 火 fonts with a complete assembly line that compiles source fonts, scales and merges glyphs,
+updates metadata, and produces distributable font files for multiple languages, scripts, and weights.
 
 The repository contains many settings files for VS Code and Python tools.
 
@@ -14,7 +14,7 @@ archivist
 foundry
     Font compilation from Glyphs source files using fontmake [3] and PostScript CIDFont source files using AFDKO makeotf [4].
 go
-    Build assembly line orchestration and entry point.
+    Assembly line orchestration and entry point.
 logistics
     File staging, asset packaging, and workbench management.
 machineShop
@@ -35,8 +35,6 @@ PackageSettings
     Package-wide configuration including paths, font metadata, and supported locales, styles, and weights.
 settingsPackage
     Package configuration instance.
-pathFilenameFiraCodeGlyphs
-    Path to Fira Code Glyphs source file.
 
 References
 ----------
@@ -53,6 +51,4 @@ References
 from Integrated_Code_Fire._theTypes import LocaleIn as LocaleIn, WeightIn as WeightIn
 
 # isort: split
-from Integrated_Code_Fire._theSSOT import (
-	PackageSettings as PackageSettings, pathFilenameFiraCodeGlyphs as pathFilenameFiraCodeGlyphs,
-	settingsPackage as settingsPackage)
+from Integrated_Code_Fire._theSSOT import PackageSettings as PackageSettings, settingsPackage as settingsPackage

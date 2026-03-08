@@ -1,5 +1,4 @@
-from fontTools import subset
-from hunterMakesPy import PackageSettings as humpy_PackageSettings
+from hunterMakesPy import errorL33T, PackageSettings as humpy_PackageSettings
 from typing import Final, TYPE_CHECKING
 import dataclasses
 
@@ -9,18 +8,6 @@ if TYPE_CHECKING:
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
 fontVersionHARDCODED: float = 0.008
 # TODO version update? ^^^^^^^^^^^^
-
-subsetOptionsHARDCODED: subset.Options = subset.Options(
-	drop_tables = [],
-	glyph_names = False,
-	layout_features = '*',
-	legacy_cmap = True,
-	name_IDs = '*',
-	name_languages = '*',
-	name_legacy = True,
-	passthrough_tables = True,
-	symbol_cmap = True,
-)
 
 #======== Subclass `hunterMakesPy.PackageSettings` to add package-specific settings. ========
 
@@ -53,7 +40,7 @@ class PackageSettings(humpy_PackageSettings):
 	pathAssets : Path
 		Directory for output assets, computed in `__post_init__`.
 	pathWorkbench : Path
-		Directory for intermediate build artifacts, computed in `__post_init__`.
+		Directory for intermediate assembly line artifacts, computed in `__post_init__`.
 	pathWorkbenchFonts : Path
 		Directory for intermediate font files, computed in `__post_init__`.
 	filenameFontFamily : str
@@ -68,39 +55,41 @@ class PackageSettings(humpy_PackageSettings):
 	[3] Email
 		"Registering Vendor ID 1INT.pdf"
 	"""
-	achVendID: str = '1INT'
+	achVendID: Final[str] = '1INT'
 	fontFamily: Final[str] = 'Integrated Code 火'
-	fontVersion: float = fontVersionHARDCODED
+	fontVersion: float = errorL33T
 	theLocales: frozenset[str] = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
 	theStyles: frozenset[str | None] = frozenset(['Italic', None])
-	theWeights: frozenset[str] = frozenset(['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Normal', 'Regular'])
+	theWeights: frozenset[str] = frozenset(['Bold', 'ExtraLight', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
 	unitsPerEm: int = 1000
+	width: int = 1200
+
+	fontFamilyASCII: str = dataclasses.field(init=False)
 
 	pathRoot: Path = dataclasses.field(init=False)
 	pathAssets: Path = dataclasses.field(init=False)
+	pathWarehouse: Path = dataclasses.field(init=False)
 	pathWorkbench: Path = dataclasses.field(init=False)
 	pathWorkbenchFonts: Path = dataclasses.field(init=False)
-
-	filenameFontFamily: str = dataclasses.field(init=False)
 
 	def __post_init__(self, identifierPackageFALLBACK: str) -> None:
 		super().__post_init__(identifierPackageFALLBACK)
 
 		self.pathRoot = self.pathPackage.parent.parent
 		self.pathAssets = self.pathRoot / 'assets'
+		self.pathWarehouse = self.pathRoot / 'warehouse'
 		self.pathWorkbench = self.pathRoot / 'workbench'
 		self.pathWorkbenchFonts = self.pathWorkbench / 'fonts'
 
-		self.filenameFontFamily = self.fontFamily.replace(' ', '')
+		self.fontFamilyASCII = self.fontFamily.replace('火', 'Fire')
 
 #-------- Package settings. ---------------------------------------------
 
+fontVersion: float = fontVersionHARDCODED
 settingsPackage = PackageSettings('Integrated_Code_Fire'
+	, fontVersion = fontVersion
 	, theLocales = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
 	, theStyles = frozenset([None])
-	, theWeights = frozenset(['Bold', 'Heavy', 'Light', 'Medium', 'Normal', 'Regular'])
+	, theWeights = frozenset(['Bold', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
 )
 
-#======== Centralized settings that have not yet found their home, such as in `settingsPackage`. ========
-
-pathFilenameFiraCodeGlyphs: Path = settingsPackage.pathRoot / 'FiraCode' / 'FiraCode.glyphs'

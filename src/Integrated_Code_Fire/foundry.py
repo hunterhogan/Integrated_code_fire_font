@@ -7,135 +7,80 @@ for parallel compilation of multiple font variants.
 Contents
 --------
 Functions
-    smithy_makeotf
-        Compile a single CID font variant using AFDKO makeotf.
-    smithyCasts_afdko
-        Compile all CID font variants across locales, weights, and styles.
-    smithyCastsFromGlyphs
-        Compile fonts in OTF and TTF formats from Glyphs source.
-    smithyFontProject
-        Compile fonts from Glyphs source in a specified format using fontmake.
+	smithy_makeotf
+		Compile a single CID font variant using AFDKO makeotf.
+	smithyCasts_afdko
+		Compile all CID font variants across locales, weights, and styles.
+	smithyCastsFromGlyphs
+		Compile fonts in OTF and TTF formats from Glyphs source.
+	smithyFontProject
+		Compile fonts from Glyphs source in a specified format using fontmake.
 
 References
 ----------
 [1] fontmake - Google Fonts
-    https://github.com/googlefonts/fontmake
+	https://github.com/googlefonts/fontmake
 [2] AFDKO (Adobe Font Development Kit for OpenType)
-    https://adobe-type-tools.github.io/afdko/
+	https://adobe-type-tools.github.io/afdko/
 [3] multiprocessing.Pool - Python Standard Library
-    https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool
+	https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool
 [4] Integrated_Code_Fire.go.go
-    Internal package reference.
+	Internal package reference.
 
 """
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
-from Integrated_Code_Fire import settingsPackage
-from Integrated_Code_Fire.archivist import archivistMakesFilenameStem, lookupAFDKOCharacterSet
-from itertools import product as CartesianProduct, repeat
+from hunterMakesPy.parseParameters import defineConcurrencyLimit
+from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
+from Integrated_Code_Fire.archivist import (
+	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, Z0Z_makeSourceHanMonoOptions)
+from itertools import product as CartesianProduct, repeat, starmap
 from multiprocessing import Pool
 from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from collections.abc import Iterable
+	from collections.abc import Iterable, Iterator
 	from pathlib import Path
+# ruff: noqa: D103
 
-def smithyCasts_afdko(fontFamilyCID: str = 'SourceHanMono', workersMaximum: int = 1) -> list[Path]:
-	"""Compile all `fontFamilyCID` font variants across the locales, weights, and styles set in `settingsPackage`.
+def smithyCasts_afdko(pathRoot: Path, theLocales: Iterable[str], theStyles: Iterable[str | None], theWeights: Iterable[str], fontFamilyCID: str = 'SourceHanMono', *, CPUlimit: bool | float | int | None = 1) -> list[Path]:
+	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
-	The function uses `multiprocessing.Pool.starmap` [1] to invoke `smithy_makeotf` for each variant in parallel.
+	optionsValues: Iterator[tuple[str, ...]] = starmap(Z0Z_makeSourceHanMonoOptions, CartesianProduct([pathRoot], [fontFamilyCID], theLocales, theStyles, theWeights))
 
-	Parameters
-	----------
-	workersMaximum : int = 1
-		Maximum number of parallel worker processes for compiling font variants.
+	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
+	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 
-	Returns
-	-------
-	listPathFilename : list[Path]
-		List of paths to compiled font files.
+	listPathFilenamesWrite: list[Path] = []
 
-	References
-	----------
-	[1] multiprocessing.Pool.starmap - Python Standard Library
-		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.starmap
-	[2] AFDKO makeotf - Read the Docs
-		https://adobe-type-tools.github.io/afdko/AFDKO-Overview.html#makeotf
-	[3] itertools.product - Python Standard Library
-		https://docs.python.org/3/library/itertools.html#itertools.product
+	pathWrite: Path = settingsPackage.pathWorkbench / fontFamilyCID
+	pathWrite.mkdir(parents=True, exist_ok=True)
+	for locale, style, weight in CartesianProduct(theLocales, theStyles, theWeights):
+		filenameStemWrite: str = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style, dictionaryWeights[weight].fontFamilyCID)
+		pathFilenameWrite: Path = pathWrite / f"{filenameStemWrite}.otf"
+		listPathFilenamesWrite.append(pathFilenameWrite)
 
-	"""
 	with Pool(processes=workersMaximum) as concurrencyManager:
-		listPathFilename: list[Path] = concurrencyManager.starmap(smithy_makeotf
-			, CartesianProduct([fontFamilyCID], settingsPackage.theLocales, settingsPackage.theStyles, settingsPackage.theWeights))
+		listPathFilenames: list[Path] = concurrencyManager.starmap(smithy_makeotf, zip(optionsValues, listPathFilenamesWrite, strict=True))
 
-	return listPathFilename
+	return listPathFilenames
 
-def smithy_makeotf(fontFamilyCID: str, locale: str, style: Literal['Italic'] | None = None, weight: str = 'Regular') -> Path:
-	"""Compile a single `fontFamilyCID` font variant using AFDKO makeotf.
-
-	You can compile a `fontFamilyCID` font file for a specified locale, weight, and style using AFDKO `makeotf` [1]. The
-	function constructs file paths for the PostScript CIDFont source file, OpenType features file, CID font info file, character
-	set mappings, Unicode sequences, and font menu name database. The function writes the compiled OpenType font file to
-	`pathWorkbench` [2] in a subdirectory named `'fontFamilyCID'`.
-
-	Parameters
-	----------
-	locale : str
-		Font locale defined in `lookupAFDKOCharacterSet`.
-	weight : str = 'Regular'
-		Font weight defined in the source files for `fontFamilyCID`.
-	style : Literal['Italic'] | None = None
-		Font style defined in the source files for `fontFamilyCID` or `None` for upright.
-
-	Returns
-	-------
-	pathFilename : Path
-		Path to the compiled OpenType font file.
-
-	Examples
-	--------
-	Invoked by `smithyCastsSourceHanMono` via `multiprocessing.Pool.starmap` [3]:
-
-	>>> from Integrated_Code_Fire.foundry import smithyCastsFont
-	>>> smithyCastsFont('Simplified_Chinese', 'Bold', None)
-
-	References
-	----------
-	[1] AFDKO makeotf - Read the Docs
-		https://adobe-type-tools.github.io/afdko/AFDKO-Overview.html#makeotf
-	[2] Integrated_Code_Fire.settingsPackage
-		Internal package reference.
-
-	"""
-	pathFontFamily: Path = settingsPackage.pathRoot / fontFamilyCID
-	pathCompiled: Path = settingsPackage.pathWorkbench / fontFamilyCID
-	pathCompiled.mkdir(parents=True, exist_ok=True)
-
-	filenameStemGlyphs: str = archivistMakesFilenameStem(fontFamilyCID, locale, style, weight)
-	filenameStemMetadata: str = archivistMakesFilenameStem(fontFamilyCID, locale, style)
-
-	pathFilename: Path = pathCompiled / f"{filenameStemGlyphs}.otf"
+def smithy_makeotf(optionsValues: tuple[str, ...], pathFilenameWrite: Path) -> Path:
+	pathFilenameWrite.parent.mkdir(parents=True, exist_ok=True)
 
 # TODO is this REALLY the only API? No class? No function?
 	afdko_makeotf([
-		'-f', str((pathFontFamily / 'glyphs') / f"{filenameStemGlyphs}.cidfont.ps")
-		, '-ff', str((pathFontFamily / 'glyphs') / f"{filenameStemGlyphs}.features")
-		, '-fi', str((pathFontFamily / 'glyphs') / f"{filenameStemGlyphs}.cidfontinfo")
-		, '-cs', lookupAFDKOCharacterSet[locale]
-		, '-ch', str((pathFontFamily / 'metadata') / f"{filenameStemMetadata}.UTF32-H")
-		, '-ci', str((pathFontFamily / 'metadata') / f"{filenameStemMetadata}.sequences")
+		*optionsValues
 		, '-omitMacNames'
-		, '-mf', str((pathFontFamily / 'metadata') / 'FontMenuNameDB')
 		, '-r'
 		, '-nS'
-		, '-omitDSIG'
+		# , '-omitDSIG'
 		, '-ncn'
 		, '-gs'
-		, '-o', str(pathFilename)
+		, '-o', str(pathFilenameWrite)
 	])
 
-	return pathFilename
+	return pathFilenameWrite
 
 def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontFormats: Iterable[str] = frozenset(['otf', 'ttf'])) -> Path:
 	"""Compile fonts in OTF and/or TTF formats from Glyphs source files.
@@ -155,7 +100,7 @@ def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontForma
 
 	Examples
 	--------
-	Invoked by `go` [3] as the first step in the build assembly line:
+	Invoked by `go` [3] as the first step in the assembly line:
 
 	>>> from Integrated_Code_Fire.foundry import smithyCastsFiraCode
 	>>> smithyCastsFiraCode()
