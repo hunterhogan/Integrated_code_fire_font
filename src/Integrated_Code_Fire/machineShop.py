@@ -160,6 +160,11 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][hmtx['width']] + modifyPerSide * 2
 			, ttFont['hmtx'][glyphName][hmtx['bearingLeft']] + modifyPerSide)
 
+def Z0Z_machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
+	for glyph in ttFont.getGlyphSet().values(): # pyright: ignore[reportUnknownVariableType]
+		glyph.width += modifyPerSide * 2 # pyright: ignore[reportUnknownMemberType]
+		glyph.lsb += modifyPerSide # pyright: ignore[reportUnknownMemberType]
+
 def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
 	"""Merge glyph outlines, horizontal metrics, and Unicode-to-glyph mappings from one `TTFont` into another.
 

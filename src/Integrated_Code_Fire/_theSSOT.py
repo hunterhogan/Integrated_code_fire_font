@@ -1,13 +1,14 @@
 from hunterMakesPy import errorL33T, PackageSettings as humpy_PackageSettings
-from typing import Final, TYPE_CHECKING
+from pathlib import Path
+from typing import Final
 import dataclasses
 
-if TYPE_CHECKING:
-	from pathlib import Path
-
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.008
+fontVersionHARDCODED: float = 0.009
 # TODO version update? ^^^^^^^^^^^^
+
+pathFilenameFiraCodeGlyphsHARDCODED: Path = Path('/clones', 'FiraCode', 'FiraCode.glyphs')
+pathRootSourceHanMonoHARDCODED: Path = Path("/clones/source-han-mono")
 
 #======== Subclass `hunterMakesPy.PackageSettings` to add package-specific settings. ========
 
@@ -93,3 +94,5 @@ settingsPackage = PackageSettings('Integrated_Code_Fire'
 	, theWeights = frozenset(['Bold', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
 )
 
+pathFilenameFiraCodeGlyphs: Path = pathFilenameFiraCodeGlyphsHARDCODED
+pathRootSourceHanMono: Path = pathRootSourceHanMonoHARDCODED

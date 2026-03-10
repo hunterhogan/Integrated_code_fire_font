@@ -1,14 +1,14 @@
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from fontTools import subset
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
-from Integrated_Code_Fire import LocaleIn, PackageSettings, settingsPackage, WeightIn
+from Integrated_Code_Fire import (
+	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, WeightIn)
 from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsSubsetCharacters, archivistGetsWeights, archivistMakesFilenameStem)
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
 from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistScalesFonts, machinistSubsetsCID
 from itertools import product as CartesianProduct
-from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
 
@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 	from collections.abc import Iterable
 	from fontTools.ttLib import TTFont
 	from hunterMakesPy import identifierDotAttribute
-
-pathFilenameFiraCodeGlyphsHARDCODED: Path = settingsPackage.pathRoot / 'FiraCode' / 'FiraCode.glyphs'
+	from pathlib import Path
 
 subsetOptionsHARDCODED: subset.Options = subset.Options(
 	drop_tables = [],
@@ -31,7 +30,6 @@ subsetOptionsHARDCODED: subset.Options = subset.Options(
 	symbol_cmap = True,
 )
 
-pathFilenameFiraCodeGlyphs: Path = pathFilenameFiraCodeGlyphsHARDCODED
 subsetOptions: subset.Options = subsetOptionsHARDCODED
 
 def glyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:
@@ -48,6 +46,9 @@ def glyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:
 	valetRemovesWorkbench()
 
 def cid(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> None:
+# TODO Configuration.
+	pathRoot: Path = pathRootSourceHanMono
+
 	pathCID: Path = settingsPackage.pathWarehouse / 'CID'
 	pathCID.mkdir(parents=True, exist_ok=True)
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
@@ -61,9 +62,6 @@ def cid(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono', the
 	subsetCharacters: dict[identifierDotAttribute, dict[str, list[int]]] = archivistGetsSubsetCharacters(fontFamilyCID, theLocales, theStyles)
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
-
-# TODO hardcoded.
-	pathRoot: Path = Path("/clones/source-han-mono")
 
 	listPathFilenames: list[Path] = smithyCasts_afdko(pathRoot, theLocales, theStyles, theWeights, fontFamilyCID, CPUlimit=workersMaximum)
 

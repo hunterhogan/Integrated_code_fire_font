@@ -48,15 +48,18 @@ References
 """
 from fontTools import subset
 from fontTools.ttLib import TTFont
+from functools import cache
 from hunterMakesPy import Ordinals
 from hunterMakesPy.filesystemToolkit import writeStringToHere
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
-from Integrated_Code_Fire import LocaleIn, PackageSettings, settingsPackage, WeightIn
+from Integrated_Code_Fire import (
+	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, WeightIn)
 from itertools import filterfalse, product as CartesianProduct
 from pathlib import Path
 from tlz.dicttoolz import keyfilter, keymap  # pyright: ignore[reportMissingModuleSource]
 from tlz.functoolz import complement, compose, curry as syntacticCurry  # pyright: ignore[reportMissingModuleSource]
 from typing import Literal, TYPE_CHECKING
+import glyphsLib
 import sys
 
 if TYPE_CHECKING:
@@ -449,16 +452,16 @@ def archivistGetsSubsetCharacters(fontFamilyCID: str = 'SourceHanMono', theLocal
 
 	return subsetCharacters
 
-def archivistGetsUnicodeFiraCode() -> frozenset[int]:
-	"""Get the Fira Code Unicode codepoints to use in Integrated Code 火.
+@cache
+def archivistGetsGlyphsUnicode(pathFilename: Path) -> frozenset[int]:
+	"""Get the Unicode codepoints to use in Integrated Code 火.
 
 	Returns
 	-------
-	unicodeFiraCode : frozenset[int]
-		Fira Code Unicode codepoints used in Integrated Code 火.
+	unicodeGlyphs : frozenset[int]
+		Unicode codepoints used in Integrated Code 火.
 	"""
-	from Integrated_Code_Fire.dataCenter import unicodesLigatures  # noqa: PLC0415
-	return frozenset(unicodesLigatures())
+	return frozenset([int(unicode, 16) for glyph in glyphsLib.load(pathFilename).glyphs for unicode in glyph.unicodes])
 
 def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filenameStemWrite: str) -> list[Path]:
 	"""Generate glyph ID and Unicode subset files from a UTF-32 character map.
@@ -490,7 +493,7 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 
 	listPathFilenames: list[Path] = []
 
-	unicodeFiraCode: frozenset[int] = archivistGetsUnicodeFiraCode()
+	unicodeFiraCode: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphs)
 
 # TODO No one in the entire universe has created a function to load these values from these super-common files?!
 	intMAPstr: dict[int, str] = keyfilter(complement(unicodeFiraCode.__contains__)
@@ -556,13 +559,15 @@ def archivistMakesAllCharacterSubsets(fontFamilyCID: str = 'SourceHanMono', theL
 
 	pathWrite: Path = settingsPackage.pathPackage / 'dataCenter'
 
-	pathMetadata: Path = settingsPackage.pathRoot / fontFamilyCID / 'metadata'
+	pathMetadata: Path = pathRootSourceHanMono / 'Resources'
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 
 	for locale, style in CartesianProduct(theLocales, theStyles):
+		if style:
+			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}-ital.map"
+		else:
+			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}.map"
 		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
-		suffix: str = 'UTF32-map'
-		pathFilename: Path = pathMetadata / f"{filenameStem}.{suffix}"
 		listPathFilenames.extend(archivistMakesCharacterSubsets(pathFilename, pathWrite, filenameStem))
 
 	return listPathFilenames

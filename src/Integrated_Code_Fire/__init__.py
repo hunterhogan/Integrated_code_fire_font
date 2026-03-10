@@ -51,4 +51,6 @@ References
 from Integrated_Code_Fire._theTypes import LocaleIn as LocaleIn, WeightIn as WeightIn
 
 # isort: split
-from Integrated_Code_Fire._theSSOT import PackageSettings as PackageSettings, settingsPackage as settingsPackage
+from Integrated_Code_Fire._theSSOT import (
+	PackageSettings as PackageSettings, pathFilenameFiraCodeGlyphs as pathFilenameFiraCodeGlyphs,
+	pathRootSourceHanMono as pathRootSourceHanMono, settingsPackage as settingsPackage)

@@ -1,6 +1,6 @@
 # Integrated Code 火
 
-| Integrated Code 火 🡲      | 🡲 is a monospaced programming font 🡲                  | 🡲 plus 🡳             |
+| Integrated Code 火 ➡      | ➡ is a monospaced programming font ➡                  | ➡ plus ⬇             |
 | ------------------------- | ----------------------------------------------------- | -------------------- |
 | Integrated Code 火 日本   | 日本語スクリプトを備えた等幅プログラミング フォント。 | Japanese.            |
 | Integrated Code 火 한국인 | 한글과 한자를 포함하는 고정폭 프로그래밍 폰트.        | Korean.              |
@@ -23,9 +23,9 @@
 | "Fira"                                                  | "Source"                                                          |     | "Source Han"                                                            |     | "Noto"                                                      |
 | ------------------------------------------------------- | ----------------------------------------------------------------- | --- | ----------------------------------------------------------------------- | --- | ----------------------------------------------------------- |
 | [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ⮀   | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
-| 🡳                                                       | 🡳                                                                 |     | 🡳                                                                       |     | 🡳                                                           |
-| [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | 🡲   | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
-| 🡳                                                       |                                                                   | 🡮   | 🡳                                                                       |     |                                                             |
+| ⬇                                                       | ⬇                                                                 |     | ⬇                                                                       |     | ⬇                                                           |
+| [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | ➡   | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
+| ⬇                                                       |                                                                   | 🡮   | ⬇                                                                       |     |                                                             |
 | [Fira Code HH](https://github.com/hunterhogan/FiraCode) |                                                                   |     | [Source Han Mono](https://github.com/adobe-fonts/source-han-mono)       |     |                                                             |
 
                🡮                      🡷
@@ -84,7 +84,8 @@ The website "[Programming Fonts](https://www.programmingfonts.org/)" has preview
 The repository is optimized to work with [Visual Studio Code](https://code.visualstudio.com/), but that is not required.
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) or fork the repository. ([Visual Studio Code instructions.](https://code.visualstudio.com/docs/sourcecontrol/repos-remotes))
-2. Install the Python packages in a virtual environment with ["uv"](https://docs.astral.sh/uv/); from the folder with the repository, run:
+2. You may need to clone [Fira Code](https://github.com/tonsky/FiraCode) and/or [Source Han Mono](https://github.com/adobe-fonts/source-han-mono).
+3. Install the Python packages in a virtual environment with ["uv"](https://docs.astral.sh/uv/); from the folder with the repository, run:
 
     uv sync
 

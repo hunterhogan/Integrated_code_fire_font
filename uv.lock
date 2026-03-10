@@ -354,6 +354,17 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ee/89/d82eaf3a0ae50e1abdd3fb608d32d584489e71de4fad9e4fac69bec8e79e/glyphslib-6.12.7-py3-none-any.whl", hash = "sha256:d0176f1910e930bfdb4342a0e0a524051f76fdeb99f24971984b51303b5f3322", size = 910615, upload-time = "2026-02-12T19:14:29.26Z" },
 ]
 
+[package.optional-dependencies]
+colr = [
+    { name = "skia-pathops" },
+]
+defcon = [
+    { name = "defcon" },
+]
+ufo-normalization = [
+    { name = "ufonormalizer" },
+]
+
 [[package]]
 name = "huntermakespy"
 version = "0.4.3"
@@ -378,6 +389,7 @@ dependencies = [
     { name = "afdko" },
     { name = "fontmake", extra = ["all"] },
     { name = "fonttools", extra = ["unicode"] },
+    { name = "glyphslib", extra = ["colr", "defcon", "ufo-normalization"] },
     { name = "huntermakespy" },
     { name = "more-itertools" },
     { name = "toolz" },
@@ -394,6 +406,7 @@ requires-dist = [
     { name = "afdko", specifier = ">=4.0.3" },
     { name = "fontmake", extras = ["all"], specifier = ">=3.11.1" },
     { name = "fonttools", extras = ["ufo", "unicode"], specifier = ">=4.61.1" },
+    { name = "glyphslib", extras = ["colr", "defcon", "ufo-normalization"], specifier = ">=6.12.7" },
     { name = "huntermakespy", specifier = ">=0.4.3" },
     { name = "more-itertools", specifier = ">=10.8.0" },
     { name = "toolz", specifier = ">=1.1.0" },
