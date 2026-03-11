@@ -132,6 +132,7 @@ statmake
 subfont
 subroutinization
 subroutinize
+Subrs
 subsetted
 Subsetter
 subsetting

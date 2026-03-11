@@ -178,7 +178,6 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 			listPathFilenamesCopied.append(pathFilename.copy_into(settingsPackage.pathWorkbenchFonts))  # noqa: PERF401
 
 	return frozenset(listPathFilenamesCopied)
-# ruff: noqa: D103
 
 def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:
 	dictionaryFontsScaled: dict[str, TTFont] = {}

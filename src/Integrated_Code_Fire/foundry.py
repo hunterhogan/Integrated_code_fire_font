@@ -41,7 +41,6 @@ from typing import Literal, TYPE_CHECKING
 if TYPE_CHECKING:
 	from collections.abc import Iterable, Iterator
 	from pathlib import Path
-# ruff: noqa: D103
 
 def smithyCasts_afdko(pathRoot: Path, theLocales: Iterable[str], theStyles: Iterable[str | None], theWeights: Iterable[str], fontFamilyCID: str = 'SourceHanMono', *, CPUlimit: bool | float | int | None = 1) -> list[Path]:
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
@@ -74,7 +73,6 @@ def smithy_makeotf(optionsValues: tuple[str, ...], pathFilenameWrite: Path) -> P
 		, '-omitMacNames'
 		, '-r'
 		, '-nS'
-		# , '-omitDSIG'
 		, '-ncn'
 		, '-gs'
 		, '-o', str(pathFilenameWrite)

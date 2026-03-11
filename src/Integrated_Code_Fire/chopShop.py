@@ -22,10 +22,7 @@ subsetOptionsHARDCODED: subset.Options = subset.Options(
 	drop_tables = [],
 	glyph_names = False,
 	layout_features = '*',
-	legacy_cmap = True,
-	name_IDs = '*',
-	name_languages = '*',
-	name_legacy = True,
+	name_IDs = '',
 	passthrough_tables = True,
 	symbol_cmap = True,
 )

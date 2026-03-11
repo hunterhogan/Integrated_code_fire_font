@@ -4,7 +4,7 @@ from typing import Final
 import dataclasses
 
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.009
+fontVersionHARDCODED: float = 0.010
 # TODO version update? ^^^^^^^^^^^^
 
 pathFilenameFiraCodeGlyphsHARDCODED: Path = Path('/clones', 'FiraCode', 'FiraCode.glyphs')

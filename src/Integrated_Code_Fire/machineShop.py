@@ -34,6 +34,8 @@ References
 """
 from afdko.otf2ttf import otf_to_ttf
 from fontTools import subset
+from fontTools.pens.t2CharStringPen import T2CharStringPen
+from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import settingsPackage
@@ -43,6 +45,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from fontTools.ttLib.tables._g_l_y_f import Glyph
+	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
 
 def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
@@ -120,12 +123,13 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 	subsetter = subset.Subsetter(subsetOptions)
 	subsetter.populate(gids = gids, unicodes = unicodes)
 	subsetter.subset(ttFont)
+# TODO modify without converting to TTF.
 	otf_to_ttf(ttFont)
-	machinistModifiesSideBearings(ttFont, hmtx['increment'])
+	machinistModifiesSideBearingsTTF(ttFont, hmtx['increment'])
+	# Z0Z_machinistModifiesSideBearingsCFF(ttFont, hmtx['increment'])  # noqa: ERA001
 	return ttFont
 
-# TODO modify without converting to TTF.
-def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
+def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None:
 	"""Modify horizontal side bearings for all glyphs in a font.
 
 	(AI generated docstring)
@@ -148,22 +152,65 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 
 	"""
 	for glyphName in ttFont.getGlyphOrder():
+		addend: int = modifyPerSide
 		glyph: Glyph = ttFont['glyf'][glyphName]
+		if ttFont['hmtx'][glyphName][hmtx['width']] == 667:
+			addend //= 2
 		if glyph.isComposite():
 			for component in glyph.components:
-				component.x += modifyPerSide
+				component.x += addend
 			glyph.recalcBounds(ttFont['glyf'])
 		elif glyph.numberOfContours != 0:
-			glyph.coordinates.translate((modifyPerSide, 0))
+			glyph.coordinates.translate((addend, 0))
 			glyph.recalcBounds(ttFont['glyf'])
 
-		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][hmtx['width']] + modifyPerSide * 2
-			, ttFont['hmtx'][glyphName][hmtx['bearingLeft']] + modifyPerSide)
+		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][hmtx['width']] + addend * 2
+			, ttFont['hmtx'][glyphName][hmtx['bearingLeft']] + addend)
+
+def Z0Z_machinistModifiesSideBearingsCFF(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
+	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()
+	dictionaryCharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
+
+	penT2CharString = T2CharStringPen(None, glyphSet)  # ty:ignore[invalid-argument-type]
+	for glyphName in glyphSet:
+		addend: int = modifyPerSide
+		if ttFont['hmtx'][glyphName][hmtx['width']] == 667:
+			addend //= 2
+
+		charString = dictionaryCharStrings[glyphName] # pyright: ignore[reportUnknownVariableType]
+		glyphSet[glyphName].draw(TransformPen(penT2CharString, (1, 0, 0, 1, addend, 0)))
+
+		dictionaryCharStrings[glyphName] = penT2CharString.getCharString(
+			private = charString.private, # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+			globalSubrs = charString.globalSubrs, # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+		)
+
+		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][hmtx['width']] + addend * 2
+			, ttFont['hmtx'][glyphName][hmtx['bearingLeft']] + addend)
+
+	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
+		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
 
 def Z0Z_machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
-	for glyph in ttFont.getGlyphSet().values(): # pyright: ignore[reportUnknownVariableType]
-		glyph.width += modifyPerSide * 2 # pyright: ignore[reportUnknownMemberType]
-		glyph.lsb += modifyPerSide # pyright: ignore[reportUnknownMemberType]
+	dirTTGGlyph=[ '_abc_impl', '_getGlyphAndOffset', '_getGlyphInstance',  # noqa: F841 # pyright: ignore[reportUnusedVariable]
+		'draw', 'drawPoints',
+		'glyphSet', 'name', 'recalcBounds',
+		'height', 'lsb', 'tsb', 'width',
+	]
+	glyphSet = ttFont.getGlyphSet()
+	dictionaryCharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
+	print(dictionaryCharStrings) # pyright: ignore[reportUnknownArgumentType]  # noqa: T201
+	aPen = T2CharStringPen(None, glyphSet)  # ty:ignore[invalid-argument-type]
+	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
+		addend: int = modifyPerSide
+		if glyph.width == 667: # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+			addend //= 2
+		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
+		glyph.width += addend * 2 # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+		glyph.lsb += addend # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+		glyph.draw(TransformPen(aPen, (1, 0, 0, 1, addend, 0)))
+	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
+		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
 
 def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
 	"""Merge glyph outlines, horizontal metrics, and Unicode-to-glyph mappings from one `TTFont` into another.
@@ -220,3 +267,10 @@ def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
 		if not table.isUnicode():
 			continue
 		table.cmap = merge(cmapAppend, table.cmap)
+
+if __name__ == "__main__":
+	with TTFont('/apps/Integrated_Code_Fire/warehouse/CID/Simplified_Chinese.Regular.ttf') as ttFont:
+		Z0Z_machinistModifiesSideBearings(ttFont, 12)
+	with TTFont('/apps/Integrated_Code_Fire/workbench/fonts/SourceHanMono.Simplified_Chinese.Regular.otf') as ttFont:
+		Z0Z_machinistModifiesSideBearingsCFF(ttFont, 100)
+

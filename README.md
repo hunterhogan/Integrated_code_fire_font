@@ -12,24 +12,24 @@
 
 | Download fonts from ["Releases"](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest), not the repository source code.                                  |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 請從 ["Releases" / 發行版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下載字型，而非儲存庫的原始碼。                                        |
+| 請從 ["Releases" / 發行版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下載字型, 而非儲存庫的原始碼。                                        |
 | ["Releases" / 릴리스](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 에서 글꼴을 다운로드하십시오. 저장소 소스 코드가 아닙니다.                   |
 | フォントはリポジトリのソースコードではなく、["Releases" / リリース](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) からダウンロードしてください。 |
-| 请从 ["Releases" / 发布](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下载字体，而非仓库源代码。                                                |
-| 請喺 ["Releases" / 發佈版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 度下載字體,唔好喺 原始碼 倉庫度攞。                                   |
+| 请从 ["Releases" / 发布](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下载字体, 而非仓库源代码。                                                |
+| 請喺 ["Releases" / 發佈版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 度下載字體, 唔好喺 原始碼 倉庫度攞。                                  |
 
 ## Font genealogy
 
 | "Fira"                                                  | "Source"                                                          |     | "Source Han"                                                            |     | "Noto"                                                      |
 | ------------------------------------------------------- | ----------------------------------------------------------------- | --- | ----------------------------------------------------------------------- | --- | ----------------------------------------------------------- |
-| [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ⮀   | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
+| [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ↔   | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
 | ⬇                                                       | ⬇                                                                 |     | ⬇                                                                       |     | ⬇                                                           |
 | [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | ➡   | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
-| ⬇                                                       |                                                                   | 🡮   | ⬇                                                                       |     |                                                             |
+| ⬇                                                       |                                                                   | ↘   | ⬇                                                                       |     |                                                             |
 | [Fira Code HH](https://github.com/hunterhogan/FiraCode) |                                                                   |     | [Source Han Mono](https://github.com/adobe-fonts/source-han-mono)       |     |                                                             |
 
-               🡮                      🡷
-                   Integrated Code 火
+                  ↘                          ↙
+                        Integrated Code 火
 
 ## Some other programming fonts
 

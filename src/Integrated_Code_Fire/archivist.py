@@ -395,17 +395,21 @@ def Z0Z_makeSourceHanMonoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHan
 		message: str = f"I received {fontFamilyCID = }. This is a reminder to check the flow from start to finish."
 		sys.stdout.write(f"{ansiColors.CyanOnMagenta}{message}{ansiColorReset}\n")
 
-	return (
+	options: list[str] =[
 		'-f',	str(pathRoot / aWeight / 'OTC' / f"cidfont.ps.OTC{styleA}.{aLocaleOTC}"),
 		'-ff',	str(pathRoot / aWeight / 'OTC' / f"features.OTC{styleA}.{aLocaleOTC}"),
-		'-fi',	str(pathRoot / aWeight / 'OTC' / f"cidfontinfo.OTC{styleA}.{aLocaleOTC}"),
 
 		'-ch',	str(pathRoot / f"Uni{fontFamilyCID}{styleB}{aLocale}-UTF32-H"),
 		'-ci',	str(pathRoot / f"{fontFamilyCID}_{aLocale}_sequences{styleC}.txt"),
 		'-mf',	str(pathRoot / 'FontMenuNameDB'),
 
 		'-cs',	lookupAFDKOCharacterSet[aLocale],
-	)
+	]
+
+	if style == 'Italic':
+		options.append('-i')
+
+	return tuple(options)
 
 #======== Rarely Used Functions ========
 
