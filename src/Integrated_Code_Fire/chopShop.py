@@ -88,12 +88,11 @@ def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOpti
 if __name__ == "__main__":
 	prepareGlyphs(pathFilenameFiraCodeGlyphs)
 
-	listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMono, CPUlimit=-2)
+	listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMono, theStyles=[None], CPUlimit=-2)
 	listPathFilenamesWorkbench: frozenset[Path] = valetCopiesToWorkbench(listPathFilenamesCID)
 
-	listPathFilenamesSubsetCID: frozenset[Path] = subsetCID(subsetOptions, CPUlimit=-2)
+	listPathFilenamesSubsetCID: frozenset[Path] = subsetCID(subsetOptions, theStyles=[None], CPUlimit=-2)
 
 	valetRemovesFiles(listPathFilenamesCID, next(iter(listPathFilenamesCID)).parent)
 	valetRemovesFiles(listPathFilenamesWorkbench, settingsPackage.pathWorkbenchFonts)
 	valetRemovesWorkbench()
-

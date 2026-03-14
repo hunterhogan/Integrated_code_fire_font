@@ -153,10 +153,15 @@ def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None
 
 	"""
 	for glyphName in ttFont.getGlyphOrder():
+		width, bearingLeft = ttFont['hmtx'][glyphName]
+		if width == 0:
+			continue
 		addend: int = modifyPerSide
-		glyph: Glyph = ttFont['glyf'][glyphName]
-		if ttFont['hmtx'][glyphName][hmtx['width']] == 667:
+		if width == 667:
 			addend //= 2
+		ttFont['hmtx'][glyphName] = (width + (addend * 2), bearingLeft + addend)
+
+		glyph: Glyph = ttFont['glyf'][glyphName]
 		if glyph.isComposite():
 			for component in glyph.components:
 				component.x += addend
@@ -165,8 +170,6 @@ def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None
 			glyph.coordinates.translate((addend, 0))
 			glyph.recalcBounds(ttFont['glyf'])
 
-		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][hmtx['width']] + addend * 2
-			, ttFont['hmtx'][glyphName][hmtx['bearingLeft']] + addend)
 
 def Z0Z_machinistModifiesSideBearingsCFF(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()

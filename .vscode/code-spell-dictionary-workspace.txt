@@ -107,6 +107,7 @@ openstep
 panose
 periodcentered
 picosvg
+Plemol
 PPEM
 processedglyphs
 Prokopov

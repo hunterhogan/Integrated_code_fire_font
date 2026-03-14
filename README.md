@@ -33,18 +33,18 @@
 
 ## Some other programming fonts
 
-The website "[Programming Fonts](https://www.programmingfonts.org/)" has previews of hundreds of fonts.
+### With Chinese, Japanese, and/or Korean glyphs
+
+- [Maple Mono](https://github.com/subframe7536/maple-font)
+- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
+- [GLG-Mono](https://github.com/junghan0611/GLG-Mono) is a Korean programming font.
+- [PlemolJP (プレモル ジェイピー)](https://github.com/yuru7/PlemolJP)
+- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
 
 ### With only Western glyphs
 
 - [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
 - As of 2026 March 3, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
-
-### With CJK / Han / Unihan glyphs
-
-- [Maple Mono](https://github.com/subframe7536/maple-font)
-- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
-- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
 
 ## The future?
 

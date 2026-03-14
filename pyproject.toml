@@ -1,6 +1,6 @@
 [project]
 name = "Integrated_Code_Fire"
-version = "0.0.10"
+version = "0.0.11"
 description = "Integrated Code 火 is a monospaced programming font with CJK languages. | 简化字 | 日本 | 한국인 | 香港 | 台灣"
 readme = "README.md"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
