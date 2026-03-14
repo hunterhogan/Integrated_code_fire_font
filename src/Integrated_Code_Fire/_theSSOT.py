@@ -1,3 +1,4 @@
+from fontTools import subset
 from hunterMakesPy import errorL33T, PackageSettings as humpy_PackageSettings
 from pathlib import Path
 from typing import Final
@@ -9,6 +10,15 @@ fontVersionHARDCODED: float = 0.010
 
 pathFilenameFiraCodeGlyphsHARDCODED: Path = Path('/clones', 'FiraCode', 'FiraCode.glyphs')
 pathRootSourceHanMonoHARDCODED: Path = Path("/clones/source-han-mono")
+
+subsetOptionsHARDCODED: subset.Options = subset.Options(
+	drop_tables = [],
+	glyph_names = False,
+	layout_features = '*',
+	name_IDs = '',
+	passthrough_tables = True,
+	symbol_cmap = True,
+)
 
 #======== Subclass `hunterMakesPy.PackageSettings` to add package-specific settings. ========
 
@@ -96,3 +106,4 @@ settingsPackage = PackageSettings('Integrated_Code_Fire'
 
 pathFilenameFiraCodeGlyphs: Path = pathFilenameFiraCodeGlyphsHARDCODED
 pathRootSourceHanMono: Path = pathRootSourceHanMonoHARDCODED
+subsetOptions: subset.Options = subsetOptionsHARDCODED

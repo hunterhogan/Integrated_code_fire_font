@@ -44,6 +44,7 @@ from tlz.dicttoolz import merge  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 	from fontTools.ttLib.tables._g_l_y_f import Glyph
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
@@ -250,27 +251,29 @@ def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
 	"""
 	GlyphOrder: list[str] = ttFont.getGlyphOrder()
 	glyphsAppend: list[str] = [glyph for glyph in fontAppend.getGlyphOrder() if glyph not in frozenset(GlyphOrder)]
-	cmapAppend: dict[int, str] = raiseIfNone(fontAppend.getBestCmap())
 
 	for glyph in glyphsAppend:
 		ttFont['hmtx'][glyph] = fontAppend['hmtx'][glyph]
+	ttFont.setGlyphOrder(GlyphOrder + glyphsAppend)
 
 	ttFont['glyf'].glyphs = merge(fontAppend['glyf'].glyphs, ttFont['glyf'].glyphs)
 
-	ttFont.setGlyphOrder(GlyphOrder + glyphsAppend)
 	ttFont['maxp'].numGlyphs = len(ttFont.getGlyphOrder())
 
+	cmapAppend: CmapSubtable = raiseIfNone(fontAppend.getBestCmap())  # ty:ignore[invalid-assignment]
 	for table in ttFont['cmap'].tables:
 		if table.format == 4:
 			del table
 			continue
 		if not table.isUnicode():
 			continue
-		table.cmap = merge(cmapAppend, table.cmap)
+		table.cmap = merge(cmapAppend, table.cmap)  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-argument-type]
 
 if __name__ == "__main__":
+	with TTFont('/apps/Integrated_Code_Fire/warehouse/scaled/Regular.ttf') as ttFont:
+		print('vmtx' in ttFont)  # noqa: T201
 	with TTFont('/apps/Integrated_Code_Fire/warehouse/CID/Simplified_Chinese.Regular.ttf') as ttFont:
-		Z0Z_machinistModifiesSideBearings(ttFont, 12)
+		machinistAppendsFont(ttFont, ttFont)
 	with TTFont('/apps/Integrated_Code_Fire/workbench/fonts/SourceHanMono.Simplified_Chinese.Regular.otf') as ttFont:
 		Z0Z_machinistModifiesSideBearingsCFF(ttFont, 100)
 

@@ -70,27 +70,6 @@ if TYPE_CHECKING:
 ansiColors = AnsiColors()
 
 """Notes in case I run out of sofunty IDs.
-
-CID subfont names:
-Alphabetic
-AlphabeticDigits
-Bopomofo
-Dingbats
-DingbatsDigits
-Generic
-HDingbats
-HKana
-Hangul
-Ideographs
-Italic
-ItalicCJK
-ItalicDigits
-Kana
-Monospace
-MonospaceCJK
-MonospaceDigits
-VKana
-
 Enclosed CJK Letters and Months
 3200-32FE
 NOTE Keep 0x32FF

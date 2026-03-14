@@ -9,12 +9,12 @@ urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://gith
 requires-python = ">=3.14"
 dependencies = [
     "afdko>=4.0.3",
+    "cytoolz>=1.1.0",
     "fontmake[all]>=3.11.1",
     "fonttools[ufo,unicode]>=4.61.1",
     "glyphslib[colr,defcon,ufo-normalization]>=6.12.7",
     "hunterMakesPy>=0.4.3",
     "more-itertools>=10.8.0",
-    "toolz>=1.1.0",
     "tqdm>=4.67.3",
 ]
 
@@ -24,5 +24,5 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "toolz-stubs>=0.3.1",
+    "toolz-stubs>=0.4.0",
 ]
