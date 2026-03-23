@@ -49,15 +49,14 @@ References
 from fontTools import subset
 from fontTools.ttLib import TTFont
 from functools import cache
+from humpy_cytoolz.dicttoolz import keyfilter, keymap
+from humpy_cytoolz.functoolz import complement, compose, curry as syntacticCurry
 from hunterMakesPy import Ordinals
 from hunterMakesPy.filesystemToolkit import writeStringToHere
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
-from Integrated_Code_Fire import (
-	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, WeightIn)
+from Integrated_Code_Fire import LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, WeightIn
 from itertools import filterfalse, product as CartesianProduct
 from pathlib import Path
-from tlz.dicttoolz import keyfilter, keymap  # pyright: ignore[reportMissingModuleSource]
-from tlz.functoolz import complement, compose, curry as syntacticCurry  # pyright: ignore[reportMissingModuleSource]
 from typing import Literal, TYPE_CHECKING
 import glyphsLib
 import sys

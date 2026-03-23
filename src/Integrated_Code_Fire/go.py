@@ -28,10 +28,8 @@ from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import (
-	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata,
-	archivistUpdatesMetadata)
-from Integrated_Code_Fire.logistics import (
-	packerMakesAssets, valetGetsScaledFont, valetRemovesFiles, valetRemovesWorkbench)
+	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
+from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsScaledFont, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistAppendsFont
 from itertools import product as CartesianProduct
 from pathlib import Path

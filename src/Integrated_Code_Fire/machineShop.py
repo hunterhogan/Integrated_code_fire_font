@@ -37,10 +37,10 @@ from fontTools import subset
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
+from humpy_cytoolz.dicttoolz import merge
 from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import settingsPackage
 from Integrated_Code_Fire.archivist import hmtx
-from tlz.dicttoolz import merge  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
