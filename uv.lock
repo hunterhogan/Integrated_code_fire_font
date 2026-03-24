@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "afdko"
-version = "4.0.3"
+version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "booleanoperations" },
@@ -20,13 +20,7 @@ dependencies = [
     { name = "ufonormalizer" },
     { name = "ufoprocessor" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/fd/4fdefdfcb0c698b55dd385cdfd87cb40a878c7666ab1f59846ee58eb7e02/afdko-4.0.3.tar.gz", hash = "sha256:5feed7c2468e25b25fce0479c04af07f4ed2680bc9251bb4c4aef9ec2fba5720", size = 17922308, upload-time = "2025-12-05T00:36:35.889Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/74/e423c6d100a02d93d9686a5684810317fbe4e6faa00b7ac003ffe5e473d6/afdko-4.0.3-py3-none-macosx_10_13_universal2.whl", hash = "sha256:70bd527cdf2cef5668cdc2aa2d3eaabfea9d3bb574ed0041f16656bfe3a60b99", size = 5107086, upload-time = "2025-12-05T00:36:29.801Z" },
-    { url = "https://files.pythonhosted.org/packages/cc/25/8697db80b1ec9e9b01d19fa52543709d88162fcaf9766027d34b63e6520e/afdko-4.0.3-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:378b6820dd64fadf0b7a6e8332e47fb707148b706b1c934593f773bddc14647f", size = 3072634, upload-time = "2025-12-05T00:36:31.228Z" },
-    { url = "https://files.pythonhosted.org/packages/45/af/fefefc7349360ef02b216bfa670cd93edc7610a1c8f8be4bd59b4de5f15b/afdko-4.0.3-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:b397b7131449c473cb03c0f28d537ed05e91492d4942365d180ddf1ae04d092f", size = 5311733, upload-time = "2025-12-05T00:36:32.721Z" },
-    { url = "https://files.pythonhosted.org/packages/a2/05/5f1f77e917387ad775b894bcbfef6a483a45d099a3e675a155dd0700eb65/afdko-4.0.3-py3-none-win_amd64.whl", hash = "sha256:ae53822368d09e6fd01d7773596c4fd97d68842926eb046cf4704afa6c886536", size = 4636775, upload-time = "2025-12-05T00:36:34.461Z" },
-]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/50/7324d3a4367e178dd9b47fe87087c0306cd5ca10d08465fb07de3e1a5f50/afdko-5.0.0.tar.gz", hash = "sha256:7dc5f7af9d7167cac00019b7c585c8169e5c32b5c092649eb03cf8d12e04c197", size = 17353113, upload-time = "2026-03-23T06:56:10.035Z" }
 
 [[package]]
 name = "attrs"
@@ -394,7 +388,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "afdko", specifier = ">=4.0.3" },
+    { name = "afdko", specifier = ">=5.0.0" },
     { name = "fontmake", extras = ["all"], specifier = ">=3.11.1" },
     { name = "fonttools", extras = ["ufo", "unicode"], specifier = ">=4.61.1" },
     { name = "glyphslib", extras = ["colr", "defcon", "ufo-normalization"], specifier = ">=6.12.7" },

@@ -74,7 +74,7 @@ def smithy_makeotf(optionsValues: tuple[str, ...], pathFilenameWrite: Path) -> P
 		, '-r'
 		, '-nS'
 		, '-ncn'
-		, '-gs'
+		, '-nshw'
 		, '-o', str(pathFilenameWrite)
 	])
 

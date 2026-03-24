@@ -8,7 +8,7 @@ license = "CC-BY-NC-4.0"
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/Integrated_Code_Fire", Issues = "https://github.com/hunterhogan/Integrated_Code_Fire/issues", Repository = "https://github.com/hunterhogan/Integrated_Code_Fire" }
 requires-python = ">=3.14"
 dependencies = [
-    "afdko>=4.0.3",
+    "afdko>=5.0.0",
     "fontmake[all]>=3.11.1",
     "fonttools[ufo,unicode]>=4.61.1",
     "glyphslib[colr,defcon,ufo-normalization]>=6.12.7",
