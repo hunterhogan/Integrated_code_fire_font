@@ -5,14 +5,14 @@ from typing import Final
 import dataclasses
 
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.011
+fontVersionHARDCODED: float = 0.012
 # TODO version update? ^^^^^^^^^^^^
 
 pathFilenameFiraCodeGlyphsHARDCODED: Path = Path('/clones', 'FiraCode', 'FiraCode.glyphs')
 pathRootSourceHanMonoHARDCODED: Path = Path("/clones/source-han-mono")
 
 subsetOptionsHARDCODED: subset.Options = subset.Options(
-	drop_tables = [],
+	drop_tables = ['vhea', 'vmtx'],
 	glyph_names = False,
 	layout_features = '*',
 	name_IDs = '',

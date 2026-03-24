@@ -179,12 +179,20 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 
 	return frozenset(listPathFilenamesCopied)
 
-def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:
+def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:  # noqa: D103
 	dictionaryFontsScaled: dict[str, TTFont] = {}
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 	for weight in settingsPackage.theWeights:
 		pathFilename = settingsPackage.pathWarehouse / 'scaled' / f"{dictionaryWeights[weight].fontFamilyScaled}.{fontFormat}"
 		dictionaryFontsScaled[dictionaryWeights[weight].fontFamilyScaled] = TTFont(pathFilename)
+	return dictionaryFontsScaled
+
+def valetGetsScaledFontPathFilename(fontFormat: str) -> dict[str, Path]:  # noqa: D103
+	dictionaryFontsScaled: dict[str, Path] = {}
+	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
+	for weight in settingsPackage.theWeights:
+		pathFilename = settingsPackage.pathWarehouse / 'scaled' / f"{dictionaryWeights[weight].fontFamilyScaled}.{fontFormat}"
+		dictionaryFontsScaled[dictionaryWeights[weight].fontFamilyScaled] = pathFilename
 	return dictionaryFontsScaled
 
 def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemove: Path | None = None) -> None:

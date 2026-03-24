@@ -34,17 +34,15 @@ References
 """
 from afdko.otf2ttf import otf_to_ttf
 from fontTools import subset
+from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
-from humpy_cytoolz.dicttoolz import merge
-from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import settingsPackage
 from Integrated_Code_Fire.archivist import hmtx
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 	from fontTools.ttLib.tables._g_l_y_f import Glyph
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
@@ -87,6 +85,9 @@ def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
 	return dictionaryFontsScaled
 
+# DEVELOPMENT
+# 1. Don't convert to TTF.
+# 2. Change width/lsb in CFF, not hmtx.
 def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
 	"""Subset a CID font to specified glyph IDs and Unicode codepoints, convert to TrueType, and adjust side bearings.
 
@@ -170,7 +171,6 @@ def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None
 			glyph.coordinates.translate((addend, 0))
 			glyph.recalcBounds(ttFont['glyf'])
 
-
 def Z0Z_machinistModifiesSideBearingsCFF(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()
 	dictionaryCharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
@@ -216,67 +216,12 @@ def Z0Z_machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> Non
 	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
 		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
 
-def machinistAppendsFont(ttFont: TTFont, fontAppend: TTFont) -> None:
-	"""Merge glyph outlines, horizontal metrics, and Unicode-to-glyph mappings from one `TTFont` into another.
-
-	(AI generated docstring)
-
-	You can merge glyphs, metrics, and Unicode mappings from `fontAppend` into `ttFont`. The function appends
-	glyphs that do not already exist in `ttFont`, copies horizontal metrics from the `hmtx` table [1], merges the `glyf` table
-	[1], updates the glyph order, and merges Unicode codepoint mappings from all `cmap` subtables [1].
-
-	Parameters
-	----------
-	ttFont : fontTools.ttLib.TTFont
-		Destination `TTFont` instance that will receive glyphs and mappings from `fontAppend`.
-	fontAppend : fontTools.ttLib.TTFont
-		Source `TTFont` instance whose glyphs, metrics, and cmap entries will be copied into `ttFont`.
-
-	Implementation Notes
-	--------------------
-	This function:
-	- Appends glyphs from `fontAppend` that do not exist in `ttFont` to the `glyf` table and copies horizontal metrics from `hmtx`.
-	- Recomputes the merged glyph order and updates `maxp.numGlyphs`.
-	- Copies Unicode mappings from `fontAppend.getBestCmap()` [2] into all Unicode `cmap` subtables of `ttFont` where the codepoint is not already present.
-	- Skips `cmap` format 4 tables and non-Unicode tables.
-
-	The function uses `raiseIfNone` [3] to assert that `fontAppend.getBestCmap()` returns a mapping.
-
-	References
-	----------
-	[1] fontTools.ttLib.TTFont
-		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
-	[2] fontTools.ttLib.TTFont.getBestCmap
-		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html#fontTools.ttLib.TTFont.getBestCmap
-	[3] hunterMakesPy.raiseIfNone
-		https://context7.com/hunterhogan/huntermakespy
-
-	"""
-	GlyphOrder: list[str] = ttFont.getGlyphOrder()
-	glyphsAppend: list[str] = [glyph for glyph in fontAppend.getGlyphOrder() if glyph not in frozenset(GlyphOrder)]
-
-	for glyph in glyphsAppend:
-		ttFont['hmtx'][glyph] = fontAppend['hmtx'][glyph]
-	ttFont.setGlyphOrder(GlyphOrder + glyphsAppend)
-
-	ttFont['glyf'].glyphs = merge(fontAppend['glyf'].glyphs, ttFont['glyf'].glyphs)
-
-	ttFont['maxp'].numGlyphs = len(ttFont.getGlyphOrder())
-
-	cmapAppend: CmapSubtable = raiseIfNone(fontAppend.getBestCmap())  # ty:ignore[invalid-assignment]
-	for table in ttFont['cmap'].tables:
-		if table.format == 4:
-			del table
-			continue
-		if not table.isUnicode():
-			continue
-		table.cmap = merge(cmapAppend, table.cmap)  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-argument-type]
+def machinistMergesFonts(*pathFilenamesFonts: Path) -> TTFont:  # noqa: D103
+	return Merger().merge(pathFilenamesFonts)
 
 if __name__ == "__main__":
 	with TTFont('/apps/Integrated_Code_Fire/warehouse/scaled/Regular.ttf') as ttFont:
 		print('vmtx' in ttFont)  # noqa: T201
-	with TTFont('/apps/Integrated_Code_Fire/warehouse/CID/Simplified_Chinese.Regular.ttf') as ttFont:
-		machinistAppendsFont(ttFont, ttFont)
 	with TTFont('/apps/Integrated_Code_Fire/workbench/fonts/SourceHanMono.Simplified_Chinese.Regular.otf') as ttFont:
 		Z0Z_machinistModifiesSideBearingsCFF(ttFont, 100)
 

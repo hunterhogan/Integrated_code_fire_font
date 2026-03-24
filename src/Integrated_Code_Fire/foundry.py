@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 	from collections.abc import Iterable, Iterator
 	from pathlib import Path
 
-def smithyCasts_afdko(pathRoot: Path, theLocales: Iterable[str], theStyles: Iterable[str | None], theWeights: Iterable[str], fontFamilyCID: str = 'SourceHanMono', *, CPUlimit: bool | float | int | None = 1) -> list[Path]:
+def smithyCasts_afdko(pathRoot: Path, theLocales: Iterable[str], theStyles: Iterable[str | None], theWeights: Iterable[str], fontFamilyCID: str = 'SourceHanMono', *, CPUlimit: bool | float | int | None = 1) -> list[Path]:  # noqa: D103
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
 	optionsValues: Iterator[tuple[str, ...]] = starmap(Z0Z_makeSourceHanMonoOptions, CartesianProduct([pathRoot], [fontFamilyCID], theLocales, theStyles, theWeights))
@@ -64,7 +64,7 @@ def smithyCasts_afdko(pathRoot: Path, theLocales: Iterable[str], theStyles: Iter
 
 	return listPathFilenames
 
-def smithy_makeotf(optionsValues: tuple[str, ...], pathFilenameWrite: Path) -> Path:
+def smithy_makeotf(optionsValues: tuple[str, ...], pathFilenameWrite: Path) -> Path:  # noqa: D103
 	pathFilenameWrite.parent.mkdir(parents=True, exist_ok=True)
 
 # TODO is this REALLY the only API? No class? No function?

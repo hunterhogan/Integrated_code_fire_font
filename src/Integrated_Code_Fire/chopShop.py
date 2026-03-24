@@ -1,4 +1,4 @@
-from concurrent.futures import as_completed, Future, ProcessPoolExecutor
+from concurrent.futures import as_completed, Future, ProcessPoolExecutor  # noqa: D100
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from Integrated_Code_Fire import (
 	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, subsetOptions, WeightIn)
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 	from hunterMakesPy import identifierDotAttribute
 	from pathlib import Path
 
-def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:
+def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:  # noqa: D103
 	pathTTFont: Path = smithyCastsFromGlyphs(pathFilenameGlyphs, 1, [fontFormat])
 
 	dictionaryFontsScaled: dict[str, TTFont] = machinistScalesFonts(pathTTFont, f"*.{fontFormat}")
@@ -32,7 +32,7 @@ def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:
 
 	valetRemovesWorkbench()
 
-def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:
+def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:  # noqa: D103
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
 	if (theLocales is None) or (theStyles is None) or (theWeights is None):
@@ -43,7 +43,7 @@ def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales:
 
 	return frozenset(smithyCasts_afdko(pathRootCID, theLocales, theStyles, theWeights, fontFamilyCID, CPUlimit=workersMaximum))
 
-def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:
+def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:  # noqa: D103
 	if (theLocales is None) or (theStyles is None) or (theWeights is None):
 		settings = PackageSettings(settingsPackage.identifierPackage)
 		theLocales = theLocales or settings.theLocales

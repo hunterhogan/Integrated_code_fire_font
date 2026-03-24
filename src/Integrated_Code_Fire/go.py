@@ -22,15 +22,13 @@ References
 
 """
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
-from copy import copy
-from fontTools.ttLib import TTFont
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
-from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsScaledFont, valetRemovesFiles, valetRemovesWorkbench
-from Integrated_Code_Fire.machineShop import machinistAppendsFont
+from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsScaledFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
+from Integrated_Code_Fire.machineShop import machinistMergesFonts
 from itertools import product as CartesianProduct
 from pathlib import Path
 from tqdm import tqdm
@@ -40,6 +38,7 @@ import time
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
+	from fontTools.ttLib import TTFont
 	from pathlib import Path
 
 ansiColors = AnsiColors()
@@ -77,7 +76,7 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 
-	dictionaryFontsScaled: dict[str, TTFont] = valetGetsScaledFont(fontFormat)
+	dictionaryFontsScaled: dict[str, Path] = valetGetsScaledFontPathFilename(fontFormat)
 
 	pathCID: Path = settingsPackage.pathWarehouse / 'CID'
 
@@ -94,7 +93,7 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 
 			listClaimTickets.append(concurrencyManager.submit(
 				_mergeFont
-				, copy(dictionaryFontsScaled[weightIn.fontFamilyScaled])
+				, dictionaryFontsScaled[weightIn.fontFamilyScaled]
 				, pathCID / f"{archivistMakesFilenameStem(None, localeIn.ascii, style, weightIn.fontFamilyCID)}.{fontFormat}"
 				, archivistMakesNameIDMetadata(weightIn.IntegratedCode火, fontFamily.replace(' ', ''), fontFamily)
 				, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(settingsPackage.fontFamily.replace(' ', ''), localeIn.IntegratedCode火, style, weightIn.IntegratedCode火, '')}.{fontFormat}"
@@ -108,23 +107,10 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 	valetRemovesFiles(pathRemove=settingsPackage.pathWorkbenchFonts)
 	valetRemovesWorkbench()
 
-def _mergeFont(ttFont: TTFont, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
-	fontHan = TTFont(pathFilenameHan)
-	machinistAppendsFont(ttFont, fontHan)
-	fontHan.close()
+def _mergeFont(pathFilenameScaled: Path, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
+	ttFont: TTFont = machinistMergesFonts(pathFilenameScaled, pathFilenameHan)
 
 	archivistUpdatesMetadata(ttFont, nameIDmetadata)
-
-# TODO I'm still deeply skeptical that ALL of the following are true:
-	# `fontTools.subset.Subsetter` didn't already do this.
-	# `afdko.otf2ttf.otf_to_ttf` didn't already do this.
-	# `ttFont.save` doesn't automatically do this.
-	# There isn't a better method or function.
-	# The parameters are correct.
-	# These are the ONLY computations I must/should manually trigger in ALL tables and TTFont properties.
-	ttFont['OS/2'].recalcAvgCharWidth(ttFont)
-	ttFont['OS/2'].recalcUnicodeRanges(ttFont)
-	ttFont['OS/2'].recalcCodePageRanges(ttFont)
 
 	pathFilenameWrite.parent.mkdir(parents=True, exist_ok=True)
 	ttFont.save(pathFilenameWrite)
