@@ -48,13 +48,13 @@ References
 """
 from fontTools import subset
 from fontTools.ttLib import TTFont
-from functools import cache
 from humpy_cytoolz.dicttoolz import keyfilter, keymap
 from humpy_cytoolz.functoolz import complement, compose, curry as syntacticCurry
 from hunterMakesPy import Ordinals
 from hunterMakesPy.filesystemToolkit import writeStringToHere
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
-from Integrated_Code_Fire import LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, WeightIn
+from Integrated_Code_Fire import (
+	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, WeightIn)
 from itertools import filterfalse, product as CartesianProduct
 from pathlib import Path
 from typing import Literal, TYPE_CHECKING
@@ -434,7 +434,6 @@ def archivistGetsSubsetCharacters(fontFamilyCID: str = 'SourceHanMono', theLocal
 
 	return subsetCharacters
 
-@cache
 def archivistGetsGlyphsUnicode(pathFilename: Path) -> frozenset[int]:
 	"""Get the Unicode codepoints to use in Integrated Code 火.
 
@@ -445,7 +444,7 @@ def archivistGetsGlyphsUnicode(pathFilename: Path) -> frozenset[int]:
 	"""
 	return frozenset([int(unicode, 16) for glyph in glyphsLib.load(pathFilename).glyphs for unicode in glyph.unicodes])
 
-def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filenameStemWrite: str) -> list[Path]:
+def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filenameStemWrite: str, unicodeExclude: frozenset[int] = frozenset()) -> list[Path]:
 	"""Generate glyph ID and Unicode subset files from a UTF-32 character map.
 
 	(AI generated docstring)
@@ -475,10 +474,8 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 
 	listPathFilenames: list[Path] = []
 
-	unicodeFiraCode: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphs)
-
 # TODO No one in the entire universe has created a function to load these values from these super-common files?!
-	intMAPstr: dict[int, str] = keyfilter(complement(unicodeFiraCode.__contains__)
+	intMAPstr: dict[int, str] = keyfilter(complement(unicodeExclude.__contains__)
 		, keymap(unicodesToInt, dict(map(compose(tuple[str, str], str.split), pathFilename.read_text('utf-8').splitlines()))))
 
 # TODO I think tlz.keyfilter might have a bug.
@@ -502,7 +499,7 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 
 	return listPathFilenames
 
-def archivistMakesAllCharacterSubsets(fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None) -> list[Path]:
+def archivistMakesAllCharacterSubsets(pathMetadata: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, unicodeExclude: frozenset[int] = frozenset()) -> list[Path]:
 	"""Generate character subset files for all locale and style combinations.
 
 	(AI generated docstring)
@@ -541,18 +538,19 @@ def archivistMakesAllCharacterSubsets(fontFamilyCID: str = 'SourceHanMono', theL
 
 	pathWrite: Path = settingsPackage.pathPackage / 'dataCenter'
 
-	pathMetadata: Path = pathRootSourceHanMono / 'Resources'
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
-
+# TODO Remove the hardcoding.
 	for locale, style in CartesianProduct(theLocales, theStyles):
 		if style:
 			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}-ital.map"
 		else:
 			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}.map"
 		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
-		listPathFilenames.extend(archivistMakesCharacterSubsets(pathFilename, pathWrite, filenameStem))
+		listPathFilenames.extend(archivistMakesCharacterSubsets(pathFilename, pathWrite, filenameStem, unicodeExclude))
 
 	return listPathFilenames
 
 if __name__ == '__main__':
-	archivistMakesAllCharacterSubsets()
+	pathMetadata: Path = pathRootSourceHanMonoDEFAULT / 'Resources'
+	unicodeExclude: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphsDEFAULT)
+	archivistMakesAllCharacterSubsets(pathMetadata, unicodeExclude=unicodeExclude)

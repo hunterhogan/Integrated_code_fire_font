@@ -108,15 +108,13 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 
 ### Compile the font files
 
-Run go.py.
-
-### Make Five Source Han Mono Locale TTC files
-
-Based on the out-of-date instructions in the Source Han Mono repository, this process produces one TTC file for each of the five locales in Source Han Mono. The files seem to work, and they are far smaller than the comprehensive TTC file. These files could be useful to you, and [you can download the fonts](https://github.com/hunterhogan/Integrated_code_fire_font/releases/tag/SourceHanMono1.002) from the "Release."
-
-1. Maximize locales, styles, and weights in "_theSSOT.py".
-2. Run `foundry.smithyCasts_afdko('SourceHanMono')`.
-3. Run makeTTCLocale.cmd.
+1. All global settings ought to be in "src\Integrated_Code_Fire\_theSSOT.py".
+2. Some actions need a local copy of Fira Code. If so, clone [Fira Code](https://github.com/tonsky/FiraCode).
+3. Some actions need a local copy of Source Han Mono. If so, clone [Source Han Mono](https://github.com/adobe-fonts/source-han-mono).
+4. To generate new character subset files for all locale and style combinations, run archivist.py.
+5. To create new scaled TTF files or to create scaled OTF files of Fira Code, run chopShop.prepareGlyphs() with the appropriate arguments.
+6. To create new subset TTF files of Source Han Mono, go to chopShop.py and have fun with that mess!
+7. To merge the scaled Fira Code files and the subset Source Han Mono files, run go.py.
 
 ## Legal stuff
 

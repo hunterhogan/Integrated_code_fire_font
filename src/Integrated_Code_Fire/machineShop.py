@@ -85,10 +85,7 @@ def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
 	return dictionaryFontsScaled
 
-# DEVELOPMENT
-# 1. Don't convert to TTF.
-# 2. Change width/lsb in CFF, not hmtx.
-def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
+def machinistSubsetsCIDtoTTF(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
 	"""Subset a CID font to specified glyph IDs and Unicode codepoints, convert to TrueType, and adjust side bearings.
 
 	(AI generated docstring)
@@ -125,10 +122,8 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 	subsetter = subset.Subsetter(subsetOptions)
 	subsetter.populate(gids = gids, unicodes = unicodes)
 	subsetter.subset(ttFont)
-# TODO modify without converting to TTF.
 	otf_to_ttf(ttFont)
 	machinistModifiesSideBearingsTTF(ttFont, hmtx['increment'])
-	# Z0Z_machinistModifiesSideBearingsCFF(ttFont, hmtx['increment'])  # noqa: ERA001
 	return ttFont
 
 def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None:
@@ -170,6 +165,20 @@ def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None
 		elif glyph.numberOfContours != 0:
 			glyph.coordinates.translate((addend, 0))
 			glyph.recalcBounds(ttFont['glyf'])
+
+# DEVELOPMENT
+# 1. Don't convert to TTF.
+# 2. Change width/lsb in CFF, not hmtx.
+def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:  # noqa: D103
+	ttFont: TTFont = TTFont(pathFilename)
+	subsetter = subset.Subsetter(subsetOptions)
+	subsetter.populate(gids = gids, unicodes = unicodes)
+	subsetter.subset(ttFont)
+# TODO modify without converting to TTF.
+	otf_to_ttf(ttFont)
+	machinistModifiesSideBearingsTTF(ttFont, hmtx['increment'])
+	# Z0Z_machinistModifiesSideBearingsCFF(ttFont, hmtx['increment'])  # noqa: ERA001
+	return ttFont
 
 def Z0Z_machinistModifiesSideBearingsCFF(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()

@@ -1,12 +1,13 @@
-from concurrent.futures import as_completed, Future, ProcessPoolExecutor  # noqa: D100
+from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from Integrated_Code_Fire import (
-	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphs, pathRootSourceHanMono, settingsPackage, subsetOptions, WeightIn)
+	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, subsetOptionsDEFAULT,
+	WeightIn)
 from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsSubsetCharacters, archivistGetsWeights, archivistMakesFilenameStem)
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
 from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
-from Integrated_Code_Fire.machineShop import machinistScalesFonts, machinistSubsetsCID
+from Integrated_Code_Fire.machineShop import machinistScalesFonts, machinistSubsetsCIDtoTTF
 from itertools import product as CartesianProduct
 from pathlib import Path
 from tqdm import tqdm
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 	from hunterMakesPy import identifierDotAttribute
 	from pathlib import Path
 
-def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:  # noqa: D103
+def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:
 	pathTTFont: Path = smithyCastsFromGlyphs(pathFilenameGlyphs, 1, [fontFormat])
 
 	dictionaryFontsScaled: dict[str, TTFont] = machinistScalesFonts(pathTTFont, f"*.{fontFormat}")
@@ -32,7 +33,7 @@ def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:  #
 
 	valetRemovesWorkbench()
 
-def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:  # noqa: D103
+def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
 	if (theLocales is None) or (theStyles is None) or (theWeights is None):
@@ -43,7 +44,10 @@ def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales:
 
 	return frozenset(smithyCasts_afdko(pathRootCID, theLocales, theStyles, theWeights, fontFamilyCID, CPUlimit=workersMaximum))
 
-def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:  # noqa: D103
+# ruff: noqa: D103, D100
+def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono'
+			, theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None
+			, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:
 	if (theLocales is None) or (theStyles is None) or (theWeights is None):
 		settings = PackageSettings(settingsPackage.identifierPackage)
 		theLocales = theLocales or settings.theLocales
@@ -80,18 +84,18 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 	return frozenset(listPathFilenames)
 
 def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
-	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, gids, unicodes, subsetOptions)
+	fontCID: TTFont = machinistSubsetsCIDtoTTF(pathFilenameCID, gids, unicodes, subsetOptions)
 	fontCID.save(pathFilenameWrite)
 	fontCID.close()
 	return pathFilenameWrite
 
 if __name__ == "__main__":
-	prepareGlyphs(pathFilenameFiraCodeGlyphs)
+	prepareGlyphs(pathFilenameFiraCodeGlyphsDEFAULT)
 
-	listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMono, theStyles=[None], CPUlimit=-2)
+	listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMonoDEFAULT, theStyles=[None], CPUlimit=-2)
 	listPathFilenamesWorkbench: frozenset[Path] = valetCopiesToWorkbench(listPathFilenamesCID)
 
-	listPathFilenamesSubsetCID: frozenset[Path] = subsetCID(subsetOptions, theStyles=[None], CPUlimit=-2)
+	listPathFilenamesSubsetCID: frozenset[Path] = subsetCID(subsetOptionsDEFAULT, theStyles=[None], CPUlimit=-2)
 
 	valetRemovesFiles(listPathFilenamesCID, next(iter(listPathFilenamesCID)).parent)
 	valetRemovesFiles(listPathFilenamesWorkbench, settingsPackage.pathWorkbenchFonts)

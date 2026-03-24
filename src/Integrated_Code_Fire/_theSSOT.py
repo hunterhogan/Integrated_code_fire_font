@@ -3,13 +3,11 @@ from hunterMakesPy import errorL33T, PackageSettings as humpy_PackageSettings
 from pathlib import Path
 from typing import Final
 import dataclasses
+import socket
 
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
 fontVersionHARDCODED: float = 0.012
 # TODO version update? ^^^^^^^^^^^^
-
-pathFilenameFiraCodeGlyphsHARDCODED: Path = Path('/clones', 'FiraCode', 'FiraCode.glyphs')
-pathRootSourceHanMonoHARDCODED: Path = Path("/clones/source-han-mono")
 
 subsetOptionsHARDCODED: subset.Options = subset.Options(
 	drop_tables = ['vhea', 'vmtx'],
@@ -104,6 +102,15 @@ settingsPackage = PackageSettings('Integrated_Code_Fire'
 	, theWeights = frozenset(['Bold', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
 )
 
-pathFilenameFiraCodeGlyphs: Path = pathFilenameFiraCodeGlyphsHARDCODED
-pathRootSourceHanMono: Path = pathRootSourceHanMonoHARDCODED
-subsetOptions: subset.Options = subsetOptionsHARDCODED
+if socket.gethostname() == 'duda':
+	pathRootRepositoriesDEFAULT: Path = Path('/clones')
+else:
+	# NOTE I assume you cloned this repository to the same parent directory as other repositories.
+	pathRootRepositoriesDEFAULT = settingsPackage.pathRoot.parent
+
+pathRootRepositories: Path = pathRootRepositoriesDEFAULT
+
+pathFilenameFiraCodeGlyphsDEFAULT: Path = pathRootRepositories / 'FiraCode' / 'FiraCode.glyphs'
+pathRootSourceHanMonoDEFAULT: Path = pathRootRepositories / "source-han-mono"
+
+subsetOptionsDEFAULT: subset.Options = subsetOptionsHARDCODED
