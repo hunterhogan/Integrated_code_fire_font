@@ -90,6 +90,7 @@ makeotfexe
 Masataka
 maxp
 maxs
+mergefonts
 metainfo
 Metainfo
 naddn

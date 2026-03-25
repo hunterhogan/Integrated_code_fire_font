@@ -9,18 +9,14 @@ horizontal side bearings, and merge glyph outlines and metrics from one font int
 Contents
 --------
 Functions
+	machinistMergesTTFFonts
+		Merge glyph outlines, horizontal metrics, and Unicode mappings between fonts.
+	machinistModifiesSideBearings
+		Modify horizontal side bearings for all glyphs in a font.
 	machinistScalesFonts
 		Scale multiple font files to the target units-per-em value.
 	machinistSubsetsCID
-		Subset a CID font to specified glyph IDs and Unicode codepoints, convert to TrueType, and adjust side bearings.
-	machinistModifiesSideBearings
-		Modify horizontal side bearings for all glyphs in a font.
-	machinistAppendsFont
-		Merge glyph outlines, horizontal metrics, and Unicode mappings from one font into another.
-
-Variables
-	subsetOptions
-		Global `fontTools.subset.Options` instance used for font subsetting.
+		Subset a CID font to specified glyph IDs and Unicode codepoints and adjust side bearings.
 
 References
 ----------
@@ -32,18 +28,15 @@ References
 	https://context7.com/hunterhogan/huntermakespy
 
 """
-from afdko.otf2ttf import otf_to_ttf
 from fontTools import subset
 from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
-from Integrated_Code_Fire import settingsPackage
-from Integrated_Code_Fire.archivist import hmtx
+from Integrated_Code_Fire import incrementHARDCODED, settingsPackage, widthHalfSourceHanMonoHARDCODED
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from fontTools.ttLib.tables._g_l_y_f import Glyph
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
 
@@ -71,7 +64,6 @@ def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 	References
 	----------
 	[1] Integrated_Code_Fire.settingsPackage
-		Internal package reference.
 	[2] fontTools.ttLib.TTFont
 		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
 	[3] fontTools.ttLib.scaleUpem.scale_upem
@@ -85,14 +77,12 @@ def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
 		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
 	return dictionaryFontsScaled
 
-def machinistSubsetsCIDtoTTF(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
-	"""Subset a CID font to specified glyph IDs and Unicode codepoints, convert to TrueType, and adjust side bearings.
-
-	(AI generated docstring)
+def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
+	"""Subset a CID font to specified glyph IDs and Unicode codepoints and adjust side bearings.
 
 	You can load a CID font file, subset the font to specified glyph IDs and Unicode codepoints using
-	`fontTools.subset.Subsetter` [1], convert the result to TrueType format using `afdko.otf2ttf.otf_to_ttf` [2], and adjust
-	horizontal side bearings by the increment specified in `hmtx['increment']`.
+	`fontTools.subset.Subsetter` [1], and adjust horizontal side bearings by the increment specified
+	in `incrementHARDCODED`.
 
 	Parameters
 	----------
@@ -112,125 +102,53 @@ def machinistSubsetsCIDtoTTF(pathFilename: Path, gids: list[int], unicodes: list
 	----------
 	[1] fontTools.subset.Subsetter
 		https://fonttools.readthedocs.io/en/latest/subset/index.html
-	[2] afdko.otf2ttf.otf_to_ttf
-		https://adobe-type-tools.github.io/afdko/
-	[3] Integrated_Code_Fire.archivist.hmtx
-		Internal package reference.
-
 	"""
 	ttFont: TTFont = TTFont(pathFilename)
 	subsetter = subset.Subsetter(subsetOptions)
 	subsetter.populate(gids = gids, unicodes = unicodes)
 	subsetter.subset(ttFont)
-	otf_to_ttf(ttFont)
-	machinistModifiesSideBearingsTTF(ttFont, hmtx['increment'])
+	machinistModifiesSideBearings(ttFont, incrementHARDCODED)
 	return ttFont
 
-def machinistModifiesSideBearingsTTF(ttFont: TTFont, modifyPerSide: int) -> None:
+def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 	"""Modify horizontal side bearings for all glyphs in a font.
 
 	(AI generated docstring)
 
-	You can adjust the horizontal side bearings of all glyphs in a font by adding `modifyPerSide` to both the
-	left and right side bearings. The function translates glyph coordinates for simple glyphs, adjusts component positions for
-	composite glyphs, recalculates bounds, and updates the `hmtx` table [1].
+	You can use this function to modify the horizontal side bearings of all glyphs in a
+	`fontTools.ttLib.TTFont` instance. The function adjusts the advance width and left
+	side bearing for each glyph by `modifyPerSide`, except for half-width glyphs which
+	receive half the modification increment.
 
 	Parameters
 	----------
 	ttFont : fontTools.ttLib.TTFont
-		Font instance to modify.
+		The font instance to modify.
 	modifyPerSide : int
-		Value to add to each side bearing. Positive values increase spacing, negative values decrease spacing.
+		The amount to add to each side bearing.
 
 	References
 	----------
 	[1] fontTools.ttLib.TTFont
 		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
-
 	"""
-	for glyphName in ttFont.getGlyphOrder():
-		width, bearingLeft = ttFont['hmtx'][glyphName]
-		if width == 0:
-			continue
-		addend: int = modifyPerSide
-		if width == 667:
-			addend //= 2
-		ttFont['hmtx'][glyphName] = (width + (addend * 2), bearingLeft + addend)
-
-		glyph: Glyph = ttFont['glyf'][glyphName]
-		if glyph.isComposite():
-			for component in glyph.components:
-				component.x += addend
-			glyph.recalcBounds(ttFont['glyf'])
-		elif glyph.numberOfContours != 0:
-			glyph.coordinates.translate((addend, 0))
-			glyph.recalcBounds(ttFont['glyf'])
-
-# DEVELOPMENT
-# 1. Don't convert to TTF.
-# 2. Change width/lsb in CFF, not hmtx.
-def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:  # noqa: D103
-	ttFont: TTFont = TTFont(pathFilename)
-	subsetter = subset.Subsetter(subsetOptions)
-	subsetter.populate(gids = gids, unicodes = unicodes)
-	subsetter.subset(ttFont)
-# TODO modify without converting to TTF.
-	otf_to_ttf(ttFont)
-	machinistModifiesSideBearingsTTF(ttFont, hmtx['increment'])
-	# Z0Z_machinistModifiesSideBearingsCFF(ttFont, hmtx['increment'])  # noqa: ERA001
-	return ttFont
-
-def Z0Z_machinistModifiesSideBearingsCFF(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()
-	dictionaryCharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownVariableType]
 
-	penT2CharString = T2CharStringPen(None, glyphSet)  # ty:ignore[invalid-argument-type]
-	for glyphName in glyphSet:
+	for glyphName, glyph in glyphSet.items():
+		if glyph.width == 0:
+			continue
+
 		addend: int = modifyPerSide
-		if ttFont['hmtx'][glyphName][hmtx['width']] == 667:
+		if glyph.width == widthHalfSourceHanMonoHARDCODED:
 			addend //= 2
 
-		charString = dictionaryCharStrings[glyphName] # pyright: ignore[reportUnknownVariableType]
-		glyphSet[glyphName].draw(TransformPen(penT2CharString, (1, 0, 0, 1, addend, 0)))
+		ttFont['hmtx'][glyphName] = (glyph.width + (addend * 2), glyph.lsb + addend)
 
-		dictionaryCharStrings[glyphName] = penT2CharString.getCharString(
-			private = charString.private, # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-			globalSubrs = charString.globalSubrs, # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-		)
+		glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0))) # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/2799
 
-		ttFont['hmtx'][glyphName] = (ttFont['hmtx'][glyphName][hmtx['width']] + addend * 2
-			, ttFont['hmtx'][glyphName][hmtx['bearingLeft']] + addend)
+def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
+	"""FontTools can't merge CID-keyed fonts.
 
-	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
-		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
-
-def Z0Z_machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:  # noqa: D103
-	dirTTGGlyph=[ '_abc_impl', '_getGlyphAndOffset', '_getGlyphInstance',  # noqa: F841 # pyright: ignore[reportUnusedVariable]
-		'draw', 'drawPoints',
-		'glyphSet', 'name', 'recalcBounds',
-		'height', 'lsb', 'tsb', 'width',
-	]
-	glyphSet = ttFont.getGlyphSet()
-	dictionaryCharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
-	print(dictionaryCharStrings) # pyright: ignore[reportUnknownArgumentType]  # noqa: T201
-	aPen = T2CharStringPen(None, glyphSet)  # ty:ignore[invalid-argument-type]
-	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
-		addend: int = modifyPerSide
-		if glyph.width == 667: # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-			addend //= 2
-		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
-		glyph.width += addend * 2 # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-		glyph.lsb += addend # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-		glyph.draw(TransformPen(aPen, (1, 0, 0, 1, addend, 0)))
-	for glyph in tuple(glyphSet.values())[0:9]: # pyright: ignore[reportUnknownArgumentType, reportIndexIssue, reportUnknownVariableType]
-		print(f"{glyph.width = }\t{glyph.lsb = }") # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]  # noqa: T201
-
-def machinistMergesFonts(*pathFilenamesFonts: Path) -> TTFont:  # noqa: D103
+	afdko mergefonts requires both fonts to be CID-keyed, but Fira Code is not CID-keyed.
+	"""
 	return Merger().merge(pathFilenamesFonts)
-
-if __name__ == "__main__":
-	with TTFont('/apps/Integrated_Code_Fire/warehouse/scaled/Regular.ttf') as ttFont:
-		print('vmtx' in ttFont)  # noqa: T201
-	with TTFont('/apps/Integrated_Code_Fire/workbench/fonts/SourceHanMono.Simplified_Chinese.Regular.otf') as ttFont:
-		Z0Z_machinistModifiesSideBearingsCFF(ttFont, 100)
-

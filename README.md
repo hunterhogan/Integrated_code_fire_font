@@ -116,6 +116,13 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 6. To create new subset TTF files of Source Han Mono, go to chopShop.py and have fun with that mess!
 7. To merge the scaled Fira Code files and the subset Source Han Mono files, run go.py.
 
+### Notes in case I run out of sfnt IDs
+
+- Enclosed CJK Letters and Months, 0x3200-32FE, Keep 0x32FF
+- filterfalse(between吗(0x3300, 0x33FF)
+- filterfalse(between吗(0xFB00, 0xFB4F)
+- filterfalse(between吗(0xFE10, 0xFE4F)
+
 ## Legal stuff
 
 - Source is a trademark of Adobe in the United States and/or other countries.

@@ -6,11 +6,13 @@ import dataclasses
 import socket
 
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.012
+fontVersionHARDCODED: float = 0.013
 # TODO version update? ^^^^^^^^^^^^
 
+widthHalfSourceHanMonoHARDCODED: int = 667
+
 subsetOptionsHARDCODED: subset.Options = subset.Options(
-	drop_tables = ['vhea', 'vmtx'],
+	drop_tables = ['vhea', 'vmtx', 'VORG', 'vert', 'vrt2'],
 	glyph_names = False,
 	layout_features = '*',
 	name_IDs = '',
@@ -114,3 +116,6 @@ pathFilenameFiraCodeGlyphsDEFAULT: Path = pathRootRepositories / 'FiraCode' / 'F
 pathRootSourceHanMonoDEFAULT: Path = pathRootRepositories / "source-han-mono"
 
 subsetOptionsDEFAULT: subset.Options = subsetOptionsHARDCODED
+
+incrementHARDCODED: int = (settingsPackage.width - settingsPackage.unitsPerEm) // 2
+"""There is a smart way to do this, but my brain is not cooperating right now."""

@@ -28,7 +28,7 @@ from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
 from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsScaledFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
-from Integrated_Code_Fire.machineShop import machinistMergesFonts
+from Integrated_Code_Fire.machineShop import machinistMergesTTFFonts
 from itertools import product as CartesianProduct
 from pathlib import Path
 from tqdm import tqdm
@@ -62,13 +62,9 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 	References
 	----------
 	[1] Integrated_Code_Fire.foundry
-		Internal package reference.
 	[2] Integrated_Code_Fire.machineShop.machinistScalesFonts
-		Internal package reference.
 	[3] Integrated_Code_Fire.mergeFonts.mergeFonts
-		Internal package reference.
 	[4] Integrated_Code_Fire.logistics.packerMakesAssets
-		Internal package reference.
 
 	"""
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
@@ -108,7 +104,7 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 	valetRemovesWorkbench()
 
 def _mergeFont(pathFilenameScaled: Path, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
-	ttFont: TTFont = machinistMergesFonts(pathFilenameScaled, pathFilenameHan)
+	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameScaled, pathFilenameHan)
 
 	archivistUpdatesMetadata(ttFont, nameIDmetadata)
 

@@ -3,8 +3,8 @@
 (AI generated docstring)
 
 You can use this module to copy compiled font files to the workbench directory, package merged fonts into locale-specific ZIP
-archives, and remove temporary assembly line artifacts. The module provides the file staging and cleanup operations used in the Integrated
-Code 火 assembly line.
+archives, retrieve scaled font references, and remove temporary assembly line artifacts. The module provides the file staging and
+cleanup operations used in the Integrated Code 火 assembly line.
 
 Contents
 --------
@@ -15,6 +15,10 @@ Functions
 		Package merged fonts for a single locale into a ZIP archive.
 	valetCopiesToWorkbench
 		Copy font files to the workbench directory.
+	valetGetsScaledFont
+		Load scaled fonts as `TTFont` instances mapped by font family.
+	valetGetsScaledFontPathFilename
+		Get scaled font file paths mapped by font family.
 	valetRemovesFiles
 		Remove files from a list or directory.
 	valetRemovesWorkbench
@@ -26,8 +30,8 @@ References
 	Internal package reference.
 [2] pathlib.Path
 	https://docs.python.org/3/library/pathlib.html
-[3] shutil
-	https://docs.python.org/3/library/shutil.html
+[3] fontTools.ttLib.TTFont
+	https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
 
 """
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
@@ -49,15 +53,13 @@ def packerMakesAssets(listPathFilenames: Iterable[Path], workersMaximum: int) ->
 	(AI generated docstring)
 
 	You can create locale-specific ZIP archives containing merged Integrated Code 火 fonts. The function
-	creates `pathAssets` [1], uses `concurrent.futures.ProcessPoolExecutor` [2] to invoke `packerMakesAssetsLocale` for each
+	creates `settingsPackage.pathAssets` [1], uses `concurrent.futures.ProcessPoolExecutor` [2] to invoke `packerMakesAssetsLocale` [3] for each
 	locale in parallel, and returns the set of created ZIP archive paths.
 
 	Parameters
 	----------
 	listPathFilenames : Iterable[Path]
 		Iterable of paths to merged font files.
-	filenameStem : str
-		Filename stem used as the base name for ZIP archives.
 	workersMaximum : int
 		Maximum number of parallel worker processes for packaging operations.
 
@@ -69,11 +71,9 @@ def packerMakesAssets(listPathFilenames: Iterable[Path], workersMaximum: int) ->
 	References
 	----------
 	[1] Integrated_Code_Fire.settingsPackage.pathAssets
-		Internal package reference.
-	[2] concurrent.futures.ProcessPoolExecutor - Python Standard Library
+	[2] concurrent.futures.ProcessPoolExecutor
 		https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ProcessPoolExecutor
-	[3] Integrated_Code_Fire.go.go
-		Internal package reference.
+	[3] Integrated_Code_Fire.logistics.packerMakesAssetsLocale
 
 	"""
 	listPathFilenamesAssets: list[Path] = []
@@ -98,9 +98,9 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 
 	(AI generated docstring)
 
-	You can create a ZIP archive containing all merged font files for a specific locale. The function filters
-	`listPathFilenames` to include only files whose stems contain `localeIn.IntegratedCode火` and writes the filtered files to
-	`pathFilenameZIP` [1].
+	You can create a ZIP archive containing all merged font files for a specific locale. The function ensures
+	`settingsPackage.pathAssets` [1] exists, filters `listPathFilenames` to include only files whose stems contain
+	`localeIn.IntegratedCode火`, and writes the filtered files to `pathFilenameZIP` using `ZipFile` [2].
 
 	Parameters
 	----------
@@ -118,10 +118,9 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 
 	References
 	----------
-	[1] zipfile.ZipFile - Python Standard Library
+	[1] Integrated_Code_Fire.settingsPackage.pathAssets
+	[2] zipfile.ZipFile
 		https://docs.python.org/3/library/zipfile.html
-	[2] Integrated_Code_Fire.settingsPackage.pathAssets
-		Internal package reference.
 
 	"""
 	settingsPackage.pathAssets.mkdir(parents=True, exist_ok=True)
@@ -133,17 +132,16 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 
 # SEMIOTICS `valet`.
 def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, pathRoot: PurePath | None = None, theGlob: str = '*.*') -> frozenset[Path]:
-	"""Copy files to `pathWorkbenchFonts`.
+	"""Copy files to the workbench fonts directory.
+
+	You can copy font files to `settingsPackage.pathWorkbenchFonts` [1] from an iterable of file paths or from a source directory
+	using a glob pattern. The function ensures the workbench fonts directory exists (creating parents as needed) before copying files.
 
 	Warning
 	-------
-	In a fight between files with the same filename, the winner will be
-	1. the last `pathFilename` from `listPathFilenames`, which is unpredictable if the `Iterable` is not ordered, or
-	2. the last `pathFilename` from `Path(pathRoot).glob(theGlob)`.
-	The file in `pathWorkbenchFonts` always loses.
-
-	This function ensures that the `pathWorkbenchFonts` directory exists [1] (creating parents as needed) and then iterates over
-	each `Path` returned by `Path(pathRoot).glob(theGlob)`[2].
+	Files with the same filename will overwrite each other in an unpredictable order. The winning file will be the last
+	`pathFilename` from `listPathFilenames` (unpredictable if the `Iterable` is not ordered) or the last `pathFilename` matching
+	the glob pattern. Existing files in `settingsPackage.pathWorkbenchFonts` [1] are always overwritten.
 
 	Parameters
 	----------
@@ -152,18 +150,17 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 	pathRoot : PurePath | None = None
 		Source directory from which files are copied, or `None` to skip copying from a directory.
 	theGlob : str = '*.*'
-		Glob pattern used to select files to copy. Default is '*.*'.
+		Glob pattern used to select files to copy from `pathRoot` [2].
 
 	Returns
 	-------
 	listPathFilenamesCopied : frozenset[Path]
-		Frozen set of paths to the files copied to `pathWorkbenchFonts`.
+		Frozen set of paths to the files copied to `settingsPackage.pathWorkbenchFonts` [1].
 
 	References
 	----------
-	[1] settingsPackage.pathWorkbenchFonts
-		Internal package reference.
-	[2] pathlib.Path.glob - Python standard library
+	[1] Integrated_Code_Fire.settingsPackage.pathWorkbenchFonts
+	[2] pathlib.Path.glob
 		https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob
 	"""
 	listPathFilenamesCopied: list[Path] = []
@@ -179,7 +176,33 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 
 	return frozenset(listPathFilenamesCopied)
 
-def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:  # noqa: D103
+def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:
+	"""Load scaled fonts as `TTFont` instances mapped by font family.
+
+	(AI generated docstring)
+
+	You can load all scaled font files from the warehouse as `TTFont` instances [1]. The function retrieves weight
+	metadata [2], constructs file paths in the scaled fonts directory, loads each font using `TTFont`, and returns
+	a mapping from font family names to loaded font instances.
+
+	Parameters
+	----------
+	fontFormat : str
+		Font file format extension (e.g., 'ttf', 'otf').
+
+	Returns
+	-------
+	dictionaryFontsScaled : dict[str, TTFont]
+		Mapping from scaled font family names to loaded `TTFont` instances [1].
+
+	References
+	----------
+	[1] fontTools.ttLib.TTFont
+		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
+	[2] Integrated_Code_Fire.archivist.archivistGetsWeights
+	[3] Integrated_Code_Fire.settingsPackage.pathWarehouse
+
+	"""
 	dictionaryFontsScaled: dict[str, TTFont] = {}
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 	for weight in settingsPackage.theWeights:
@@ -187,7 +210,31 @@ def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:  # noqa: D103
 		dictionaryFontsScaled[dictionaryWeights[weight].fontFamilyScaled] = TTFont(pathFilename)
 	return dictionaryFontsScaled
 
-def valetGetsScaledFontPathFilename(fontFormat: str) -> dict[str, Path]:  # noqa: D103
+def valetGetsScaledFontPathFilename(fontFormat: str) -> dict[str, Path]:
+	"""Get scaled font file paths mapped by font family.
+
+	(AI generated docstring)
+
+	You can retrieve file paths for all scaled font files in the warehouse without loading font data. The function
+	retrieves weight metadata [1], constructs file paths in the scaled fonts directory [2], and returns a mapping
+	from font family names to file paths.
+
+	Parameters
+	----------
+	fontFormat : str
+		Font file format extension (e.g., 'ttf', 'otf').
+
+	Returns
+	-------
+	dictionaryFontsScaled : dict[str, Path]
+		Mapping from scaled font family names to file paths.
+
+	References
+	----------
+	[1] Integrated_Code_Fire.archivist.archivistGetsWeights
+	[2] Integrated_Code_Fire.settingsPackage.pathWarehouse
+
+	"""
 	dictionaryFontsScaled: dict[str, Path] = {}
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 	for weight in settingsPackage.theWeights:
@@ -201,7 +248,8 @@ def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemov
 	(AI generated docstring)
 
 	You can remove files specified in `listPathFilenames` or all files in the directory `pathRemove`. If
-	`pathRemove` is provided, the function removes all files in `pathRemove` and then removes the directory itself.
+	`pathRemove` is provided, the function iterates over all files [1], removes each file using `Path.unlink` [2],
+	and then removes the directory itself using `Path.rmdir` [3].
 
 	Parameters
 	----------
@@ -212,9 +260,11 @@ def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemov
 
 	References
 	----------
-	[1] pathlib.Path.unlink - Python Standard Library
+	[1] pathlib.Path.iterdir
+		https://docs.python.org/3/library/pathlib.html#pathlib.Path.iterdir
+	[2] pathlib.Path.unlink
 		https://docs.python.org/3/library/pathlib.html#pathlib.Path.unlink
-	[2] pathlib.Path.rmdir - Python Standard Library
+	[3] pathlib.Path.rmdir
 		https://docs.python.org/3/library/pathlib.html#pathlib.Path.rmdir
 
 	"""
@@ -231,17 +281,19 @@ def valetRemovesWorkbench() -> None:
 	"""Remove the workbench directory and all contained files.
 
 	You can remove `settingsPackage.pathWorkbench` [1] and all files within the workbench directory. The
-	function unlinks all files in the directory and then removes the directory itself. The function intentionally cannot remove
-	subdirectories, so if a subdirectory is present in the workbench, an exception will be raised. If that happens, it is a signal
-	that something is flawed in the font creation process or that something went wrong during this creation process.
+	function iterates over all items in the directory [2], unlinks each file [3], and then removes the directory
+	itself [4]. The function intentionally cannot remove subdirectories, so if a subdirectory is present in the
+	workbench, an exception will be raised. If that happens, it is a signal that something is flawed in the font
+	creation process or that something went wrong during this creation process.
 
 	References
 	----------
 	[1] Integrated_Code_Fire.settingsPackage.pathWorkbench
-		Internal package reference.
-	[2] pathlib.Path.unlink - Python Standard Library
+	[2] pathlib.Path.iterdir
+		https://docs.python.org/3/library/pathlib.html#pathlib.Path.iterdir
+	[3] pathlib.Path.unlink
 		https://docs.python.org/3/library/pathlib.html#pathlib.Path.unlink
-	[3] pathlib.Path.rmdir - Python Standard Library
+	[4] pathlib.Path.rmdir
 		https://docs.python.org/3/library/pathlib.html#pathlib.Path.rmdir
 
 	"""
