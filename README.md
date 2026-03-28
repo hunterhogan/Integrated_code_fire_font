@@ -108,13 +108,13 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 
 ### Compile the font files
 
-1. All global settings ought to be in "src\Integrated_Code_Fire\_theSSOT.py".
+1. All global settings ought to be in "src/Integrated_Code_Fire/_theSSOT.py".
 2. Some actions need a local copy of Fira Code. If so, clone [Fira Code](https://github.com/tonsky/FiraCode).
 3. Some actions need a local copy of Source Han Mono. If so, clone [Source Han Mono](https://github.com/adobe-fonts/source-han-mono).
 4. To generate new character subset files for all locale and style combinations, run archivist.py.
-5. To create new scaled TTF files or to create scaled OTF files of Fira Code, run chopShop.prepareGlyphs() with the appropriate arguments.
+5. To create new TTF files or to create OTF files of Fira Code, go to chopShop.py and run chopShop.prepareGlyphs() with the appropriate arguments.
 6. To create new subset TTF files of Source Han Mono, go to chopShop.py and have fun with that mess!
-7. To merge the scaled Fira Code files and the subset Source Han Mono files, run go.py.
+7. To merge the prepared Fira Code files and the subset Source Han Mono files, run go.py.
 
 ### Notes in case I run out of sfnt IDs
 
@@ -131,6 +131,7 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 - You may license the files, other than the font files, in this repository of which I am the copyright holder under the terms of the [Creative Commons Attribution-NonCommercial 4.0 International Public License](https://creativecommons.org/licenses/by-nc/4.0/).
 
 [![SIL Open Font License](https://raw.githubusercontent.com/hunterhogan/integrated_code_fire_font/refs/heads/main/.github/OFLLogoRectColor.png)](https://openfontlicense.org/ofl-faq/)
+
 [![CC-BY-NC-4.0](https://raw.githubusercontent.com/hunterhogan/integrated_code_fire_font/refs/heads/main/.github/CC-BY-NC-4.0.png)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 ### Commentary

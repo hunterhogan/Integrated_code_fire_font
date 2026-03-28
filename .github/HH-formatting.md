@@ -218,8 +218,6 @@ Use vertical alignment when:
 - **Tabular data** benefits from column-based reading
 - **Dictionary literals or configuration blocks** where keys form a semantic category
 
-**Example: Type annotations revealing relationships**
-
 ```python
 indexFirst:      int
 indexLast:       int
@@ -230,8 +228,6 @@ valueAverage:    float
 ```
 
 The alignment reveals two conceptual groups (index-related integers, value-related floats) that would be obscured by ragged formatting.
-
-**Example: Related assignments**
 
 ```python
 pathInput       = Path(configFile)

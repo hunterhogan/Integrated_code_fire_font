@@ -1,6 +1,8 @@
 SETLOCAL enableDelayedExpansion
 SET fontFamily=SourceHanMono
 
+@REM the paths are wrong. the commands are for 4.0.3.
+
 SET pathPS=C:\apps\Integrated_Code_Fire\%fontFamily%\glyphs
 SET pathSHM=C:\apps\Integrated_Code_Fire\workbench\%fontFamily%
 
