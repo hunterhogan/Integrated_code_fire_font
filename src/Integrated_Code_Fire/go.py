@@ -1,23 +1,24 @@
-"""Orchestrate the Integrated Code 火 font assembly line.
+"""Merge western and CJK fonts and package release assets.
 
-You can run the complete Integrated Code 火 assembly line. The module compiles multiple fonts from source, scales and merges
-fonts, updates OpenType metadata, packages release assets as ZIP archives, and removes temporary assembly line artifacts.
+You can use this module to merge prepared western fonts with subsetted CID fonts, update OpenType metadata, package locale
+archives, and remove temporary assembly-line artifacts. The module provides the merge stage in `goMerge` and the packaging and
+cleanup stage in `goAssets`.
 
 Contents
 --------
 Functions
-	go
-		Run the complete font assembly line.
+	goAssets
+		Package merged fonts into locale archives and remove temporary artifacts.
+	goMerge
+		Merge prepared western fonts with subsetted CID fonts.
 
 References
 ----------
-[1] Integrated_Code_Fire.foundry
+[1] Integrated_Code_Fire.archivist
 	Internal package reference.
-[2] Integrated_Code_Fire.machineShop
+[2] Integrated_Code_Fire.logistics
 	Internal package reference.
-[3] Integrated_Code_Fire.mergeFonts
-	Internal package reference.
-[4] Integrated_Code_Fire.logistics
+[3] Integrated_Code_Fire.machineShop
 	Internal package reference.
 
 """
@@ -27,7 +28,7 @@ from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
-from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsScaledFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
+from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsWesternFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistMergesTTFFonts
 from itertools import product as CartesianProduct
 from pathlib import Path
@@ -43,28 +44,44 @@ if TYPE_CHECKING:
 
 ansiColors = AnsiColors()
 
-def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> None:
-	"""Run the complete Integrated Code 火 font assembly line.
+def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
+	"""Merge prepared western fonts with subsetted CID fonts.
 
 	(AI generated docstring)
 
-	You can execute all stages of the font assembly line process: compile Fira Code from Glyphs source using
-	`smithyCastsFromGlyphs` [1], compile Source Han Mono from CIDFont source using `smithyCasts_afdko` [1], stage compiled CID
-	fonts to the workbench, scale Fira Code fonts to the target units-per-em value using `machinistScalesFonts` [2], merge scaled
-	Fira Code with subsetted Source Han Mono using `mergeFonts` [3], package merged fonts into locale-specific ZIP archives using
-	`packerMakesAssets` [4], and remove temporary assembly line artifacts.
+	You can use this function to merge prepared western fonts with subsetted CID fonts for every configured locale, style, and
+	weight combination. The function loads western font paths from `valetGetsWesternFontPathFilename` [1], derives name-table
+	metadata with `archivistMakesNameIDMetadata` [2], dispatches `_mergeFont` workers in parallel, and writes merged fonts into
+	`settingsPackage.pathWorkbenchFonts`.
 
 	Parameters
 	----------
-	workersMaximum : int = 1
-		Maximum number of parallel worker processes for compilation, merging, and packaging operations.
+	fontFormat : str = 'ttf'
+		Font file format used for both western input files and subsetted CID input files.
+	CPUlimit : bool | float | int | None = 1
+		Concurrency limit passed to `defineConcurrencyLimit` [3].
+
+	Returns
+	-------
+	pathFilenamesMerged : list[Path]
+		Merged font file paths written into `settingsPackage.pathWorkbenchFonts`.
+
+	Examples
+	--------
+	The `__main__` block uses `goMerge` to produce the merged fonts that `goAssets` packages [4].
+
+	>>> listPathFilenames: Iterable[Path] = goMerge(CPUlimit=CPUlimit)
 
 	References
 	----------
-	[1] Integrated_Code_Fire.foundry
-	[2] Integrated_Code_Fire.machineShop.machinistScalesFonts
-	[3] Integrated_Code_Fire.mergeFonts.mergeFonts
-	[4] Integrated_Code_Fire.logistics.packerMakesAssets
+	[1] Integrated_Code_Fire.logistics.valetGetsWesternFontPathFilename
+		Internal package reference.
+	[2] Integrated_Code_Fire.archivist.archivistMakesNameIDMetadata
+		Internal package reference.
+	[3] hunterMakesPy.parseParameters.defineConcurrencyLimit
+		https://context7.com/hunterhogan/huntermakespy
+	[4] Integrated_Code_Fire.go.goAssets
+		Internal package reference.
 
 	"""
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
@@ -72,7 +89,7 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 
-	dictionaryFontsScaled: dict[str, Path] = valetGetsScaledFontPathFilename(fontFormat)
+	dictionaryFontsWestern: dict[str, Path] = valetGetsWesternFontPathFilename(fontFormat)
 
 	pathCID: Path = settingsPackage.pathWarehouse / 'CID'
 
@@ -89,7 +106,7 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 
 			listClaimTickets.append(concurrencyManager.submit(
 				_mergeFont
-				, dictionaryFontsScaled[weightIn.fontFamilyScaled]
+				, dictionaryFontsWestern[weightIn.fontFamilyWestern]
 				, pathCID / f"{archivistMakesFilenameStem(None, localeIn.ascii, style, weightIn.fontFamilyCID)}.{fontFormat}"
 				, archivistMakesNameIDMetadata(weightIn.IntegratedCode火, fontFamily.replace(' ', ''), fontFamily)
 				, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(settingsPackage.fontFamily.replace(' ', ''), localeIn.IntegratedCode火, style, weightIn.IntegratedCode火, '')}.{fontFormat}"
@@ -98,13 +115,43 @@ def go(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> N
 		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc = "Merging fonts"):
 			listPathFilenames.append(claimTicket.result())
 
-	listPathFilenames = packerMakesAssets(listPathFilenames, workersMaximum)
+	return listPathFilenames
 
-	valetRemovesFiles(pathRemove=settingsPackage.pathWorkbenchFonts)
-	valetRemovesWorkbench()
+def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
+	"""I use this worker to merge one western font with one subsetted CID font.
 
-def _mergeFont(pathFilenameScaled: Path, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
-	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameScaled, pathFilenameHan)
+	(AI generated docstring)
+
+	I use this function as the parallel worker dispatched by `goMerge` [1]. The function merges `pathFilenameWestern` and
+	`pathFilenameHan` with `machinistMergesTTFFonts` [2], updates OpenType metadata with `archivistUpdatesMetadata` [3], writes
+	the merged font to `pathFilenameWrite`, and returns `pathFilenameWrite`.
+
+	Parameters
+	----------
+	pathFilenameWestern : Path
+		Path to the prepared western font file.
+	pathFilenameHan : Path
+		Path to the subsetted CID-derived font file.
+	nameIDmetadata : dict[int, str]
+		Name-table values written into the merged font.
+	pathFilenameWrite : Path
+		Destination path for the merged font file.
+
+	Returns
+	-------
+	pathFilenameWrite : Path
+		Path to the written merged font file.
+
+	References
+	----------
+	[1] Integrated_Code_Fire.go.goMerge
+		Internal package reference.
+	[2] Integrated_Code_Fire.machineShop.machinistMergesTTFFonts
+		Internal package reference.
+	[3] Integrated_Code_Fire.archivist.archivistUpdatesMetadata
+		Internal package reference.
+	"""
+	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameWestern, pathFilenameHan)
 
 	archivistUpdatesMetadata(ttFont, nameIDmetadata)
 
@@ -114,7 +161,47 @@ def _mergeFont(pathFilenameScaled: Path, pathFilenameHan: Path, nameIDmetadata: 
 
 	return pathFilenameWrite
 
+def goAssets(listPathFilenames: Iterable[Path], *, CPUlimit: bool | float | int | None = 1) -> None:
+	"""Package merged fonts into locale archives and remove temporary artifacts.
+
+	You can use this function to package the merged font files produced by `goMerge` [1] into locale-specific ZIP archives with
+	`packerMakesAssets` [2]. After packaging, the function removes `settingsPackage.pathWorkbenchFonts` and `settingsPackage.pathWorkbench`
+	to leave only warehouse and asset outputs.
+
+	Parameters
+	----------
+	listPathFilenames : Iterable[Path]
+		Merged font file paths to package.
+	CPUlimit : bool | float | int | None = 1
+		Concurrency limit passed to `defineConcurrencyLimit` [3].
+
+	References
+	----------
+	[1] Integrated_Code_Fire.go.goMerge
+		Internal package reference.
+	[2] Integrated_Code_Fire.logistics.packerMakesAssets
+		Internal package reference.
+	[3] hunterMakesPy.parseParameters.defineConcurrencyLimit
+		https://context7.com/hunterhogan/huntermakespy
+	"""
+	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
+	listPathFilenames = packerMakesAssets(listPathFilenames, workersMaximum)
+
+	valetRemovesFiles(pathRemove=settingsPackage.pathWorkbenchFonts)
+	valetRemovesWorkbench()
+
 if __name__ == '__main__':
+	CPUlimit: int = -1
+
 	timeStart: float = time.perf_counter()
-	go(CPUlimit=-1)
+
+	listPathFilenames: Iterable[Path] = goMerge(CPUlimit=CPUlimit)
+	goAssets(listPathFilenames, CPUlimit=CPUlimit)
+
 	sys.stdout.write(f"{ansiColors.BlackOnYellow}Done in {time.perf_counter() - timeStart:.2f} seconds.{ansiColorReset}\n")
+
+# cid-keyed to name-keyed _in-place_
+# merge.
+# don't create assets.
+# sfntedit to share tables.
+# otf2otc.

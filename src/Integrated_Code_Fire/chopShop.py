@@ -13,7 +13,7 @@ Functions
 	castCID
 		Compile Source Han Mono OTF fonts from CIDFont source for all locale, style, and weight combinations.
 	prepareGlyphs
-		Compile and scale a Fira Code Glyphs source file and save scaled fonts to the warehouse.
+		Prepare compiled western fonts for merging.
 	subsetCID
 		Subset compiled CID fonts to locale-specific glyph IDs and Unicode ranges.
 
@@ -38,7 +38,9 @@ References
 
 """
 from afdko.otf2ttf import otf_to_ttf
+from collections.abc import Iterable
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
+from fontTools.ttLib import scaleUpem, TTFont
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from Integrated_Code_Fire import (
 	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, subsetOptionsDEFAULT,
@@ -47,65 +49,73 @@ from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsSubsetCharacters, archivistGetsWeights, archivistMakesFilenameStem)
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
 from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
-from Integrated_Code_Fire.machineShop import machinistScalesFonts, machinistSubsetsCID
+from Integrated_Code_Fire.machineShop import machinistSubsetsCID
 from itertools import product as CartesianProduct
 from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from collections.abc import Iterable
 	from fontTools import subset
-	from fontTools.ttLib import TTFont
 	from hunterMakesPy import identifierDotAttribute
 
-def prepareGlyphs(pathFilenameGlyphs: Path, fontFormat: str = 'ttf') -> None:
-	"""Compile and scale a Fira Code Glyphs source file and save scaled fonts to the warehouse.
+def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
+	"""Prepare compiled western fonts for merging.
 
 	(AI generated docstring)
 
-	You can compile fonts from the Glyphs source file at `pathFilenameGlyphs` using `smithyCastsFromGlyphs` [1], scale the
-	compiled fonts to the target units-per-em value using `machinistScalesFonts` [2], and save the scaled fonts to
-	`settingsPackage.pathWarehouse / 'scaled'`. The function removes the intermediate compiled font file using
-	`valetRemovesFiles` [3] after scaling, then cleans up the workbench using `valetRemovesWorkbench` [4].
+	You can use this function to take already compiled western font files, scale each font to `settingsPackage.unitsPerEm` when
+	necessary, and save the prepared fonts into `settingsPackage.pathWarehouse`. The function writes into `western` when the
+	target units-per-em value already equals `2000`, and writes into `scaled` otherwise. The `CPUlimit` parameter is accepted for
+	interface consistency with other assembly-line stages [1].
 
 	Parameters
 	----------
-	pathFilenameGlyphs : Path
-		Path to the Glyphs source file to compile.
-	fontFormat : str = 'ttf'
-		Font format to compile and scale. Use 'ttf' for TrueType outlines or 'otf' for PostScript CFF outlines.
+	listPathFilenamesTTFont : Iterable[Path]
+		Iterable of compiled western font paths to prepare.
+	CPUlimit : bool | float | int | None = 1
+		Concurrency limit placeholder kept for API consistency with adjacent assembly-line stages.
+
+	Returns
+	-------
+	pathFilenamesPrepared : frozenset[Path]
+		Prepared font file paths written into `settingsPackage.pathWarehouse`.
 
 	Examples
 	--------
-	Invoked in the `__main__` block using the default Fira Code path and 'ttf' format:
+	The `__main__` block prepares the compiled fonts returned by `smithyCastsFromGlyphs` [2].
 
-	>>> from Integrated_Code_Fire.chopShop import prepareGlyphs
-	>>> from Integrated_Code_Fire import pathFilenameFiraCodeGlyphsDEFAULT
-	>>> prepareGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, 'ttf')
+	>>> pathTTFont: Path | None = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, 1, [fontFormat])
+	>>> listPathFilenamesTTFont: Iterable[Path] = pathTTFont.glob(f"*.{fontFormat}")
+	>>> prepareGlyphs(listPathFilenamesTTFont, CPUlimit=CPUlimit)
 
 	References
 	----------
-	[1] Integrated_Code_Fire.foundry.smithyCastsFromGlyphs
-		Internal package reference.
-	[2] Integrated_Code_Fire.machineShop.machinistScalesFonts
-		Internal package reference.
-	[3] Integrated_Code_Fire.logistics.valetRemovesFiles
-		Internal package reference.
-	[4] Integrated_Code_Fire.logistics.valetRemovesWorkbench
+	[1] hunterMakesPy.parseParameters.defineConcurrencyLimit
+		https://context7.com/hunterhogan/huntermakespy
+	[2] Integrated_Code_Fire.foundry.smithyCastsFromGlyphs
 		Internal package reference.
 	"""
-	pathTTFont: Path = smithyCastsFromGlyphs(pathFilenameGlyphs, 1, [fontFormat])
+	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)  # pyright: ignore[reportUnusedVariable] # noqa: F841
 
-	dictionaryFontsScaled: dict[str, TTFont] = machinistScalesFonts(pathTTFont, f"*.{fontFormat}")
-	valetRemovesFiles(pathRemove=pathTTFont)
+	listPathFilenames: Iterable[Path] = []
 
-	pathScaled: Path = settingsPackage.pathWarehouse / 'scaled'
-	pathScaled.mkdir(parents=True, exist_ok=True)
-	for weight, ttFont in dictionaryFontsScaled.items():
-		ttFont.save(pathScaled / f"{weight}.{fontFormat}")
+	if settingsPackage.unitsPerEm == 2000:
+		pathWrite: Path = settingsPackage.pathWarehouse / 'western'
+	else:
+		pathWrite: Path = settingsPackage.pathWarehouse / 'scaled'
+	pathWrite.mkdir(parents=True, exist_ok=True)
 
-	valetRemovesWorkbench()
+	for pathFilename in listPathFilenamesTTFont:
+		ttFont: TTFont = TTFont(pathFilename)
+		if settingsPackage.unitsPerEm != 2000:
+			scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
+		weight: str = pathFilename.stem.removeprefix(f"{pathFilename.parent.name}-")
+		pathFilenameWrite: Path = pathWrite / f"{weight}{pathFilename.suffix}"
+		ttFont.save(pathFilenameWrite)
+		listPathFilenames.append(pathFilenameWrite)
+
+	return frozenset(listPathFilenames)
 
 def castCID(pathRootCID: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, theWeights: Iterable[str] | None = None, *, CPUlimit: bool | float | int | None = 1) -> frozenset[Path]:
 	"""Compile Source Han Mono OTF fonts from CIDFont source for all locale, style, and weight combinations.
@@ -344,20 +354,34 @@ def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOpti
 
 if __name__ == "__main__":
 	fontFormat: str = 'ttf'
+	CPUlimit: int = -2
 
-	if doThis := True:
-		prepareGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, fontFormat)
+	doGlyphs = True
+	doCID = True
+	doSubset = True
+	doCleanUp = True
 
-	if doThis := True:
-		listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMonoDEFAULT, theStyles=[None], CPUlimit=-2)
+	if doGlyphs:
+		pathTTFont: Path | None = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, 1, [fontFormat])
+		listPathFilenamesTTFont: Iterable[Path] = pathTTFont.glob(f"*.{fontFormat}")
+		prepareGlyphs(listPathFilenamesTTFont, CPUlimit=CPUlimit)
+	else:
+		pathTTFont = None
+
+	if doCID:
+		listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMonoDEFAULT, theStyles=[None], CPUlimit=CPUlimit)
 	else:
 		listPathFilenamesCID = frozenset(Path('/apps/Integrated_Code_Fire/workbench/SourceHanMono').glob('*.otf'))
 
-	if doThis := True:
+	if doSubset:
 		listPathFilenamesWorkbench: frozenset[Path] = valetCopiesToWorkbench(listPathFilenamesCID)
-		listPathFilenamesSubsetCID: frozenset[Path] = subsetCID(subsetOptionsDEFAULT, theStyles=[None], fontFormat=fontFormat, CPUlimit=-2)
+		listPathFilenamesSubsetCID: frozenset[Path] = subsetCID(subsetOptionsDEFAULT, theStyles=[None], fontFormat=fontFormat, CPUlimit=CPUlimit)
+	else:
+		listPathFilenamesWorkbench: frozenset[Path] = frozenset()
 
-	if cleanUp := True:
+	if doCleanUp:
+		if pathTTFont:
+			valetRemovesFiles(listPathFilenamesTTFont, pathTTFont) # pyright: ignore[reportPossiblyUnboundVariable]
 		valetRemovesFiles(listPathFilenamesCID, next(iter(listPathFilenamesCID)).parent)
 		valetRemovesFiles(listPathFilenamesWorkbench, settingsPackage.pathWorkbenchFonts)
 		valetRemovesWorkbench()

@@ -3,29 +3,27 @@
 (AI generated docstring)
 
 You can use this module to perform font manipulation operations in the Integrated Code 火 assembly line. The module provides
-functions to scale fonts to a target units-per-em value, subset CID fonts to specified glyph IDs and Unicode codepoints, adjust
-horizontal side bearings, and merge glyph outlines and metrics from one font into another.
+functions that operate on `fontTools.ttLib.TTFont` [3] instances, including CID subsetting with `fontTools.subset.Subsetter` [1]
+and multi-font merging with `fontTools.merge.Merger` [2].
 
 Contents
 --------
 Functions
 	machinistMergesTTFFonts
-		Merge glyph outlines, horizontal metrics, and Unicode mappings between fonts.
+		Merge multiple TrueType font files into one `TTFont` instance.
 	machinistModifiesSideBearings
 		Modify horizontal side bearings for all glyphs in a font.
-	machinistScalesFonts
-		Scale multiple font files to the target units-per-em value.
 	machinistSubsetsCID
-		Subset a CID font to specified glyph IDs and Unicode codepoints and adjust side bearings.
+		Subset a CID font and widen retained glyphs.
 
 References
 ----------
-[1] fontTools
-	https://fonttools.readthedocs.io/en/latest/
-[2] afdko.otf2ttf
-	https://adobe-type-tools.github.io/afdko/
-[3] hunterMakesPy
-	https://context7.com/hunterhogan/huntermakespy
+[1] fontTools.subset.Subsetter
+	https://fonttools.readthedocs.io/en/latest/subset/index.html
+[2] fontTools.merge.Merger
+	https://fonttools.readthedocs.io/en/latest/merge.html
+[3] fontTools.ttLib.TTFont
+	https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
 
 """
 from fontTools import subset
@@ -40,49 +38,11 @@ if TYPE_CHECKING:
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
 
-def machinistScalesFonts(pathFonts: Path, theGlob: str) -> dict[str, TTFont]:
-	"""Scale multiple font files to the target units-per-em value.
-
-	(AI generated docstring)
-
-	You can load font files matching `theGlob` from `pathFonts` and scale each font to
-	`settingsPackage.unitsPerEm` [1]. The function returns a mapping from weight identifier to scaled `TTFont` [2] instance.
-	Weight identifiers are extracted from filenames by removing the `pathFonts.name` prefix.
-
-	Parameters
-	----------
-	pathFonts : Path
-		Directory containing font files to scale.
-	theGlob : str
-		Glob pattern for selecting font files.
-
-	Returns
-	-------
-	dictionaryFontsScaled : dict[str, TTFont]
-		Mapping from weight identifier to scaled `TTFont` instance.
-
-	References
-	----------
-	[1] Integrated_Code_Fire.settingsPackage
-	[2] fontTools.ttLib.TTFont
-		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
-	[3] fontTools.ttLib.scaleUpem.scale_upem
-		https://fonttools.readthedocs.io/en/latest/ttLib/scaleUpem.html
-
-	"""
-	dictionaryFontsScaled: dict[str, TTFont] = {}
-	for pathFilename in pathFonts.glob(theGlob):
-		font: TTFont = TTFont(pathFilename)
-		scaleUpem.scale_upem(font, settingsPackage.unitsPerEm)
-		dictionaryFontsScaled[pathFilename.stem.removeprefix(f"{pathFonts.name}-")] = font
-	return dictionaryFontsScaled
-
 def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
-	"""Subset a CID font to specified glyph IDs and Unicode codepoints and adjust side bearings.
+	"""Subset a CID font and widen retained glyphs.
 
-	You can load a CID font file, subset the font to specified glyph IDs and Unicode codepoints using
-	`fontTools.subset.Subsetter` [1], and adjust horizontal side bearings by the increment specified
-	in `incrementHARDCODED`.
+	You can load a CID font file, subset the CID font to `gids` and `unicodes` with `fontTools.subset.Subsetter` [1], scale the
+	CID font to `settingsPackage.unitsPerEm` when needed, and widen retained glyphs with `machinistModifiesSideBearings` [2].
 
 	Parameters
 	----------
@@ -92,21 +52,27 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 		List of glyph IDs to retain in the subset.
 	unicodes : list[int]
 		List of Unicode codepoints to retain in the subset.
+	subsetOptions : subset.Options
+		Subsetting options passed to `fontTools.subset.Subsetter` [1].
 
 	Returns
 	-------
 	ttFont : fontTools.ttLib.TTFont
-		Subsetted and converted TrueType font instance with adjusted side bearings.
+		Subsetted font instance with adjusted side bearings.
 
 	References
 	----------
 	[1] fontTools.subset.Subsetter
 		https://fonttools.readthedocs.io/en/latest/subset/index.html
+	[2] Integrated_Code_Fire.machineShop.machinistModifiesSideBearings
+		Internal package reference.
 	"""
 	ttFont: TTFont = TTFont(pathFilename)
 	subsetter = subset.Subsetter(subsetOptions)
 	subsetter.populate(gids = gids, unicodes = unicodes)
 	subsetter.subset(ttFont)
+	if settingsPackage.unitsPerEm != 1000:
+		scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
 	machinistModifiesSideBearings(ttFont, incrementHARDCODED)
 	return ttFont
 
@@ -133,7 +99,7 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
 	"""
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()
-
+	# TODO This doesn't seem to modify the 'CFF ' table, so I'm not sure it really works on CID-keyed fonts.
 	for glyphName, glyph in glyphSet.items():
 		if glyph.width == 0:
 			continue
@@ -147,8 +113,25 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 		glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0))) # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/2799
 
 def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
-	"""FontTools can't merge CID-keyed fonts.
+	"""Merge multiple TrueType font files into one `TTFont` instance.
 
-	afdko mergefonts requires both fonts to be CID-keyed, but Fira Code is not CID-keyed.
+	You can use this function to merge multiple TrueType font files with `fontTools.merge.Merger` [1]. The assembly line calls
+	`machinistMergesTTFFonts` after CID fonts have already been converted away from CID-keyed outlines, because direct merging of
+	CID-keyed fonts is not viable for the western and Han sources used here.
+
+	Parameters
+	----------
+	*pathFilenamesFonts : Path
+		Input font file paths passed to `fontTools.merge.Merger` [1].
+
+	Returns
+	-------
+	ttFont : TTFont
+		Merged font instance.
+
+	References
+	----------
+	[1] fontTools.merge.Merger
+		https://fonttools.readthedocs.io/en/latest/merge.html
 	"""
 	return Merger().merge(pathFilenamesFonts)

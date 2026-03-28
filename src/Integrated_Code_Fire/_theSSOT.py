@@ -6,7 +6,7 @@ import dataclasses
 import socket
 
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.013
+fontVersionHARDCODED: float = 0.014
 # TODO version update? ^^^^^^^^^^^^
 
 widthHalfSourceHanMonoHARDCODED: int = 667
@@ -24,11 +24,30 @@ subsetOptionsHARDCODED: subset.Options = subset.Options(
 
 @dataclasses.dataclass
 class PackageSettings(humpy_PackageSettings):
-	"""Configure package-wide settings specific to Integrated Code 火 font generation.
+	"""Store package-specific settings for Integrated Code 火 font generation.
 
-	You can use this class to define font metadata, directory paths, locale and weight sets, and other package-wide configuration
-	values. The class extends `hunterMakesPy.PackageSettings` [1] with font-specific fields and computes derived paths in
-	`__post_init__`.
+	You can use this class to define font metadata, locale coverage, layout dimensions, and derived workspace paths shared across
+	the Integrated Code 火 assembly line. The class extends `hunterMakesPy.PackageSettings` [1] and computes derived path
+	attributes in `__post_init__`.
+
+	Parameters
+	----------
+	achVendID : str = '1INT'
+		OS/2 vendor identifier written into compiled fonts.
+	fontFamily : str = 'Integrated Code 火'
+		Display name for the font family.
+	fontVersion : float = errorL33T
+		Version number written into compiled font metadata.
+	theLocales : frozenset[str] = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
+		Locale identifiers to build.
+	theStyles : frozenset[str | None] = frozenset(['Italic', None])
+		Style identifiers to build. The value `None` represents upright style.
+	theWeights : frozenset[str] = frozenset(['Bold', 'ExtraLight', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
+		Weight identifiers to build.
+	unitsPerEm : int = 2000
+		Target units-per-em value for merged fonts.
+	width : int = 2400
+		Target glyph advance width used for merged fonts.
 
 	Attributes
 	----------
@@ -44,18 +63,22 @@ class PackageSettings(humpy_PackageSettings):
 		Set of supported style identifiers, where `None` represents upright.
 	theWeights : frozenset[str]
 		Set of supported weight identifiers.
-	unitsPerEm : int = 1000
+	unitsPerEm : int = 2000
 		Units per em square for the font coordinate system.
+	width : int = 2400
+		Target glyph advance width for merged fonts.
+	fontFamilyASCII : str
+		ASCII-safe font family name used for filenames and asset names.
 	pathRoot : Path
 		Root directory of the workspace, computed in `__post_init__`.
 	pathAssets : Path
 		Directory for output assets, computed in `__post_init__`.
+	pathWarehouse : Path
+		Directory for persistent intermediate fonts, computed in `__post_init__`.
 	pathWorkbench : Path
 		Directory for intermediate assembly line artifacts, computed in `__post_init__`.
 	pathWorkbenchFonts : Path
 		Directory for intermediate font files, computed in `__post_init__`.
-	filenameFontFamily : str
-		Font family name without spaces, computed in `__post_init__`.
 
 	References
 	----------
@@ -72,8 +95,8 @@ class PackageSettings(humpy_PackageSettings):
 	theLocales: frozenset[str] = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
 	theStyles: frozenset[str | None] = frozenset(['Italic', None])
 	theWeights: frozenset[str] = frozenset(['Bold', 'ExtraLight', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
-	unitsPerEm: int = 1000
-	width: int = 1200
+	unitsPerEm: int = 2000
+	width: int = 2400
 
 	fontFamilyASCII: str = dataclasses.field(init=False)
 
@@ -118,4 +141,13 @@ pathRootSourceHanMonoDEFAULT: Path = pathRootRepositories / "source-han-mono"
 subsetOptionsDEFAULT: subset.Options = subsetOptionsHARDCODED
 
 incrementHARDCODED: int = (settingsPackage.width - settingsPackage.unitsPerEm) // 2
-"""There is a smart way to do this, but my brain is not cooperating right now."""
+"""Provide the per-side width increment used when widening Source Han Mono glyphs.
+
+The `incrementHARDCODED` value equals half of `settingsPackage.width - settingsPackage.unitsPerEm`. The assembly line uses
+`incrementHARDCODED` when `machinistModifiesSideBearings` [1] widens retained CJK glyphs after subsetting.
+
+References
+----------
+[1] Integrated_Code_Fire.machineShop.machinistModifiesSideBearings
+	Internal package reference.
+"""

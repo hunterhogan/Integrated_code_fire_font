@@ -3,8 +3,8 @@
 (AI generated docstring)
 
 You can use this module to copy compiled font files to the workbench directory, package merged fonts into locale-specific ZIP
-archives, retrieve scaled font references, and remove temporary assembly line artifacts. The module provides the file staging and
-cleanup operations used in the Integrated Code 火 assembly line.
+archives, retrieve prepared western font paths, and remove temporary assembly line artifacts. The module provides the file
+staging and cleanup operations used in the Integrated Code 火 assembly line, including packaging with `zipfile.ZipFile` [3].
 
 Contents
 --------
@@ -15,10 +15,8 @@ Functions
 		Package merged fonts for a single locale into a ZIP archive.
 	valetCopiesToWorkbench
 		Copy font files to the workbench directory.
-	valetGetsScaledFont
-		Load scaled fonts as `TTFont` instances mapped by font family.
-	valetGetsScaledFontPathFilename
-		Get scaled font file paths mapped by font family.
+	valetGetsWesternFontPathFilename
+		Get western font file paths mapped by western weight identifiers.
 	valetRemovesFiles
 		Remove files from a list or directory.
 	valetRemovesWorkbench
@@ -30,12 +28,11 @@ References
 	Internal package reference.
 [2] pathlib.Path
 	https://docs.python.org/3/library/pathlib.html
-[3] fontTools.ttLib.TTFont
-	https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
+[3] zipfile.ZipFile
+	https://docs.python.org/3/library/zipfile.html
 
 """
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
-from fontTools.ttLib import TTFont
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import archivistGetsLocales, archivistGetsWeights
 from pathlib import Path, PurePath
@@ -176,14 +173,15 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 
 	return frozenset(listPathFilenamesCopied)
 
-def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:
-	"""Load scaled fonts as `TTFont` instances mapped by font family.
+def valetGetsWesternFontPathFilename(fontFormat: str) -> dict[str, Path]:
+	"""Get western font file paths mapped by western weight identifiers.
 
 	(AI generated docstring)
 
-	You can load all scaled font files from the warehouse as `TTFont` instances [1]. The function retrieves weight
-	metadata [2], constructs file paths in the scaled fonts directory, loads each font using `TTFont`, and returns
-	a mapping from font family names to loaded font instances.
+	You can retrieve file paths for the prepared western font files in the warehouse without loading font data. The function
+	uses `archivistGetsWeights` [1] to map package weight identifiers to western weight identifiers, selects `warehouse/western`
+	when `settingsPackage.unitsPerEm` already equals `2000`, selects `warehouse/scaled` otherwise, and returns a mapping from
+	western weight identifiers to file paths.
 
 	Parameters
 	----------
@@ -192,42 +190,8 @@ def valetGetsScaledFont(fontFormat: str) -> dict[str, TTFont]:
 
 	Returns
 	-------
-	dictionaryFontsScaled : dict[str, TTFont]
-		Mapping from scaled font family names to loaded `TTFont` instances [1].
-
-	References
-	----------
-	[1] fontTools.ttLib.TTFont
-		https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
-	[2] Integrated_Code_Fire.archivist.archivistGetsWeights
-	[3] Integrated_Code_Fire.settingsPackage.pathWarehouse
-
-	"""
-	dictionaryFontsScaled: dict[str, TTFont] = {}
-	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
-	for weight in settingsPackage.theWeights:
-		pathFilename = settingsPackage.pathWarehouse / 'scaled' / f"{dictionaryWeights[weight].fontFamilyScaled}.{fontFormat}"
-		dictionaryFontsScaled[dictionaryWeights[weight].fontFamilyScaled] = TTFont(pathFilename)
-	return dictionaryFontsScaled
-
-def valetGetsScaledFontPathFilename(fontFormat: str) -> dict[str, Path]:
-	"""Get scaled font file paths mapped by font family.
-
-	(AI generated docstring)
-
-	You can retrieve file paths for all scaled font files in the warehouse without loading font data. The function
-	retrieves weight metadata [1], constructs file paths in the scaled fonts directory [2], and returns a mapping
-	from font family names to file paths.
-
-	Parameters
-	----------
-	fontFormat : str
-		Font file format extension (e.g., 'ttf', 'otf').
-
-	Returns
-	-------
-	dictionaryFontsScaled : dict[str, Path]
-		Mapping from scaled font family names to file paths.
+	dictionaryFontsWestern : dict[str, Path]
+		Mapping from western weight identifiers to prepared font file paths.
 
 	References
 	----------
@@ -235,12 +199,16 @@ def valetGetsScaledFontPathFilename(fontFormat: str) -> dict[str, Path]:
 	[2] Integrated_Code_Fire.settingsPackage.pathWarehouse
 
 	"""
-	dictionaryFontsScaled: dict[str, Path] = {}
+	western: str = 'western'
+	if settingsPackage.unitsPerEm != 2000:
+		western: str = 'scaled'
+
+	dictionaryFontsWestern: dict[str, Path] = {}
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 	for weight in settingsPackage.theWeights:
-		pathFilename = settingsPackage.pathWarehouse / 'scaled' / f"{dictionaryWeights[weight].fontFamilyScaled}.{fontFormat}"
-		dictionaryFontsScaled[dictionaryWeights[weight].fontFamilyScaled] = pathFilename
-	return dictionaryFontsScaled
+		pathFilename: Path = settingsPackage.pathWarehouse / western / f"{dictionaryWeights[weight].fontFamilyWestern}.{fontFormat}"
+		dictionaryFontsWestern[dictionaryWeights[weight].fontFamilyWestern] = pathFilename
+	return dictionaryFontsWestern
 
 def valetRemovesFiles(listPathFilenames: Iterable[Path] | None = None, pathRemove: Path | None = None) -> None:
 	"""Remove files from a list or directory.

@@ -31,7 +31,9 @@ Functions
 	archivistUpdatesMetadata
 		Update OpenType metadata in an open `TTFont` instance.
 	between吗
-		Return `True` when `comparand` satisfies `floor <= comparand <= ceiling`.
+		Test whether `comparand` lies between `floor` and `ceiling`, inclusive.
+	Z0Z_make_afdkoOptions
+		Build an AFDKO option tuple for one locale, style, and weight combination.
 
 Variables
 	lookupAFDKOCharacterSet
@@ -75,7 +77,7 @@ ansiColors = AnsiColors()
 
 @syntacticCurry
 def between吗[小于: Ordinals](floor: 小于, ceiling: 小于, comparand: 小于) -> bool:
-	"""Return `True` when `comparand` satisfies `floor <= comparand <= ceiling`.
+	"""Test whether `comparand` lies between `floor` and `ceiling`, inclusive.
 
 	Parameters
 	----------
@@ -172,7 +174,7 @@ def archivistGetsWeights() -> dict[str, WeightIn]:
 	(AI generated docstring)
 
 	You can obtain the complete mapping of supported weight identifiers to `WeightIn` [1] instances
-	containing weight names for all font families. The returned mapping keys are Source Han Mono weight names and correspond to
+	containing equivalent weight names for every font family used in the assembly line. The returned mapping keys correspond to
 	the weight identifiers in `settingsPackage.theWeights` [2].
 
 	Returns
@@ -187,13 +189,13 @@ def archivistGetsWeights() -> dict[str, WeightIn]:
 
 	"""
 	return {
-		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyScaled='SemiBold', fontFamilyCID='Bold', SourceHanMono='Bold'),
-		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyScaled='', fontFamilyCID='ExtraLight', SourceHanMono='ExtraLight'),
-		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyScaled='Bold', fontFamilyCID='Heavy', SourceHanMono='Heavy'),
-		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyScaled='Light', fontFamilyCID='Light', SourceHanMono='Light'),
-		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyScaled='Medium', fontFamilyCID='Medium', SourceHanMono='Medium'),
-		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyScaled='Retina', fontFamilyCID='Normal', SourceHanMono='Normal'),
-		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyScaled='Regular', fontFamilyCID='Regular', SourceHanMono='Regular'),
+		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyWestern='SemiBold', fontFamilyCID='Bold', SourceHanMono='Bold'),
+		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyWestern='', fontFamilyCID='ExtraLight', SourceHanMono='ExtraLight'),
+		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyWestern='Bold', fontFamilyCID='Heavy', SourceHanMono='Heavy'),
+		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyWestern='Light', fontFamilyCID='Light', SourceHanMono='Light'),
+		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyWestern='Medium', fontFamilyCID='Medium', SourceHanMono='Medium'),
+		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyWestern='Retina', fontFamilyCID='Normal', SourceHanMono='Normal'),
+		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyWestern='Regular', fontFamilyCID='Regular', SourceHanMono='Regular'),
 	}
 
 def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None = None, style: str | None = None, weight: str | None = None, separator: str = '.') -> str:
@@ -222,28 +224,6 @@ def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None
 	-------
 	filenameStem : str
 		Filename stem created by joining non-`None` components with `separator`.
-
-	Examples
-	--------
-	Generate CID font glyphs filename stem:
-
-	>>> archivistMakesFilenameStem('SourceHanMono', 'Japan', None, 'Bold')
-	'SourceHanMono.Japan.Bold'
-
-	Generate metadata filename stem without weight:
-
-	>>> archivistMakesFilenameStem('SourceHanMono', 'Simplified_Chinese', 'Italic')
-	'SourceHanMono.Simplified_Chinese.Italic'
-
-	Generate Integrated Code 火 filename stem with no separator:
-
-	>>> archivistMakesFilenameStem('IntegratedCode火', '日本', None, 'SemiBold', '')
-	'IntegratedCode火日本SemiBold'
-
-	Generate font family name with space separator:
-
-	>>> archivistMakesFilenameStem('Integrated Code 火', '台灣', separator=' ')
-	'Integrated Code 火 台灣'
 
 	"""
 	notNone: None = None # Ironic, no?
@@ -358,7 +338,39 @@ def archivistUpdatesMetadata(ttFont: TTFont, nameIDmetadata: dict[int, str]) -> 
 		ttFont['name'].setName(nameIDmetadata[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
 
 def Z0Z_make_afdkoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', locale: str = 'Simplified_Chinese', style: Literal['Italic'] | None = None, weight: str = 'Regular') -> tuple[str, ...]:
-	"""Prototype."""
+	"""Build an AFDKO option tuple for one locale, style, and weight combination.
+
+	You can use this prototype function to construct the `makeotf` option sequence expected by the CID build step. The function
+	derives locale abbreviations and weight names from `archivistGetsLocales` [1] and `archivistGetsWeights` [2], then assembles
+	paths and character-set options for one build target.
+
+	Parameters
+	----------
+	pathRoot : Path
+		Root directory containing Source Han Mono or related CID build assets.
+	fontFamilyCID : str = 'SourceHanMono'
+		CID font family identifier used to choose locale and weight naming rules.
+	locale : str = 'Simplified_Chinese'
+		Locale identifier for the target build.
+	style : Literal['Italic'] | None = None
+		Style identifier for the target build. The value `None` represents upright style.
+	weight : str = 'Regular'
+		Weight identifier for the target build.
+
+	Returns
+	-------
+	options : tuple[str, ...]
+		AFDKO command-line options for one build target.
+
+	References
+	----------
+	[1] Integrated_Code_Fire.archivist.archivistGetsLocales
+		Internal package reference.
+	[2] Integrated_Code_Fire.archivist.archivistGetsWeights
+		Internal package reference.
+	[3] AFDKO makeotf
+		https://adobe-type-tools.github.io/afdko/AFDKO-Overview.html#makeotf
+	"""
 	styleA: Literal['.It', ''] = ''
 	styleB: Literal['It', ''] = ''
 	styleC: Literal['_italic', ''] = ''
