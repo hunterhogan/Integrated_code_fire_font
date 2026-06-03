@@ -51,6 +51,8 @@ References
 	https://github.com/googlefonts/glyphsLib
 
 """
+from __future__ import annotations
+
 from fontTools import subset
 from fontTools.ttLib import TTFont
 from humpy_cytoolz.dicttoolz import keyfilter, keymap, valfilter
@@ -61,7 +63,6 @@ from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import (
 	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, WeightIn)
 from itertools import filterfalse, product as CartesianProduct
-from pathlib import Path
 from typing import Literal, TYPE_CHECKING
 import glyphsLib
 import sys
@@ -99,9 +100,9 @@ def between吗[小于: Ordinals](floor: 小于, ceiling: 小于, comparand: 小�
 #======== Settings that have not yet been obsoleted or found their home, such as a dataclass or function. ========
 
 name: dict[str, int] = {
-	'langID' : 0x0409,
-	'platEncID' : 1,
-	'platformID' : 3,
+	'langID': 0x0409,
+	'platEncID': 1,
+	'platformID': 3,
 }
 """Provide name table platform and encoding identifiers for Windows Unicode BMP name records.
 
@@ -226,7 +227,7 @@ def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None
 		Filename stem created by joining non-`None` components with `separator`.
 
 	"""
-	notNone: None = None # Ironic, no?
+	notNone: None = None  # Ironic, no?
 	return separator.join(filter(notNone, [fontFamily, locale, style, weight]))
 
 def archivistMakesNameIDMetadata(weight: str, filenameFontFamily: str, fontFamily: str) -> dict[int, str]:
@@ -392,15 +393,15 @@ def Z0Z_make_afdkoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', 
 		message: str = f"I received {fontFamilyCID = }. This is a reminder to check the flow from start to finish."
 		sys.stdout.write(f"{ansiColors.CyanOnMagenta}{message}{ansiColorReset}\n")
 
-	options: list[str] =[
-		'-f',	str(pathRoot / aWeight / 'OTC' / f"cidfont.ps.OTC{styleA}.{aLocaleOTC}"),
-		'-ff',	str(pathRoot / aWeight / 'OTC' / f"features.OTC{styleA}.{aLocaleOTC}"),
+	options: list[str] = [
+		'-f', str(pathRoot / aWeight / 'OTC' / f"cidfont.ps.OTC{styleA}.{aLocaleOTC}"),
+		'-ff', str(pathRoot / aWeight / 'OTC' / f"features.OTC{styleA}.{aLocaleOTC}"),
 
-		'-ch',	str(pathRoot / f"Uni{fontFamilyCID}{styleB}{aLocale}-UTF32-H"),
-		'-ci',	str(pathRoot / f"{fontFamilyCID}_{aLocale}_sequences{styleC}.txt"),
-		'-mf',	str(pathRoot / 'FontMenuNameDB'),
+		'-ch', str(pathRoot / f"Uni{fontFamilyCID}{styleB}{aLocale}-UTF32-H"),
+		'-ci', str(pathRoot / f"{fontFamilyCID}_{aLocale}_sequences{styleC}.txt"),
+		'-mf', str(pathRoot / 'FontMenuNameDB'),
 
-		'-cs',	lookupAFDKOCharacterSet[aLocale],
+		'-cs', lookupAFDKOCharacterSet[aLocale],
 	]
 
 	if style == 'Italic':
@@ -535,13 +536,13 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 	# ww = qq.values()  # noqa: ERA001
 	# gids: list[str] = sorted(ww, key=int)  # noqa: ERA001
 	# gids: list[str] = sorted(keyfilter((65535).__ge__, unicodeTOgid).values(), key=int)  # noqa: ERA001
-	gids: list[str] = sorted({gid for unicode, gid in unicodeTOgid.items() if 0xFFFF < unicode}, key=int)  # ty:ignore[invalid-assignment]
+	gids: list[str] = sorted({gid for unicode, gid in unicodeTOgid.items() if 0xFFFF < unicode}, key=int)
 	gids.append('')
 
 	suffix: str = 'gids'
 	listPathFilenames.append(writeStringToHere('\n'.join(gids), pathWrite / f"{filenameStemWrite}.{suffix}"))
 
-	# TODO These ranges need to be less hardcoded-ish and/or more semantic (e.g., what is 0x1200?)  # noqa: ERA001
+	# TODO These ranges need to be less hardcoded-ish and/or more semantic (e.g., what is 0x1200?)
 	# TODO Configuration settings.
 	unicodes: Iterator[str] = map(hex
 		, filterfalse(between吗(0x1200, 0x2E7F)

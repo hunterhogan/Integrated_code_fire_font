@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fontTools import subset
 from hunterMakesPy import errorL33T, PackageSettings as humpy_PackageSettings
 from pathlib import Path
@@ -12,12 +14,12 @@ fontVersionHARDCODED: float = 0.014
 widthHalfSourceHanMonoHARDCODED: int = 667
 
 subsetOptionsHARDCODED: subset.Options = subset.Options(
-	drop_tables = ['vhea', 'vmtx', 'VORG', 'vert', 'vrt2'],
-	glyph_names = False,
-	layout_features = '*',
-	name_IDs = '',
-	passthrough_tables = True,
-	symbol_cmap = True,
+	drop_tables=['vhea', 'vmtx', 'VORG', 'vert', 'vrt2'],
+	glyph_names=False,
+	layout_features='*',
+	name_IDs='',
+	passthrough_tables=True,
+	symbol_cmap=True,
 )
 
 #======== Subclass `hunterMakesPy.PackageSettings` to add package-specific settings. ========
@@ -121,10 +123,10 @@ class PackageSettings(humpy_PackageSettings):
 
 fontVersion: float = fontVersionHARDCODED
 settingsPackage = PackageSettings('Integrated_Code_Fire'
-	, fontVersion = fontVersion
-	, theLocales = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
-	, theStyles = frozenset([None])
-	, theWeights = frozenset(['Bold', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
+	, fontVersion=fontVersion
+	, theLocales=frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
+	, theStyles=frozenset([None])
+	, theWeights=frozenset(['Bold', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
 )
 
 if socket.gethostname() == 'duda':

@@ -26,6 +26,8 @@ References
 	https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool
 
 """
+from __future__ import annotations
+
 from afdko.makeotf import main as afdko_makeotf
 from fontmake.font_project import FontProject
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
@@ -232,4 +234,3 @@ def smithyFontProject(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> 
 		, autohint=False
 	)
 	return output_dir
-

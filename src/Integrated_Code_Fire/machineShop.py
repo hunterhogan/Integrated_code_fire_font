@@ -26,6 +26,8 @@ References
 	https://fonttools.readthedocs.io/en/latest/ttLib/ttFont.html
 
 """
+from __future__ import annotations
+
 from fontTools import subset
 from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
@@ -69,7 +71,7 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 	"""
 	ttFont: TTFont = TTFont(pathFilename)
 	subsetter = subset.Subsetter(subsetOptions)
-	subsetter.populate(gids = gids, unicodes = unicodes)
+	subsetter.populate(gids=gids, unicodes=unicodes)
 	subsetter.subset(ttFont)
 	if settingsPackage.unitsPerEm != 1000:
 		scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
@@ -110,7 +112,7 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 
 		ttFont['hmtx'][glyphName] = (glyph.width + (addend * 2), glyph.lsb + addend)
 
-		glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0))) # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/2799
+		glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0)))  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/2799
 
 def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 	"""Merge multiple TrueType font files into one `TTFont` instance.

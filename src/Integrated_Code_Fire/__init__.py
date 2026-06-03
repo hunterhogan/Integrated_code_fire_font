@@ -48,6 +48,8 @@ References
     https://adobe-type-tools.github.io/afdko/
 
 """
+from __future__ import annotations
+
 from Integrated_Code_Fire._theTypes import LocaleIn as LocaleIn, WeightIn as WeightIn
 
 # isort: split

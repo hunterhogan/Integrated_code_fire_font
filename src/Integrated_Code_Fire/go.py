@@ -22,6 +22,8 @@ References
 	Internal package reference.
 
 """
+from __future__ import annotations
+
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
@@ -31,7 +33,6 @@ from Integrated_Code_Fire.archivist import (
 from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsWesternFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistMergesTTFFonts
 from itertools import product as CartesianProduct
-from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
 import sys
@@ -112,7 +113,7 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 				, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(settingsPackage.fontFamily.replace(' ', ''), localeIn.IntegratedCode火, style, weightIn.IntegratedCode火, '')}.{fontFormat}"
 			))
 
-		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc = "Merging fonts"):
+		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc="Merging fonts"):
 			listPathFilenames.append(claimTicket.result())
 
 	return listPathFilenames

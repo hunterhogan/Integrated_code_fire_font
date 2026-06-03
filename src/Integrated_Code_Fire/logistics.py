@@ -32,6 +32,8 @@ References
 	https://docs.python.org/3/library/zipfile.html
 
 """
+from __future__ import annotations
+
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import archivistGetsLocales, archivistGetsWeights
@@ -84,7 +86,7 @@ def packerMakesAssets(listPathFilenames: Iterable[Path], workersMaximum: int) ->
 			pathFilenameZIP: Path = settingsPackage.pathAssets / f"{settingsPackage.fontFamilyASCII.replace(' ', '')}_{localeIn.ascii}.zip"
 			listClaimTickets.append(concurrencyManager.submit(packerMakesAssetsLocale, listPathFilenames, pathFilenameZIP, localeIn))
 
-		for claimTicket in tqdm(as_completed(listClaimTickets), total = len(listClaimTickets), desc = "Making assets"):
+		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc="Making assets"):
 			listPathFilenamesAssets.extend(claimTicket.result())
 
 	return frozenset(listPathFilenamesAssets)
@@ -121,11 +123,11 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 
 	"""
 	settingsPackage.pathAssets.mkdir(parents=True, exist_ok=True)
-	with ZipFile(pathFilenameZIP, mode = 'w', compression = ZIP_DEFLATED, compresslevel = 9) as zipWrite:
+	with ZipFile(pathFilenameZIP, mode='w', compression=ZIP_DEFLATED, compresslevel=9) as zipWrite:
 		for pathFilename in filter(lambda pathFilename: localeIn.IntegratedCode火 in pathFilename.stem, listPathFilenames):
-			zipWrite.write(pathFilename, arcname = pathFilename.name)
+			zipWrite.write(pathFilename, arcname=pathFilename.name)
 
-	return frozenset([pathFilenameZIP]) # NOTE In the future, there may be more than one asset.
+	return frozenset([pathFilenameZIP])  # NOTE In the future, there may be more than one asset.
 
 # SEMIOTICS `valet`.
 def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, pathRoot: PurePath | None = None, theGlob: str = '*.*') -> frozenset[Path]:

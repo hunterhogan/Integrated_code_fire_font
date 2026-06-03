@@ -37,8 +37,9 @@ References
 	https://github.com/adobe-fonts/source-han-mono
 
 """
+from __future__ import annotations
+
 from afdko.otf2ttf import otf_to_ttf
-from collections.abc import Iterable
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from fontTools.ttLib import scaleUpem, TTFont
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
@@ -56,6 +57,7 @@ from tqdm import tqdm
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from collections.abc import Iterable
 	from fontTools import subset
 	from hunterMakesPy import identifierDotAttribute
 
@@ -272,7 +274,7 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 					, pathCID / f"{archivistMakesFilenameStem(None, localeIn.ascii, style, weightIn.fontFamilyCID)}.{fontFormat}"
 				))
 
-		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc = f"Subsetting {fontFamilyCID}"):
+		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc=f"Subsetting {fontFamilyCID}"):
 			listPathFilenames.append(claimTicket.result())  # noqa: PERF401
 	return frozenset(listPathFilenames)
 
@@ -381,7 +383,7 @@ if __name__ == "__main__":
 
 	if doCleanUp:
 		if pathTTFont:
-			valetRemovesFiles(listPathFilenamesTTFont, pathTTFont) # pyright: ignore[reportPossiblyUnboundVariable]
+			valetRemovesFiles(listPathFilenamesTTFont, pathTTFont)  # pyright: ignore[reportPossiblyUnboundVariable]
 		valetRemovesFiles(listPathFilenamesCID, next(iter(listPathFilenamesCID)).parent)
 		valetRemovesFiles(listPathFilenamesWorkbench, settingsPackage.pathWorkbenchFonts)
 		valetRemovesWorkbench()

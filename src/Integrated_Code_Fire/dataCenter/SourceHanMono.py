@@ -1,4 +1,6 @@
 """Source Han Mono data."""
+from __future__ import annotations
+
 cidsVerticalOnly: frozenset[str] = frozenset([
 '250',
 '251',

@@ -1,6 +1,6 @@
 [project]
 name = "Integrated_Code_Fire"
-version = "0.0.14"
+version = "0.1.0"
 description = "Integrated Code 火 is a monospaced programming font with CJK languages. | 简化字 | 日本 | 한국인 | 香港 | 台灣"
 readme = "README.md"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
@@ -15,8 +15,9 @@ dependencies = [
     "hunterMakesPy>=0.4.7",
     "more-itertools>=10.8.0",
     "tqdm>=4.67.3",
+    "z0z-tools>=2.0.0",
 ]
 
 [build-system]
-requires = ["uv_build>=0.10.0,<0.11.0"]
+requires = ["uv_build>=0.11.0,<0.12.0"]
 build-backend = "uv_build"
