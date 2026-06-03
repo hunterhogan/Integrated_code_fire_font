@@ -44,7 +44,7 @@ For filenames and directory names, default to the same character restrictions as
 
 ### Functions and methods: explicit Subject–Verb–Object
 
-Use the pattern: **[S][V]O[adj][adv]**
+Use the pattern: `[S][V]O[adj][adv]`
 
 - Callables must include a **verb**.
 - For functions and methods, the **subject must be explicit** (an actor/role/system/component), not implied.
@@ -127,14 +127,17 @@ Example distinction that is strong enough:
 
 ### Preserve case for domain type names and column identifiers
 
-**AST type names** (e.g., `ast.keyword`, `ast.expr`, `ast.stmt`) and **DataFrame column names** (e.g., `defaultValue`, `Call_keyword`) must preserve their exact case when referenced in identifiers:
+#### AST type names (e.g., `ast.keyword`, `ast.expr`, `ast.stmt`)
 
-- ✅ `makeKeywordFromAttributeDefaultValue` — lowercase `keyword` matches `ast.keyword`
+- ✅ `make_keywordFromAttributeDefaultValue` — lowercase `keyword` matches `ast.keyword`
 - ❌ `makeKeywordWithDefault` — capital-K `Keyword` is ambiguous; "Default" is a diminutive
-- ✅ `updateCallKeywordColumn` — preserves `Call_keyword` column name case
+
+#### DataFrame column names (e.g., `defaultValue`, `Call_keyword`) must preserve their exact case when referenced in identifiers
+
+- ✅ `updateCall_keywordColumn` — preserves `Call_keyword` column name case
 - ❌ `updateCallKWColumn` — "KW" is an abbreviation
 
-**Anti-pattern: Truncating or capitalizing domain terms**
+#### Anti-pattern: Truncating or capitalizing domain terms
 
 - ❌ `makeKeywordWithDefault` — two violations:
   - "Keyword" does not preserve the `ast.keyword` type name case
