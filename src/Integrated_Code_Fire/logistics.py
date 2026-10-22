@@ -167,11 +167,11 @@ def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, path
 
 	if pathRoot is not None:
 		for pathFilename in Path(pathRoot).glob(theGlob):
-			listPathFilenamesCopied.append(pathFilename.copy_into(settingsPackage.pathWorkbenchFonts))  # noqa: PERF401
+			listPathFilenamesCopied.append(pathFilename.copy_into(settingsPackage.pathWorkbenchFonts))  # ruff: ignore[manual-list-comprehension]
 
 	if listPathFilenames is not None:
 		for pathFilename in listPathFilenames:
-			listPathFilenamesCopied.append(pathFilename.copy_into(settingsPackage.pathWorkbenchFonts))  # noqa: PERF401
+			listPathFilenamesCopied.append(pathFilename.copy_into(settingsPackage.pathWorkbenchFonts))  # ruff: ignore[manual-list-comprehension]
 
 	return frozenset(listPathFilenamesCopied)
 

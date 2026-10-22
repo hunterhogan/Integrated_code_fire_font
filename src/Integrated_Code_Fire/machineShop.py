@@ -112,7 +112,7 @@ def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
 
 		ttFont['hmtx'][glyphName] = (glyph.width + (addend * 2), glyph.lsb + addend)
 
-		glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0)))  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/2799
+		glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0)))
 
 def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 	"""Merge multiple TrueType font files into one `TTFont` instance.

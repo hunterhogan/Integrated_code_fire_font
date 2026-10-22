@@ -192,7 +192,7 @@ def goAssets(listPathFilenames: Iterable[Path], *, CPUlimit: bool | float | int 
 	valetRemovesWorkbench()
 
 if __name__ == '__main__':
-	CPUlimit: int = -1
+	CPUlimit: int = 15
 
 	timeStart: float = time.perf_counter()
 

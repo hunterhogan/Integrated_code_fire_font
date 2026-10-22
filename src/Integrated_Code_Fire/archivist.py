@@ -1,3 +1,5 @@
+# ty: ignore[call-non-callable]
+# pyright: reportCallIssue=false, reportUnknownArgumentType=false
 """Manage font metadata, locale and weight mappings, filename generation, and character subset configuration.
 
 (AI generated docstring)
@@ -55,15 +57,14 @@ from __future__ import annotations
 
 from fontTools import subset
 from fontTools.ttLib import TTFont
-from humpy_cytoolz.dicttoolz import keyfilter, keymap, valfilter
-from humpy_cytoolz.functoolz import complement, compose, curry as syntacticCurry
-from hunterMakesPy import Ordinals
+from humpy_cytoolz import complement, compose, keyfilter, keymap, valfilter
 from hunterMakesPy.filesystemToolkit import writeStringToHere
 from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
 from Integrated_Code_Fire import (
 	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, WeightIn)
 from itertools import filterfalse, product as CartesianProduct
 from typing import Literal, TYPE_CHECKING
+from Z0Z_tools import between吗  # pyright: ignore[reportUnknownVariableType]
 import glyphsLib
 import sys
 
@@ -73,29 +74,6 @@ if TYPE_CHECKING:
 	from pathlib import Path
 
 ansiColors = AnsiColors()
-
-#======== Boolean antecedents ================================================
-
-@syntacticCurry
-def between吗[小于: Ordinals](floor: 小于, ceiling: 小于, comparand: 小于) -> bool:
-	"""Test whether `comparand` lies between `floor` and `ceiling`, inclusive.
-
-	Parameters
-	----------
-	floor : Ordinals
-		Lower bound of the range, inclusive.
-	ceiling : Ordinals
-		Upper bound of the range, inclusive.
-	comparand : Ordinals
-		Value to test against `floor` and `ceiling`.
-
-	Returns
-	-------
-	isBetween : bool
-		`True` when `floor <= comparand <= ceiling`, `False` otherwise.
-
-	"""
-	return floor <= comparand <= ceiling
 
 #======== Settings that have not yet been obsoleted or found their home, such as a dataclass or function. ========
 
@@ -333,8 +311,8 @@ def archivistUpdatesMetadata(ttFont: TTFont, nameIDmetadata: dict[int, str]) -> 
 	[2] Integrated_Code_Fire.settingsPackage
 
 	"""
-	ttFont['head'].fontRevision = settingsPackage.fontVersion  # ty:ignore[unresolved-attribute]
-	ttFont['OS/2'].achVendID = settingsPackage.achVendID  # ty:ignore[unresolved-attribute]
+	ttFont['head'].fontRevision = settingsPackage.fontVersion
+	ttFont['OS/2'].achVendID = settingsPackage.achVendID
 	for nameID in nameIDmetadata:
 		ttFont['name'].setName(nameIDmetadata[nameID], nameID, name['platformID'], name['platEncID'], name['langID'])
 
@@ -530,12 +508,6 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 			, valfilter(complement(gidsExclude.__contains__)
 				, dict(map(compose(tuple[str, str], str.split), pathFilename.read_text('utf-8').splitlines())))))
 
-	# TODO I think tlz.keyfilter might have a bug.
-	# qq = keyfilter(lambda u: 65535 < u, unicodeTOgid)  # noqa: ERA001
-	# qq = itemfilter(lambda ug: 65535 < ug[0], unicodeTOgid)  # noqa: ERA001
-	# ww = qq.values()  # noqa: ERA001
-	# gids: list[str] = sorted(ww, key=int)  # noqa: ERA001
-	# gids: list[str] = sorted(keyfilter((65535).__ge__, unicodeTOgid).values(), key=int)  # noqa: ERA001
 	gids: list[str] = sorted({gid for unicode, gid in unicodeTOgid.items() if 0xFFFF < unicode}, key=int)
 	gids.append('')
 
@@ -545,10 +517,11 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 	# TODO These ranges need to be less hardcoded-ish and/or more semantic (e.g., what is 0x1200?)
 	# TODO Configuration settings.
 	unicodes: Iterator[str] = map(hex
-		, filterfalse(between吗(0x1200, 0x2E7F)
+		, filterfalse(between吗(0x1200, 0x21FF)
+		, filterfalse(between吗(0x2300, 0x2E7F)
 		, filterfalse(between吗(0xFF01, 0xFF5E)
 			, filter(between吗(0x1100, 0xFFFF), unicodeTOgid.keys())
-	)))
+	))))
 
 	suffix: str = 'unicodes'
 	listPathFilenames.append(writeStringToHere('\n'.join(unicodes) + '\n', pathWrite / f"{filenameStemWrite}.{suffix}"))
@@ -598,7 +571,8 @@ def archivistMakesAllCharacterSubsets(pathMetadata: Path, fontFamilyCID: str = '
 
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	# TODO Remove the hardcoding.
-	from Integrated_Code_Fire.dataCenter.SourceHanMono import cidsVerticalOnly  # pyright: ignore[reportUnusedImport] # noqa: PLC0415
+	# ruff: ignore[import-outside-top-level]
+	from Integrated_Code_Fire.dataCenter.SourceHanMono import cidsVerticalOnly  # pyright: ignore[reportUnusedImport]
 	for locale, style in CartesianProduct(theLocales, theStyles):
 		if style:
 			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}-ital.map"
@@ -611,5 +585,5 @@ def archivistMakesAllCharacterSubsets(pathMetadata: Path, fontFamilyCID: str = '
 
 if __name__ == '__main__':
 	pathMetadata: Path = pathRootSourceHanMonoDEFAULT / 'Resources'
-	unicodeExclude: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphsDEFAULT)
+	unicodeExclude: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphsDEFAULT) | {0x22EF}
 	archivistMakesAllCharacterSubsets(pathMetadata, unicodeExclude=unicodeExclude)

@@ -8,7 +8,7 @@ import dataclasses
 import socket
 
 #======== Eliminate hardcoding, typically with a dynamic process or adding the value to `settingsPackage`. ========
-fontVersionHARDCODED: float = 0.014
+fontVersionHARDCODED: float = 0.015
 # TODO version update? ^^^^^^^^^^^^
 
 widthHalfSourceHanMonoHARDCODED: int = 667

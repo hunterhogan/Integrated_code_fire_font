@@ -52,6 +52,7 @@ from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyph
 from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistSubsetsCID
 from itertools import product as CartesianProduct
+from more_itertools import consume, side_effect
 from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
@@ -98,7 +99,7 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 	[2] Integrated_Code_Fire.foundry.smithyCastsFromGlyphs
 		Internal package reference.
 	"""
-	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)  # pyright: ignore[reportUnusedVariable] # noqa: F841
+	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)  # pyright: ignore[reportUnusedVariable] # ruff: ignore[unused-variable]
 
 	listPathFilenames: Iterable[Path] = []
 
@@ -110,6 +111,7 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 
 	for pathFilename in listPathFilenamesTTFont:
 		ttFont: TTFont = TTFont(pathFilename)
+		consume(side_effect(lambda table: table.cmap.update({0x22EF: 'ellipsis'}), ttFont['cmap'].tables))
 		if settingsPackage.unitsPerEm != 2000:
 			scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
 		weight: str = pathFilename.stem.removeprefix(f"{pathFilename.parent.name}-")
@@ -275,7 +277,7 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 				))
 
 		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc=f"Subsetting {fontFamilyCID}"):
-			listPathFilenames.append(claimTicket.result())  # noqa: PERF401
+			listPathFilenames.append(claimTicket.result())  # ruff: ignore[manual-list-comprehension]
 	return frozenset(listPathFilenames)
 
 def _cidTOttf(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
