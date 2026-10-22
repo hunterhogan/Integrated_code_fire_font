@@ -3,21 +3,33 @@ name = "Integrated_Code_Fire"
 version = "0.1.0"
 description = "Integrated Code 火 is a monospaced programming font with CJK languages. | 简化字 | 日本 | 한국인 | 香港 | 台灣"
 readme = "README.md"
-authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
-license = "CC-BY-NC-4.0"
-urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/Integrated_Code_Fire", Issues = "https://github.com/hunterhogan/Integrated_Code_Fire/issues", Repository = "https://github.com/hunterhogan/Integrated_Code_Fire" }
 requires-python = ">=3.14"
+license = "CC-BY-NC-4.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
+maintainers = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 dependencies = [
-    "afdko>=5.0.0",
-    "fontmake[all]>=3.11.1",
-    "fonttools[ufo,unicode]>=4.61.1",
-    "glyphslib[colr,defcon,ufo-normalization]>=6.12.7",
-    "hunterMakesPy>=0.4.7",
-    "more-itertools>=10.8.0",
-    "tqdm>=4.67.3",
-    "z0z-tools>=2.0.0",
+  "afdko>=5.0.1",
+  "fontmake>=3.11.1",
+  "fonttools>=4.61.1",
+  "glyphslib>=6.12.7",
+  "hunterMakesPy>=0.8.1",
+  "more-itertools>=11.1.0",
+  "tqdm>=4.67.3",
+  "z0z-tools>=3.1.0",
 ]
 
+[project.urls]
+Documentation = "https://github.com/hunterhogan/Integrated_code_fire_font/blob/main/README.md"
+Donate = "https://www.patreon.com/integrated"
+Homepage = "https://github.com/hunterhogan/Integrated_code_fire_font"
+Issues = "https://github.com/hunterhogan/Integrated_code_fire_font/issues"
+Repository = "https://github.com/hunterhogan/Integrated_code_fire_font.git"
+
 [build-system]
-requires = ["uv_build>=0.11.0,<0.12.0"]
-build-backend = "uv_build"
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = { find = { where = ["src"], namespaces = false } }
+package-data = { Integrated_Code_Fire = ["*.cmd", "py.typed"], "Integrated_Code_Fire.dataCenter" = ["*.gids", "*.unicodes"] }
