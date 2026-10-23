@@ -1,6 +1,6 @@
 [project]
 name = "Integrated_Code_Fire"
-version = "0.1.0"
+version = "0.2.0"
 description = "Integrated Code 火 is a monospaced programming font with CJK languages. | 简化字 | 日本 | 한국인 | 香港 | 台灣"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -16,7 +16,7 @@ dependencies = [
   "hunterMakesPy>=0.8.1",
   "more-itertools>=11.1.0",
   "tqdm>=4.67.3",
-  "z0z-tools>=3.1.0",
+  "z0z-tools>=3.2.4",
 ]
 
 [project.urls]
@@ -31,5 +31,5 @@ requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = { find = { where = ["src"], namespaces = false } }
+packages = { find = {} }
 package-data = { Integrated_Code_Fire = ["*.cmd", "py.typed"], "Integrated_Code_Fire.dataCenter" = ["*.gids", "*.unicodes"] }

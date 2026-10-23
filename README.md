@@ -1,104 +1,132 @@
 # Integrated Code 火
 
-| Integrated Code 火 ➡      | ➡ is a monospaced programming font ➡                  | ➡ plus ⬇             |
-| ------------------------- | ----------------------------------------------------- | -------------------- |
-| Integrated Code 火 日本   | 日本語スクリプトを備えた等幅プログラミング フォント。 | Japanese.            |
-| Integrated Code 火 한국인 | 한글과 한자를 포함하는 고정폭 프로그래밍 폰트.        | Korean.              |
-| Integrated Code 火 简化字 | 一款采用简体中文字符的等宽编程字体。                  | simplified Chinese.  |
-| Integrated Code 火 台灣   | 一款包含繁體中文字元的等寬程式設計字型。              | traditional Chinese. |
-| Integrated Code 火 香港   | 一個等間隔嘅編程字體, 有傳統嘅粵語字。                | Cantonese.           |
+**Fira Code ligatures, with Chinese, Japanese, and Korean on the same grid.**
 
-## Download 下载 다운로드 ダウンロード 下載 Integrated Code 火
+[Download fonts][releases] · [Choose a variant](#choose-your-variant) · [Install](#install)
 
-| Download fonts from ["Releases"](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest), not the repository source code.                                  |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 請從 ["Releases" / 發行版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下載字型, 而非儲存庫的原始碼。                                        |
-| ["Releases" / 릴리스](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 에서 글꼴을 다운로드하십시오. 저장소 소스 코드가 아닙니다.                   |
-| フォントはリポジトリのソースコードではなく、["Releases" / リリース](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) からダウンロードしてください。 |
-| 请从 ["Releases" / 发布](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 下载字体, 而非仓库源代码。                                                |
-| 請喺 ["Releases" / 發佈版本](https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest) 度下載字體, 唔好喺 原始碼 倉庫度攞。                                  |
+Integrated Code 火 combines Fira Code's programming glyphs with regional CJK glyphs from
+Source Han Mono. Full-width CJK glyphs occupy two Latin character cells, so code and CJK text
+can share a monospaced layout.
 
-## Font genealogy
+![Programming text and five regional CJK samples in Integrated Code 火 Regular.][preview]
 
-| "Fira"                                                  | "Source"                                                          |     | "Source Han"                                                            |     | "Noto"                                                      |
-| ------------------------------------------------------- | ----------------------------------------------------------------- | --- | ----------------------------------------------------------------------- | --- | ----------------------------------------------------------- |
-| [Fira Mono](https://github.com/mozilla/Fira)            | [Source Sans](https://github.com/adobe-fonts/source-sans)         |     | [Source Han Sans](https://github.com/adobe-fonts/source-han-sans)       | ↔   | [Noto Sans CJK](https://github.com/notofonts/noto-cjk)      |
-| ⬇                                                       | ⬇                                                                 |     | ⬇                                                                       |     | ⬇                                                           |
-| [Fira Code](https://github.com/tonsky/FiraCode)         | [Source Code Pro](https://github.com/adobe-fonts/source-code-pro) | ➡   | [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp) |     | [Noto Sans Mono CJK](https://github.com/notofonts/noto-cjk) |
-| ⬇                                                       |                                                                   | ↘   | ⬇                                                                       |     |                                                             |
-| [Fira Code HH](https://github.com/hunterhogan/FiraCode) |                                                                   |     | [Source Han Mono](https://github.com/adobe-fonts/source-han-mono)       |     |                                                             |
+- **Five regional variants:** Japanese, Korean, simplified Chinese, Taiwan, and Hong Kong.
+- **Six upright weights:** Light, Regular, Retina, Medium, SemiBold, and Bold.
+- **Programming ligatures:** Fira Code's combinations for operators and other code punctuation.
+- **TrueType fonts:** individual `.ttf` files, packaged by locale.
 
-                  ↘                          ↙
-                        Integrated Code 火
+## Choose your variant
 
-## Some other programming fonts
+Choose the variant for the glyph forms used in your language or region. Every variant uses the
+same western font; the CJK glyph forms differ by locale. You can install more than one variant.
 
-### With Chinese, Japanese, and/or Korean glyphs
+| Language or region            | Family to select in your editor | Download ZIP                     |
+| ----------------------------- | ------------------------------- | -------------------------------- |
+| 日本語 · Japanese             | Integrated Code 火 日本         | [Japan][japan]                   |
+| 한국어 · Korean               | Integrated Code 火 한국인       | [Korea][korea]                   |
+| 简体中文 · Simplified Chinese | Integrated Code 火 简化字       | [Simplified_Chinese][simplified] |
+| 台灣 · Traditional Chinese    | Integrated Code 火 台灣         | [Taiwan][taiwan]                 |
+| 香港 · Hong Kong / Cantonese  | Integrated Code 火 香港         | [Hong_Kong][hongkong]            |
+
+Download the font ZIP from [Releases][releases]. Each locale archive contains the six weights.
+GitHub's **Source code** downloads contain the build sources.
+
+## Install
+
+1. Download and extract the ZIP for your locale.
+2. Install the `.ttf` files using your operating system's font installer.
+3. Select the family name from the table above in your editor or terminal.
+4. Enable font ligatures in editors that support them if you want the programming ligatures.
+
+The font ZIP is ready to install. Python and the font build tools are needed only to build your
+own font files.
+
+## What to expect
+
+Fira Code supplies the western characters and programming features. Source Han Mono supplies the
+selected CJK characters, including regional ideograph forms, kana, and hangul. The font combines
+these sources with spacing adjusted for a two-cell CJK width.
+
+Ligatures change how supported character combinations appear; the underlying text stays the same.
+Editors and terminals differ in their support for ligatures and OpenType features.
+
+The characters `⋯` (U+22EF) and `…` (U+2026) use the same one-cell ellipsis glyph.
+
+The downloads contain upright fonts. Italic, variable-font, and webfont builds are not included in
+these locale archives.
+
+## Font origins
+
+Integrated Code 火 brings together two branches of font development.
+
+- [Fira Mono] → [Fira Code] → [Fira Code HH], the source used for the western fonts.
+- [Source Han Sans] and [Source Code Pro] → [Source Han Mono], a pan-CJK relative of
+  [Source Han Code JP].
+
+Fira Code is my favorite code-centric font. I also publish compiled Fira Code fonts in
+[my fork][Fira Code HH] for people who want Fira Code on its own.
+
+<details>
+<summary>Other programming fonts</summary>
+
+With Chinese, Japanese, and/or Korean glyphs.
 
 - [Maple Mono](https://github.com/subframe7536/maple-font)
 - [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic)
-- [GLG-Mono](https://github.com/junghan0611/GLG-Mono) is a Korean programming font.
+- [GLG-Mono](https://github.com/junghan0611/GLG-Mono)
 - [PlemolJP (プレモル ジェイピー)](https://github.com/yuru7/PlemolJP)
-- [Source Han Code JP | 源ノ角ゴシック Code](https://github.com/adobe-fonts/source-han-code-jp)
+- [Source Han Code JP]
 
-### With only Western glyphs
+With western glyphs.
 
-- [Fira Code](https://github.com/tonsky/FiraCode) is my favorite code-centric font.
-- As of 2026 March 3, the last compiled version was released on 2021 December 6, and I have more recently compiled versions in [my fork of Fira Code](https://github.com/hunterhogan/FiraCode).
+- [Fira Code]
+- [Fira Code HH]
 
-## The future?
+</details>
 
-1. You contribute to the project?
-2. Improve non-English text.
-3. Improve configuration management.
-4. Improve and generalize flow.
-5. Weights:
-   1. Fira Code has six different weights.
-   2. Source Han Mono has seven different weights.
-   3. Monospaced Noto Sans CJK has two different weights.
-   4. Replace English-language weight names with weight values. "Regular", for example, may become "400". Or maybe this would break something I don't understand.
-6. Glyphs:
-   1. Noto Sans CJK may have updated and/or new glyphs.
-   2. Source Han Code JP likely has updated and new glyphs.
-   3. [GB 18030-2022](https://github.com/adobe-type-tools/Adobe-GB1/?tab=readme-ov-file#supplement-6adobe-gb1-6) defines new simplified Chinese glyphs. I suspect some of them are in Noto Sans CJK.
-   4. Investigate: [Adobe-Manga1-0 Character Collection](https://github.com/adobe-type-tools/Adobe-Manga1/).
-   5. Investigate: can adobe-type-tools / [CMap-resources](https://github.com/adobe-type-tools/cmap-resources) help find updated and/or new glyphs?
-7. Reduce font file size.
-8. Formats:
-   1. ❓.otf
-   2. ❓variable font
-   3. ❓.woff2
-   4. ❓Keep .ttc
-   5. ❓abc
-   6. ❓CMap
-   7. ❓abbr.
-   8. ❓cmap
-   9. ❓wolf9
-9. Create a pan-CJK variant.
-10. Spacing:
-    1. ❓Eliminate all full width spaces?
-    2. In "words" with mixed Latin and CJK, shift the CJK towards the Latin.
+<details>
+<summary>Build the font or contribute</summary>
 
-## Working with the files in the repository
+### Set up the build environment
 
-The repository is optimized to work with [Visual Studio Code](https://code.visualstudio.com/), but that is not required.
+The build tools require Python 3.14 or later. Clone this repository and install its dependencies
+with `uv sync`, then activate the project virtual environment before running the Python scripts.
+For PowerShell.
 
-1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) or fork the repository. ([Visual Studio Code instructions.](https://code.visualstudio.com/docs/sourcecontrol/repos-remotes))
-2. You may need to clone [Fira Code](https://github.com/tonsky/FiraCode) and/or [Source Han Mono](https://github.com/adobe-fonts/source-han-mono).
-3. Install the Python packages in a virtual environment with ["uv"](https://docs.astral.sh/uv/); from the folder with the repository, run:
+```powershell
+uv sync
+. .\.venv\Scripts\Activate.ps1
+```
 
-    uv sync
+Compiling the source fonts also requires local checkouts of [Fira Code HH] and [Source Han Mono].
+By default, the build expects `FiraCode/FiraCode.glyphs` and the `source-han-mono` checkout under
+this project's parent directory. Font settings and source locations are in
+[Integrated_Code_Fire/_theSSOT.py](Integrated_Code_Fire/_theSSOT.py).
 
-### Tips to make life easier
+### Build stages
 
-1. In the names of files and fonts, don't use separators: - (hyphen), – (en dash), — (em dash), or similar characters. For some readers, they can be ambiguous due to 一, which is an ideograph representing "1".
-2. When preparing font files, only make changes in the "workbench" directory. Never change files in directories with glyph or metadata information unless you intend the change to be permanent and universal.
+The assembly line separates character selection, font preparation, merging, and packaging.
+Run the stages needed for the inputs you are changing.
 
-### Comparison of weight names
+1. **Character selections.** Run `python Integrated_Code_Fire/archivist.py` to regenerate the
+   locale and style selections in `Integrated_Code_Fire/dataCenter`. The selections exclude
+   western characters and vertical glyph forms. Regeneration replaces these persistent inputs.
+2. **Source compilation and preparation.** Review the build switches in
+   [chopShop.py](Integrated_Code_Fire/chopShop.py), then run
+   `python Integrated_Code_Fire/chopShop.py`. Western fonts are prepared under
+   `warehouse/western` or `warehouse/scaled`; CJK subsets are prepared under `warehouse/CID`.
+3. **Merging and packaging.** Run `python Integrated_Code_Fire/go.py` with the prepared warehouse
+   inputs. The active configuration selects five locales and six upright weights. Merged fonts
+   are written to `workbench/fonts`, locale ZIP archives are written to `assets`, and temporary
+   workbench files are removed after packaging.
+
+Keep temporary font edits in `workbench`. Changes to the warehouse fonts or character selections
+become persistent inputs to later builds. Build outputs with matching filenames are replaced.
+
+### Weight matching
 
 | Integrated Code 火 | Fira Code | Source Han Mono |
 | ------------------ | --------- | --------------- |
-| -                  | -         | ExtraLight      |
 | Light              | Light     | Light           |
 | Regular            | Regular   | Regular         |
 | Retina             | Retina    | Normal          |
@@ -106,40 +134,49 @@ The repository is optimized to work with [Visual Studio Code](https://code.visua
 | SemiBold           | SemiBold  | Bold            |
 | Bold               | Bold      | Heavy           |
 
-### Compile the font files
+Source Han Mono's ExtraLight weight has no matching Fira Code weight and is not selected for the
+release fonts. Some preparation functions use the broader defaults of a fresh `PackageSettings`,
+including italic styles and ExtraLight. Use explicit selections when you want those functions to
+match the active release configuration.
 
-1. All global settings ought to be in "src/Integrated_Code_Fire/_theSSOT.py".
-2. Some actions need a local copy of Fira Code. If so, clone [Fira Code](https://github.com/tonsky/FiraCode).
-3. Some actions need a local copy of Source Han Mono. If so, clone [Source Han Mono](https://github.com/adobe-fonts/source-han-mono).
-4. To generate new character subset files for all locale and style combinations, run archivist.py.
-5. To create new TTF files or to create OTF files of Fira Code, go to chopShop.py and run chopShop.prepareGlyphs() with the appropriate arguments.
-6. To create new subset TTF files of Source Han Mono, go to chopShop.py and have fun with that mess!
-7. To merge the prepared Fira Code files and the subset Source Han Mono files, run go.py.
+### Contributions
 
-### Notes in case I run out of sfnt IDs
+Corrections to the non-English text, improvements to CJK coverage and spacing, smaller font files,
+and additional font formats are welcome. [Open an issue][issues] to discuss a change.
 
-- Enclosed CJK Letters and Months, 0x3200-32FE, Keep 0x32FF
-- filterfalse(between吗(0x3300, 0x33FF)
-- filterfalse(between吗(0xFB00, 0xFB4F)
-- filterfalse(between吗(0xFE10, 0xFE4F)
+</details>
 
-## Legal stuff
+## Licenses and credits
 
+- The font, Integrated Code 火, is available under the [SIL Open Font License, Version 1.1](OFL-1.1),
+  with Reserved Font Name "Integrated".
+- Files other than the fonts for which I am the copyright holder are available under the
+  [Creative Commons Attribution-NonCommercial 4.0 International Public License](LICENSE).
 - Source is a trademark of Adobe in the United States and/or other countries.
 - Fira Mono is a trademark of The Mozilla Corporation.
-- You may license the font, Integrated Code 火, with Reserved Font Name "Integrated", under the terms of the [SIL Open Font License, Version 1.1](https://openfontlicense.org/ofl-faq/).
-- You may license the files, other than the font files, in this repository of which I am the copyright holder under the terms of the [Creative Commons Attribution-NonCommercial 4.0 International Public License](https://creativecommons.org/licenses/by-nc/4.0/).
 
-[![SIL Open Font License](https://raw.githubusercontent.com/hunterhogan/integrated_code_fire_font/refs/heads/main/.github/OFLLogoRectColor.png)](https://openfontlicense.org/ofl-faq/)
-
-[![CC-BY-NC-4.0](https://raw.githubusercontent.com/hunterhogan/integrated_code_fire_font/refs/heads/main/.github/CC-BY-NC-4.0.png)](https://creativecommons.org/licenses/by-nc/4.0/)
-
-### Commentary
-
-- Adobe writing "and/or" in their trademark notice is stupid.
-- The Mozilla Corporation has probably abandoned the Fira Mono trademark.
+[![SIL Open Font License](.github/OFLLogoRectColor.png)](OFL-1.1)
+[![CC-BY-NC-4.0](.github/CC-BY-NC-4.0.png)](LICENSE)
 
 ## My recovery
 
-[![Static Badge](https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat)](https://HunterThinks.com/support)
-[![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UC3Gx7kz61009NbhpRtPP7tw)](https://www.youtube.com/@HunterHogan)
+[![Homeless since 2011 August][recovery-badge]][support]
+
+[releases]: https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest
+[japan]: https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest/download/IntegratedCodeFire_Japan.zip
+[korea]: https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest/download/IntegratedCodeFire_Korea.zip
+[simplified]: https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest/download/IntegratedCodeFire_Simplified_Chinese.zip
+[taiwan]: https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest/download/IntegratedCodeFire_Taiwan.zip
+[hongkong]: https://github.com/hunterhogan/Integrated_code_fire_font/releases/latest/download/IntegratedCodeFire_Hong_Kong.zip
+[issues]: https://github.com/hunterhogan/Integrated_code_fire_font/issues
+[Fira Mono]: https://github.com/mozilla/Fira
+[Fira Code]: https://github.com/tonsky/FiraCode
+[Fira Code HH]: https://github.com/hunterhogan/FiraCode
+[Source Han Sans]: https://github.com/adobe-fonts/source-han-sans
+[Source Code Pro]: https://github.com/adobe-fonts/source-code-pro
+[Source Han Mono]: https://github.com/adobe-fonts/source-han-mono
+[Source Han Code JP]: https://github.com/adobe-fonts/source-han-code-jp
+
+[preview]: .github/font-preview.svg
+[recovery-badge]: https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat
+[support]: https://HunterThinks.com/support

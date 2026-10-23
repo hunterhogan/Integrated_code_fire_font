@@ -1,16 +1,18 @@
-"""Merge western and CJK fonts and package release assets.
+"""Merge prepared western and CJK fonts and package locale-specific release archives.
 
-You can use this module to merge prepared western fonts with subsetted CID fonts, update OpenType
-metadata, package locale archives, and remove temporary assembly-line artifacts. The module provides
-the merge stage in `goMerge` and the packaging and cleanup stage in `goAssets`.
+(AI generated docstring)
+
+You can produce Integrated Code 火 fonts from warehouse inputs using the active
+`settingsPackage` selections. Merging writes font files to the workbench; packaging creates the
+locale archives and removes the temporary build files.
 
 Contents
 --------
 Functions
-    goAssets
-        Package merged fonts into locale archives and remove temporary artifacts.
-    goMerge
-        Merge prepared western fonts with subsetted CID fonts.
+	goAssets
+		Package merged font files and clear the workbench.
+	goMerge
+		Save merged fonts for the configured locales, styles, and weights.
 """
 from __future__ import annotations
 
@@ -34,32 +36,48 @@ if TYPE_CHECKING:
 	from pathlib import Path
 
 def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
-	"""Merge prepared western fonts with subsetted CID fonts.
+	"""Save merged western and CJK fonts for the active locales, styles, and weights.
 
 	(AI generated docstring)
-
-	You can use this function to merge prepared western fonts with subsetted CID fonts for every configured locale, style, and
-	weight combination. The function loads western font paths from `valetGetsWesternFontPathFilename` [1], derives name-table
-	metadata with `archivistMakesNameIDMetadata` [2], dispatches `_mergeFont` workers in parallel, and writes merged fonts into
-	`settingsPackage.pathWorkbenchFonts`.
 
 	Parameters
 	----------
 	fontFormat : str = 'ttf'
-		Font file format used for both western input files and subsetted CID input files.
+		Extension used for prepared input and merged output files. Inputs must contain TrueType
+		outlines compatible with the TrueType merger.
 	CPUlimit : bool | float | int | None = 1
-		Concurrency limit passed to `defineConcurrencyLimit` [3].
+		Worker limit. Positive integers select workers; negative integers reserve CPUs.
+		Fractions select proportions to use or reserve. `None`, `False`, and `0` use all CPUs;
+		`True` selects one worker. The effective limit is at least one worker.
 
 	Returns
 	-------
-	pathFilenamesMerged : list[Path]
-		Merged font file paths written into `settingsPackage.pathWorkbenchFonts`.
+	listPathFilenames : list[Path]
+		Saved merged font paths under `settingsPackage.pathWorkbenchFonts`, in completion order.
+
+	See Also
+	--------
+	`goAssets`
+		Package the merged font files into locale archives and clear the workbench.
+
+	File Replacement
+	----------------
+	The workbench font directory is created and matching merged font files are replaced. Each
+	font receives the locale family name, weight name, version, vendor identifier, and credits.
+	Prepared warehouse inputs are retained.
 
 	Examples
 	--------
-	The `__main__` block uses `goMerge` to produce the merged fonts that `goAssets` packages [4].
+	The module entry point merges warehouse fonts and packages the results.
 
-	>>> listPathFilenames: Iterable[Path] = goMerge(CPUlimit=CPUlimit)
+		```python
+		from Integrated_Code_Fire.go import goAssets, goMerge
+
+		if __name__ == '__main__':
+			CPUlimit = 15
+			listPathFilenames = goMerge(CPUlimit=CPUlimit)
+			goAssets(listPathFilenames, CPUlimit=CPUlimit)
+		```
 	"""
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
@@ -95,38 +113,29 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 	return listPathFilenames
 
 def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
-	"""I use this worker to merge one western font with one subsetted CID font.
+	"""I use this worker to save one merged western and CJK font with release metadata.
 
 	(AI generated docstring)
-
-	I use this function as the parallel worker dispatched by `goMerge` [1]. The function merges `pathFilenameWestern` and
-	`pathFilenameHan` with `machinistMergesTTFFonts` [2], updates OpenType metadata with `archivistUpdatesMetadata` [3], writes
-	the merged font to `pathFilenameWrite`, and returns `pathFilenameWrite`.
 
 	Parameters
 	----------
 	pathFilenameWestern : Path
-		Path to the prepared western font file.
+		Prepared western font with TrueType outlines.
 	pathFilenameHan : Path
-		Path to the subsetted CID-derived font file.
+		Prepared CJK subset with TrueType outlines and matching em size.
 	nameIDmetadata : dict[int, str]
-		Name-table values written into the merged font.
+		Font name identifiers mapped to their release text.
 	pathFilenameWrite : Path
-		Destination path for the merged font file.
+		Destination for the merged font. Parent directories are created.
 
 	Returns
 	-------
 	pathFilenameWrite : Path
-		Path to the written merged font file.
+		Saved font path. The merged font is closed after saving.
 
-	References
-	----------
-	[1] Integrated_Code_Fire.go.goMerge
-		Internal package reference.
-	[2] Integrated_Code_Fire.machineShop.machinistMergesTTFFonts
-		Internal package reference.
-	[3] Integrated_Code_Fire.archivist.archivistUpdatesMetadata
-		Internal package reference.
+	File Replacement
+	----------------
+	The output file is replaced. Both input font files are retained.
 	"""
 	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameWestern, pathFilenameHan)
 
@@ -139,27 +148,30 @@ def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata:
 	return pathFilenameWrite
 
 def goAssets(listPathFilenames: Iterable[Path], *, CPUlimit: bool | float | int | None = 1) -> None:
-	"""Package merged fonts into locale archives and remove temporary artifacts.
+	"""Package merged fonts into locale archives and remove temporary build files.
 
-	You can use this function to package the merged font files produced by `goMerge` [1] into locale-specific ZIP archives with
-	`packerMakesAssets` [2]. After packaging, the function removes `settingsPackage.pathWorkbenchFonts` and `settingsPackage.pathWorkbench`
-	to leave only warehouse and asset outputs.
+	(AI generated docstring)
 
 	Parameters
 	----------
 	listPathFilenames : Iterable[Path]
-		Merged font file paths to package.
+		Merged font paths with locale labels in their filename stems.
 	CPUlimit : bool | float | int | None = 1
-		Concurrency limit passed to `defineConcurrencyLimit` [3].
+		Worker limit. Positive integers select workers; negative integers reserve CPUs.
+		Fractions select proportions to use or reserve. `None`, `False`, and `0` use all CPUs;
+		`True` selects one worker. The effective limit is at least one worker.
 
-	References
-	----------
-	[1] Integrated_Code_Fire.go.goMerge
-		Internal package reference.
-	[2] Integrated_Code_Fire.logistics.packerMakesAssets
-		Internal package reference.
-	[3] hunterMakesPy.parseParameters.defineConcurrencyLimit
-		https://context7.com/hunterhogan/huntermakespy
+	See Also
+	--------
+	`Integrated_Code_Fire.logistics.packerMakesAssets`
+		Create archives and obtain their paths while retaining the workbench files.
+
+	File Replacement and Removal
+	----------------------------
+	Matching locale ZIP archives in `settingsPackage.pathAssets` are replaced. After packaging,
+	all files in `settingsPackage.pathWorkbenchFonts` and that directory are removed. Remaining
+	files in `settingsPackage.pathWorkbench` and that directory are then removed. Other nested
+	directories prevent cleanup from completing. Warehouse inputs and release archives are retained.
 	"""
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 	listPathFilenames = packerMakesAssets(listPathFilenames, workersMaximum)
@@ -176,9 +188,3 @@ if __name__ == '__main__':
 	goAssets(listPathFilenames, CPUlimit=CPUlimit)
 
 	sys.stdout.write(f"{ansiColor.BlackOnYellow}Done in {time.perf_counter() - timeStart:.2f} seconds.{ansiColorReset}\n")
-
-# cid-keyed to name-keyed _in-place_
-# merge.
-# don't create assets.
-# sfntedit to share tables.
-# otf2otc.

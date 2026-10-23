@@ -1,4 +1,19 @@
-"""Source Han Mono data."""
+"""Identify Source Han Mono glyphs excluded from horizontal character selections.
+
+(AI generated docstring)
+
+Contents
+--------
+Glyph Exclusions
+	cidsVerticalOnly
+		Store decimal CID strings excluded when character selection files are generated.
+
+Attributes
+----------
+cidsVerticalOnly : frozenset[str]
+	Source Han Mono character identifiers for vertical glyph forms. The character selection
+	generator compares these decimal strings with identifiers from the source character maps.
+"""
 from __future__ import annotations
 
 cidsVerticalOnly: frozenset[str] = frozenset([
