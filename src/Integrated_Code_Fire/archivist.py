@@ -518,10 +518,11 @@ def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filename
 	# TODO Configuration settings.
 	unicodes: Iterator[str] = map(hex
 		, filterfalse(between吗(0x1200, 0x21FF)
+		, filterfalse(settingsPackage.cmapUpdates.__contains__
 		, filterfalse(between吗(0x2300, 0x2E7F)
 		, filterfalse(between吗(0xFF01, 0xFF5E)
 			, filter(between吗(0x1100, 0xFFFF), unicodeTOgid.keys())
-	))))
+	)))))
 
 	suffix: str = 'unicodes'
 	listPathFilenames.append(writeStringToHere('\n'.join(unicodes) + '\n', pathWrite / f"{filenameStemWrite}.{suffix}"))
@@ -585,5 +586,5 @@ def archivistMakesAllCharacterSubsets(pathMetadata: Path, fontFamilyCID: str = '
 
 if __name__ == '__main__':
 	pathMetadata: Path = pathRootSourceHanMonoDEFAULT / 'Resources'
-	unicodeExclude: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphsDEFAULT) | {0x22EF}
+	unicodeExclude: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphsDEFAULT)
 	archivistMakesAllCharacterSubsets(pathMetadata, unicodeExclude=unicodeExclude)

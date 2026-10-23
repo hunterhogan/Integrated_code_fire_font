@@ -52,7 +52,8 @@ from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyph
 from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistSubsetsCID
 from itertools import product as CartesianProduct
-from more_itertools import consume, side_effect
+from more_itertools import consume
+from operator import attrgetter, methodcaller
 from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
@@ -67,10 +68,11 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 
 	(AI generated docstring)
 
-	You can use this function to take already compiled western font files, scale each font to `settingsPackage.unitsPerEm` when
-	necessary, and save the prepared fonts into `settingsPackage.pathWarehouse`. The function writes into `western` when the
-	target units-per-em value already equals `2000`, and writes into `scaled` otherwise. The `CPUlimit` parameter is accepted for
-	interface consistency with other assembly-line stages [1].
+	You can use this function to take already compiled western font files, scale each font to
+	`settingsPackage.unitsPerEm` when necessary, and save the prepared fonts into
+	`settingsPackage.pathWarehouse`. The function writes into `western` when the target units-per-em
+	value already equals `2000`, and writes into `scaled` otherwise. The `CPUlimit` parameter is
+	accepted for interface consistency with other assembly-line stages [1].
 
 	Parameters
 	----------
@@ -111,7 +113,7 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 
 	for pathFilename in listPathFilenamesTTFont:
 		ttFont: TTFont = TTFont(pathFilename)
-		consume(side_effect(lambda table: table.cmap.update({0x22EF: 'ellipsis'}), ttFont['cmap'].tables))
+		consume(map(methodcaller('update', settingsPackage.cmapUpdates), map(attrgetter('cmap'), ttFont['cmap'].tables)))
 		if settingsPackage.unitsPerEm != 2000:
 			scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
 		weight: str = pathFilename.stem.removeprefix(f"{pathFilename.parent.name}-")

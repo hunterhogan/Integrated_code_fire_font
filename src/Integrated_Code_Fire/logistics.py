@@ -37,15 +37,15 @@ from __future__ import annotations
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import archivistGetsLocales, archivistGetsWeights
-from pathlib import Path, PurePath
+from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
 from zipfile import ZIP_DEFLATED, ZipFile
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
+	from pathlib import PurePath
 
-# SEMIOTICS `packer`.
 def packerMakesAssets(listPathFilenames: Iterable[Path], workersMaximum: int) -> frozenset[Path]:
 	"""Package merged fonts into locale-specific ZIP archives.
 
@@ -127,9 +127,9 @@ def packerMakesAssetsLocale(listPathFilenames: Iterable[Path], pathFilenameZIP: 
 		for pathFilename in filter(lambda pathFilename: localeIn.IntegratedCode火 in pathFilename.stem, listPathFilenames):
 			zipWrite.write(pathFilename, arcname=pathFilename.name)
 
-	return frozenset([pathFilenameZIP])  # NOTE In the future, there may be more than one asset.
+	# Using a list makes it easy to add more assets in the future.
+	return frozenset([pathFilenameZIP])
 
-# SEMIOTICS `valet`.
 def valetCopiesToWorkbench(listPathFilenames: Iterable[Path] | None = None, pathRoot: PurePath | None = None, theGlob: str = '*.*') -> frozenset[Path]:
 	"""Copy files to the workbench fonts directory.
 

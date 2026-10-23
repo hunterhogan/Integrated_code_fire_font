@@ -92,6 +92,7 @@ class PackageSettings(humpy_PackageSettings):
 		"Registering Vendor ID 1INT.pdf"
 	"""
 	achVendID: Final[str] = '1INT'
+	cmapUpdates: dict[int, str] = dataclasses.field(default_factory=dict[int, str])
 	fontFamily: Final[str] = 'Integrated Code 火'
 	fontVersion: float = errorL33T
 	theLocales: frozenset[str] = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
@@ -124,6 +125,7 @@ class PackageSettings(humpy_PackageSettings):
 fontVersion: float = fontVersionHARDCODED
 settingsPackage = PackageSettings('Integrated_Code_Fire'
 	, fontVersion=fontVersion
+	, cmapUpdates={0x22EF: 'ellipsis'}
 	, theLocales=frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
 	, theStyles=frozenset([None])
 	, theWeights=frozenset(['Bold', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])

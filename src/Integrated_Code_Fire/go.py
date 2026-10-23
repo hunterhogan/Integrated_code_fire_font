@@ -1,32 +1,22 @@
 """Merge western and CJK fonts and package release assets.
 
-You can use this module to merge prepared western fonts with subsetted CID fonts, update OpenType metadata, package locale
-archives, and remove temporary assembly-line artifacts. The module provides the merge stage in `goMerge` and the packaging and
-cleanup stage in `goAssets`.
+You can use this module to merge prepared western fonts with subsetted CID fonts, update OpenType
+metadata, package locale archives, and remove temporary assembly-line artifacts. The module provides
+the merge stage in `goMerge` and the packaging and cleanup stage in `goAssets`.
 
 Contents
 --------
 Functions
-	goAssets
-		Package merged fonts into locale archives and remove temporary artifacts.
-	goMerge
-		Merge prepared western fonts with subsetted CID fonts.
-
-References
-----------
-[1] Integrated_Code_Fire.archivist
-	Internal package reference.
-[2] Integrated_Code_Fire.logistics
-	Internal package reference.
-[3] Integrated_Code_Fire.machineShop
-	Internal package reference.
-
+    goAssets
+        Package merged fonts into locale archives and remove temporary artifacts.
+    goMerge
+        Merge prepared western fonts with subsetted CID fonts.
 """
 from __future__ import annotations
 
 from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
-from hunterMakesPy.semiotics import ansiColorReset, AnsiColors
+from hunterMakesPy.semiotics import ansiColor, ansiColorReset
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
 from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
@@ -42,8 +32,6 @@ if TYPE_CHECKING:
 	from collections.abc import Iterable
 	from fontTools.ttLib import TTFont
 	from pathlib import Path
-
-ansiColors = AnsiColors()
 
 def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
 	"""Merge prepared western fonts with subsetted CID fonts.
@@ -72,18 +60,6 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 	The `__main__` block uses `goMerge` to produce the merged fonts that `goAssets` packages [4].
 
 	>>> listPathFilenames: Iterable[Path] = goMerge(CPUlimit=CPUlimit)
-
-	References
-	----------
-	[1] Integrated_Code_Fire.logistics.valetGetsWesternFontPathFilename
-		Internal package reference.
-	[2] Integrated_Code_Fire.archivist.archivistMakesNameIDMetadata
-		Internal package reference.
-	[3] hunterMakesPy.parseParameters.defineConcurrencyLimit
-		https://context7.com/hunterhogan/huntermakespy
-	[4] Integrated_Code_Fire.go.goAssets
-		Internal package reference.
-
 	"""
 	workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
@@ -199,7 +175,7 @@ if __name__ == '__main__':
 	listPathFilenames: Iterable[Path] = goMerge(CPUlimit=CPUlimit)
 	goAssets(listPathFilenames, CPUlimit=CPUlimit)
 
-	sys.stdout.write(f"{ansiColors.BlackOnYellow}Done in {time.perf_counter() - timeStart:.2f} seconds.{ansiColorReset}\n")
+	sys.stdout.write(f"{ansiColor.BlackOnYellow}Done in {time.perf_counter() - timeStart:.2f} seconds.{ansiColorReset}\n")
 
 # cid-keyed to name-keyed _in-place_
 # merge.

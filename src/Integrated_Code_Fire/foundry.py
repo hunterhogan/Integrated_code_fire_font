@@ -160,9 +160,10 @@ def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontForma
 
 	(AI generated docstring)
 
-	You can compile fonts from a Glyphs source file by invoking `smithyFontProject` in parallel using `multiprocessing.Pool` [1].
-	The function reads the Glyphs source file from `pathFilename`, compiles each format in `fontFormats` using separate worker
-	processes, and writes compiled font files to directories under `settingsPackage.pathWorkbench` [2].
+	You can compile fonts from a Glyphs source file by invoking `smithyFontProject` in parallel using
+	`multiprocessing.Pool` [1]. The function reads the Glyphs source file from `pathFilename`,
+	compiles each format in `fontFormats` using separate worker processes, and writes compiled font
+	files to directories under `settingsPackage.pathWorkbench` [2].
 
 	Parameters
 	----------
@@ -171,7 +172,8 @@ def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontForma
 	workersMaximum : int = 2
 		Maximum number of parallel worker processes for compiling font formats.
 	fontFormats : Iterable[str] = frozenset(['otf', 'ttf'])
-		Output font formats to compile, where each format is either `'otf'` for OpenType CFF or `'ttf'` for TrueType.
+		Output font formats to compile, where each format is either `'otf'` for OpenType CFF or
+		`'ttf'` for TrueType.
 
 	Returns
 	-------
@@ -191,8 +193,7 @@ def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontForma
 	----------
 	[1] multiprocessing.Pool - Python Standard Library
 		https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool
-	[2] Integrated_Code_Fire.settingsPackage
-	[3] fontmake - Google Fonts
+	[2] Integrated_Code_Fire.settingsPackage [3] fontmake - Google Fonts
 		https://github.com/googlefonts/fontmake
 	"""
 	with Pool(processes=workersMaximum) as concurrencyManager:
@@ -202,9 +203,9 @@ def smithyCastsFromGlyphs(pathFilename: Path, workersMaximum: int = 2, fontForma
 def smithyFontProject(pathFilename: Path, fontFormat: Literal['otf', 'ttf']) -> Path:
 	"""Compile fonts from Glyphs source in a specified output format.
 
-	You can compile fonts from a Glyphs source file using `fontmake.font_project.FontProject` [1]. The function interpolates font
-	instances, disables autohinting, and writes the compiled font files to an output directory under
-	`settingsPackage.pathWorkbench` [2].
+	You can compile fonts from a Glyphs source file using `fontmake.font_project.FontProject` [1]. The
+	function interpolates font instances, disables autohinting, and writes the compiled font files to
+	an output directory under `settingsPackage.pathWorkbench` [2].
 
 	Parameters
 	----------
