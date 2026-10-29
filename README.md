@@ -156,7 +156,13 @@ and additional font formats are welcome. [Open an issue][issues] to discuss a ch
 - Fira Mono is a trademark of The Mozilla Corporation.
 
 [![SIL Open Font License](.github/OFLLogoRectColor.png)](OFL-1.1)
-[![CC-BY-NC-4.0](.github/CC-BY-NC-4.0.png)](LICENSE)
+[![CC-BY-NC-4.0](https://raw.githubusercontent.com/hunterhogan/Integrated_code_fire_font/refs/heads/main/.github/CC-BY-NC-4.0.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+By law, authors retain their copyrights unless they grant exceptions. The [Attribution-NonCommercial 4.0 International Deed](https://github.com/hunterhogan/Integrated_code_fire_font#License-1-ov-file) outlines how you may use this work.
+
+The restriction on commercial use (without a license) limits advantage-taking, unjust enrichment, and exploitation. You would be morally wrong if you were to enrich yourself by using this work while I am denied healthcare, housing, security of property, and the safety of my person.
+
+To obtain and retain the right to use this work, you incur the cost of attributing the work to me. Your nominal cost might accrue as a benefit that mitigates my suffering or saves my life.
 
 ## My recovery
 
