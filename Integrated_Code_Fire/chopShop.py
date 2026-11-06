@@ -316,7 +316,7 @@ def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOpti
 
 if __name__ == "__main__":
 	fontFormat: str = 'ttf'
-	CPUlimit: int = -2
+	CPUlimit: int = 5
 
 	doGlyphs = True
 	doCID = True

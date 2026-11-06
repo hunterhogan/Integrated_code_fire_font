@@ -218,7 +218,7 @@ settingsPackage = PackageSettings('Integrated_Code_Fire'
 if socket.gethostname() == 'duda':
 	pathRootRepositoriesDEFAULT: Path = Path('/clones')
 else:
-	# NOTE I assume you cloned this repository to the same parent directory as other repositories.
+	# NOTE I assume you, the user, cloned this repository to the same parent directory as other repositories.
 	pathRootRepositoriesDEFAULT = settingsPackage.pathRoot.parent
 
 pathRootRepositories: Path = pathRootRepositoriesDEFAULT

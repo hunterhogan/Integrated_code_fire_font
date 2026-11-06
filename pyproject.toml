@@ -10,12 +10,14 @@ authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 maintainers = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 dependencies = [
   "afdko>=5.0.1",
-  "fontmake>=3.11.1",
+  "fontbakery>=1.1.0",
+  "fontmake[autohint]>=3.11.1",
   "fonttools>=4.61.1",
   "glyphslib>=6.12.7",
   "hunterMakesPy>=0.8.1",
   "more-itertools>=11.1.0",
   "tqdm>=4.67.3",
+  "uharfbuzz>=0.57.0",
   "z0z-tools>=3.2.4",
 ]
 
