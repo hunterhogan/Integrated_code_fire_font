@@ -368,3 +368,5 @@ def archivistMakesUnicodesHan(cmapReversed: Mapping[str, Iterable[int]], unicode
 		, chain.from_iterable(starmap(archivistMakesRangeBlocks, settingsPackage.rangesExclude))))
 	glyphNamesVerticalOnly: frozenset[str] = frozenset(map('cid{:05d}'.format, cidsVerticalOnly))
 	return frozenset(chain.from_iterable(keyfilter(complement(glyphNamesVerticalOnly.__contains__), cmapReversed).values())) - unicodesExclude
+
+# TODO What is the role of `archivistUpdatesFontFileMetadata` now?
