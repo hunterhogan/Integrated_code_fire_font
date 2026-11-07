@@ -21,6 +21,8 @@ logistics
 	Copy intermediate files, package archives, and remove temporary files.
 machineShop
 	Subset CJK fonts, change horizontal metrics, and merge TrueType fonts.
+qualityControl
+	Check prepared, subset, and merged fonts during and after the build.
 
 Subpackages
 -----------
@@ -37,6 +39,18 @@ Types
 	WeightIn
 		Store matching weight identifiers for the font families and source files.
 Settings
+	autohintOptionsDEFAULT
+		Provide the `ttfautohint` options applied to prepared western fonts.
+	boxOfCheckIDsHinting
+		Select the FontBakery checks for hinted western fonts.
+	boxOfCheckIDsMerged
+		Select the FontBakery checks for merged fonts.
+	headFlagsHinting
+		Select the `head.flags` bits that describe TrueType instructions.
+	headFlagsIntegerPPEM
+		Select the `head.flags` bit that forces integer ppem for hinted fonts.
+	pathFilenameFiraCode_build_ttfDEFAULT
+		Locate the expected Fira Code TrueType build script.
 	pathFilenameFiraCodeGlyphsDEFAULT
 		Locate the expected Fira Code Glyphs source file.
 	pathRootSourceHanMonoDEFAULT
@@ -45,6 +59,8 @@ Settings
 		Provide the active configuration shared by the build operations.
 	subsetOptionsDEFAULT
 		Provide the shared CJK subsetting options.
+	textShaping
+		Provide programming text whose shaping in merged fonts must equal its shaping in Fira Code.
 """
 from __future__ import annotations
 
@@ -52,6 +68,8 @@ from Integrated_Code_Fire._theTypes import LocaleIn as LocaleIn, WeightIn as Wei
 
 # isort: split
 from Integrated_Code_Fire._theSSOT import (
-	PackageSettings as PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT as pathFilenameFiraCodeGlyphsDEFAULT,
-	pathRootSourceHanMonoDEFAULT as pathRootSourceHanMonoDEFAULT, settingsPackage as settingsPackage,
-	subsetOptionsDEFAULT as subsetOptionsDEFAULT)
+	autohintOptionsDEFAULT as autohintOptionsDEFAULT, boxOfCheckIDsHinting as boxOfCheckIDsHinting, boxOfCheckIDsMerged as boxOfCheckIDsMerged,
+	headFlagsHinting as headFlagsHinting, headFlagsIntegerPPEM as headFlagsIntegerPPEM, PackageSettings as PackageSettings,
+	pathFilenameFiraCode_build_ttfDEFAULT as pathFilenameFiraCode_build_ttfDEFAULT,
+	pathFilenameFiraCodeGlyphsDEFAULT as pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT as pathRootSourceHanMonoDEFAULT,
+	settingsPackage as settingsPackage, subsetOptionsDEFAULT as subsetOptionsDEFAULT, textShaping as textShaping)

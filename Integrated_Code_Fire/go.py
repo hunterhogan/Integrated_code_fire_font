@@ -24,6 +24,7 @@ from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
 from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsWesternFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistMergesTTFFonts
+from Integrated_Code_Fire.qualityControl import checkMerged
 from itertools import product as CartesianProduct
 from tqdm import tqdm
 from typing import TYPE_CHECKING
@@ -103,7 +104,7 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 				_mergeFont
 				, dictionaryFontsWestern[weightIn.fontFamilyWestern]
 				, pathCID / f"{archivistMakesFilenameStem(None, localeIn.ascii, style, weightIn.fontFamilyCID)}.{fontFormat}"
-				, archivistMakesNameIDMetadata(weightIn.IntegratedCode火, fontFamily.replace(' ', ''), fontFamily)
+				, archivistMakesNameIDMetadata(weightIn.IntegratedCode火, archivistMakesFilenameStem(settingsPackage.fontFamilyASCII, localeIn.ascii, separator='').replace(' ', '').replace('_', ''), fontFamily)
 				, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(settingsPackage.fontFamily.replace(' ', ''), localeIn.IntegratedCode火, style, weightIn.IntegratedCode火, '')}.{fontFormat}"
 			))
 
@@ -136,6 +137,11 @@ def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata:
 	File Replacement
 	----------------
 	The output file is replaced. Both input font files are retained.
+
+	Quality Control
+	---------------
+	`Integrated_Code_Fire.qualityControl.checkMerged` checks the saved font and writes its findings
+	to standard output. The findings do not stop the build.
 	"""
 	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameWestern, pathFilenameHan)
 
@@ -144,6 +150,8 @@ def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata:
 	pathFilenameWrite.parent.mkdir(parents=True, exist_ok=True)
 	ttFont.save(pathFilenameWrite)
 	ttFont.close()
+
+	checkMerged(pathFilenameWrite, pathFilenameWestern, pathFilenameHan)
 
 	return pathFilenameWrite
 
@@ -180,7 +188,7 @@ def goAssets(listPathFilenames: Iterable[Path], *, CPUlimit: bool | float | int 
 	valetRemovesWorkbench()
 
 if __name__ == '__main__':
-	CPUlimit: int = 5
+	CPUlimit: int = 1
 
 	timeStart: float = time.perf_counter()
 

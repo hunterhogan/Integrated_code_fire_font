@@ -34,4 +34,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = { find = {} }
-package-data = { Integrated_Code_Fire = ["*.cmd", "py.typed"], "Integrated_Code_Fire.dataCenter" = ["*.gids", "*.unicodes"] }
+package-data = { Integrated_Code_Fire = ["*.cmd", "py.typed"] }

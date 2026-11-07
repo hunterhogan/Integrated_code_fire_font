@@ -23,26 +23,28 @@ from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from fontTools.ttLib import scaleUpem, TTFont
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from Integrated_Code_Fire import (
-	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, subsetOptionsDEFAULT,
-	WeightIn)
-from Integrated_Code_Fire.archivist import (
-	archivistGetsLocales, archivistGetsSubsetCharacters, archivistGetsWeights, archivistMakesFilenameStem)
+	autohintOptionsDEFAULT, headFlagsIntegerPPEM, LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT,
+	settingsPackage, subsetOptionsDEFAULT, WeightIn)
+from Integrated_Code_Fire.archivist import archivistGetsLocales, archivistGetsUnicodes, archivistGetsWeights, archivistMakesFilenameStem
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
-from Integrated_Code_Fire.logistics import valetCopiesToWorkbench, valetRemovesFiles, valetRemovesWorkbench
+from Integrated_Code_Fire.logistics import (
+	valetCopiesToWorkbench, valetGetsWesternFontPathFilename, valetRemovesFiles, valetRemovesWorkbench)
 from Integrated_Code_Fire.machineShop import machinistSubsetsCID
-from itertools import product as CartesianProduct
+from Integrated_Code_Fire.qualityControl import checkAdvanceWidths, checkHan, checkWestern
+from itertools import chain, product as CartesianProduct
 from more_itertools import consume
 from operator import attrgetter, methodcaller
 from pathlib import Path
 from tqdm import tqdm
+from ttfautohint import ttfautohint
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
 	from fontTools import subset
-	from hunterMakesPy import identifierDotAttribute
+	from ttfautohint.options import UserOptions
 
-def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
+def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], autohintOptions: UserOptions, *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
 	"""Prepare western fonts with the configured character mappings and em size.
 
 	(AI generated docstring)
@@ -52,6 +54,8 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 	listPathFilenamesTTFont : Iterable[Path]
 		Compiled western fonts. Input stems follow the source directory name and a hyphen, then
 		the weight label; output filenames retain the weight label and extension.
+	autohintOptions : UserOptions
+		Keyword options for `ttfautohint.ttfautohint`, normally `autohintOptionsDEFAULT`.
 	CPUlimit : bool | float | int | None = 1
 		Accepted concurrency setting. Preparation remains sequential regardless of this value.
 
@@ -71,9 +75,21 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 	The western fonts receive `settingsPackage.cmapUpdates`. The supplied configuration maps
 	U+22EF (`⋯`) to the existing `"ellipsis"` glyph, also used for U+2026 (`…`).
 
+	Hinting
+	-------
+	`ttfautohint` hints each prepared font after the character mappings and em size change, so the
+	hints describe the final outlines. Each font also sets `head.flags` bit 3, which forces integer
+	ppem values, as hinted fonts require. Merging retains the hints of the first font only, so the
+	western font must precede the CJK font in the merge.
+
 	File Replacement
 	----------------
 	Prepared files with matching weight names are replaced. The input files are retained.
+
+	Quality Control
+	---------------
+	`Integrated_Code_Fire.qualityControl.checkWestern` checks each saved font and writes its
+	findings to standard output. The findings do not stop the build.
 	"""
 	_workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
@@ -90,9 +106,12 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], *, CPUlimit: bool | f
 		consume(map(methodcaller('update', settingsPackage.cmapUpdates), map(attrgetter('cmap'), ttFont['cmap'].tables)))
 		if settingsPackage.unitsPerEm != 2000:
 			scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
+		ttFont['head'].flags |= headFlagsIntegerPPEM
 		weight: str = pathFilename.stem.removeprefix(f"{pathFilename.parent.name}-")
 		pathFilenameWrite: Path = pathWrite / f"{weight}{pathFilename.suffix}"
 		ttFont.save(pathFilenameWrite)
+		ttfautohint(**(autohintOptions | {'in_file': pathFilenameWrite, 'out_file': pathFilenameWrite}))
+		checkWestern(pathFilenameWrite)
 		listPathFilenames.append(pathFilenameWrite)
 
 	return frozenset(listPathFilenames)
@@ -159,15 +178,18 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 
 	(AI generated docstring)
 
-	You can prepare the CJK contribution to merged fonts using character selections stored in
-	`dataCenter`. The input fonts must already be staged in `settingsPackage.pathWorkbenchFonts`.
+	You can prepare the CJK contribution to merged fonts. Each subset retains the characters that
+	`Integrated_Code_Fire.archivist.archivistMakesUnicodesHan` selects from the font's own character
+	map. The input fonts must already be staged in `settingsPackage.pathWorkbenchFonts`, and the
+	prepared western fonts of the active weights must already be in the warehouse, because the CJK
+	subsets omit every character that the western fonts map.
 
 	Parameters
 	----------
 	subsetOptions : subset.Options
 		FontTools options controlling retained glyphs, layout features, names, and tables.
 	fontFamilyCID : str = 'SourceHanMono'
-		Family label shared by staged font filenames and character selection filenames.
+		Family label of the staged font filenames.
 	theLocales : Iterable[str]
 		Locale keys. Defaults to the locales in a fresh `PackageSettings`.
 	theStyles : Iterable[str | None]
@@ -176,8 +198,8 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 	theWeights : Iterable[str]
 		Weight keys. Defaults to all seven weights in a fresh `PackageSettings`.
 	fontFormat : {'ttf', 'otf'} = 'ttf'
-		Output format. `"otf"` retains CFF outlines; `"ttf"` converts to TrueType outlines and
-		preserves the adjusted horizontal metrics.
+		Output format, also the format of the prepared western fonts. `"otf"` retains CFF outlines;
+		`"ttf"` converts to TrueType outlines.
 	CPUlimit : bool | float | int | None = 1
 		Worker limit. Positive integers select workers; negative integers reserve CPUs.
 		Fractions select proportions to use or reserve. `None`, `False`, and `0` use all CPUs;
@@ -212,7 +234,7 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 		theStyles = theStyles or settings.theStyles
 		theWeights = theWeights or settings.theWeights
 
-	subsetCharacters: dict[identifierDotAttribute, dict[str, list[int]]] = archivistGetsSubsetCharacters(fontFamilyCID, theLocales, theStyles)
+	unicodesWestern: frozenset[int] = frozenset(chain.from_iterable(map(archivistGetsUnicodes, valetGetsWesternFontPathFilename(fontFormat).values())))
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 
@@ -232,13 +254,10 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 			localeIn: LocaleIn = dictionaryLocales[locale]
 			weightIn: WeightIn = dictionaryWeights[weight]
 
-			lookupIDs: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, localeIn.ascii, style)
-
 			listClaimTickets.append(concurrencyManager.submit(
 					functionSubsetCID
 					, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(fontFamilyCID, localeIn.ascii, style, weightIn.fontFamilyCID)}.otf"
-					, subsetCharacters[lookupIDs]['gids']
-					, subsetCharacters[lookupIDs]['unicodes']
+					, unicodesWestern
 					, subsetOptions
 					, pathCID / f"{archivistMakesFilenameStem(None, localeIn.ascii, style, weightIn.fontFamilyCID)}.{fontFormat}"
 				))
@@ -246,7 +265,7 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 		listPathFilenames.extend(claimTicket.result() for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc=f"Subsetting {fontFamilyCID}"))
 	return frozenset(listPathFilenames)
 
-def _cidTOttf(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
+def _cidTOttf(pathFilenameCID: Path, unicodesWestern: frozenset[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
 	"""I use this worker to save a CJK subset with TrueType outlines and adjusted metrics.
 
 	(AI generated docstring)
@@ -255,10 +274,8 @@ def _cidTOttf(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subse
 	----------
 	pathFilenameCID : Path
 		Staged CJK font with CFF outlines.
-	gids : list[int]
-		Glyph identifiers to retain alongside the Unicode selections.
-	unicodes : list[int]
-		Unicode code points to retain alongside the glyph selections.
+	unicodesWestern : frozenset[int]
+		Code points of the western fonts, which the subset must not map.
 	subsetOptions : subset.Options
 		FontTools subsetting options.
 	pathFilenameWrite : Path
@@ -271,18 +288,22 @@ def _cidTOttf(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subse
 
 	File Replacement
 	----------------
-	The output file is replaced with the subset. Horizontal metrics from CJK preparation are
-	retained through the outline conversion.
+	The output file is replaced with the subset. The outline conversion keeps the advance widths
+	from CJK preparation and sets each left side bearing from the converted outline.
+
+	Quality Control
+	---------------
+	`Integrated_Code_Fire.qualityControl.checkHan` checks the saved font and writes its findings to
+	standard output. The findings do not stop the build.
 	"""
-	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, gids, unicodes, subsetOptions)
-	metrics: dict[str, tuple[int, int]] = fontCID['hmtx'].metrics.copy()
+	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, unicodesWestern, subsetOptions)
 	otf_to_ttf(fontCID)
-	fontCID['hmtx'].metrics = metrics
 	fontCID.save(pathFilenameWrite)
 	fontCID.close()
+	checkHan(pathFilenameWrite)
 	return pathFilenameWrite
 
-def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
+def _cid(pathFilenameCID: Path, unicodesWestern: frozenset[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
 	"""I use this worker to save a CJK subset while retaining CFF outlines.
 
 	(AI generated docstring)
@@ -291,10 +312,8 @@ def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOpti
 	----------
 	pathFilenameCID : Path
 		Staged CJK font with CFF outlines.
-	gids : list[int]
-		Glyph identifiers to retain alongside the Unicode selections.
-	unicodes : list[int]
-		Unicode code points to retain alongside the glyph selections.
+	unicodesWestern : frozenset[int]
+		Code points of the western fonts, which the subset must not map.
 	subsetOptions : subset.Options
 		FontTools subsetting options.
 	pathFilenameWrite : Path
@@ -308,15 +327,21 @@ def _cid(pathFilenameCID: Path, gids: list[int], unicodes: list[int], subsetOpti
 	File Replacement
 	----------------
 	The output file is replaced with the subset and its adjusted horizontal metrics.
+
+	Quality Control
+	---------------
+	`Integrated_Code_Fire.qualityControl.checkAdvanceWidths` checks the saved font and writes its
+	findings to standard output. The findings do not stop the build.
 	"""
-	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, gids, unicodes, subsetOptions)
+	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, unicodesWestern, subsetOptions)
 	fontCID.save(pathFilenameWrite)
 	fontCID.close()
+	checkAdvanceWidths(pathFilenameWrite, settingsPackage.width)
 	return pathFilenameWrite
 
 if __name__ == "__main__":
 	fontFormat: str = 'ttf'
-	CPUlimit: int = 5
+	CPUlimit: int = 1
 
 	doGlyphs = True
 	doCID = True
@@ -328,7 +353,7 @@ if __name__ == "__main__":
 	if doGlyphs:
 		pathTTFont: Path | None = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, 1, [fontFormat])
 		listPathFilenamesTTFont = pathTTFont.glob(f"*.{fontFormat}")
-		prepareGlyphs(listPathFilenamesTTFont, CPUlimit=CPUlimit)
+		prepareGlyphs(listPathFilenamesTTFont, autohintOptionsDEFAULT, CPUlimit=CPUlimit)
 	else:
 		pathTTFont = None
 

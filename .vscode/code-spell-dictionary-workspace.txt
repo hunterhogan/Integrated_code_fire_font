@@ -19,6 +19,7 @@ charstring
 Charstring
 charstrings
 checkoutlinesufo
+checkrunner
 cidchar
 cidfont
 cidfontinfo
@@ -42,6 +43,7 @@ Edenspiekermann
 eexec
 endcidchar
 endcidrange
+familyname
 FMNDB
 fontbakery
 fontforge
@@ -50,6 +52,7 @@ fontmake
 fonttools
 fontv
 Franken
+fullfont
 fullwidth
 Fullwidth
 GDEF
@@ -59,6 +62,7 @@ gfsubsets
 gftools
 gids
 glyf
+glyphnames
 glyphsets
 glyphslib
 gname
@@ -68,6 +72,7 @@ GSUB
 Halfwidth
 Hangugeo
 Hanja
+Harf
 Hasklig
 HATTORI
 hhea
@@ -83,11 +88,13 @@ keepends
 layercontents
 Layercontents
 loca
+loglevels
 Lunde
 lxml
 makeotf
 makeotfexe
 Masataka
+maxadvancewidth
 maxp
 maxs
 mergefonts
@@ -110,6 +117,7 @@ periodcentered
 picosvg
 Plemol
 PPEM
+PPEMHARDCODED
 processedglyphs
 Prokopov
 pyclipper
