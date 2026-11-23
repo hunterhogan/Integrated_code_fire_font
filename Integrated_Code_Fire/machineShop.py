@@ -13,6 +13,8 @@ Functions
 		Combine prepared TrueType fonts into one open font.
 	machinistModifiesSideBearings
 		Center each CJK glyph in a full-width or half-width cell of an open font.
+	machinistSortsFeatureRecords
+		Sort the feature records of the layout tables of an open font by feature tag.
 	machinistSubsetsCID
 		Retain selected CJK characters and apply the configured scale and spacing.
 """
@@ -23,6 +25,7 @@ from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
+from operator import attrgetter
 from humpy_cytoolz import keyfilter
 from Integrated_Code_Fire import headFlagsHinting, settingsPackage
 from Integrated_Code_Fire.archivist import archivistMakesUnicodesCJK
@@ -32,6 +35,7 @@ if TYPE_CHECKING:
 	from collections.abc import Iterable
 	from fontTools.cffLib import CharStrings
 	from fontTools.misc.psCharStrings import T2CharString
+	from fontTools.ttLib.tables import otTables
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
 
@@ -138,6 +142,11 @@ def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 		Merged font containing glyphs and layout data from the inputs. The caller sets release
 		metadata, saves the font, and closes the font. Input files are retained.
 
+	Feature Records
+	---------------
+	`Merger` appends the feature records of each font, so `machinistSortsFeatureRecords` sorts them
+	by feature tag, as the OpenType specification recommends.
+
 	Hinting
 	-------
 	The merged font keeps the TrueType instructions of the first font only. `Merger` combines bits 2
@@ -152,4 +161,44 @@ def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 	ttFont: TTFont = Merger().merge(pathFilenamesFonts)
 	with TTFont(pathFilenamesFonts[0], lazy=True) as ttFontFirst:
 		ttFont['head'].flags = (ttFont['head'].flags & ~headFlagsHinting) | (ttFontFirst['head'].flags & headFlagsHinting)
+	machinistSortsFeatureRecords(ttFont)
 	return ttFont
+
+def machinistSortsFeatureRecords(ttFont: TTFont) -> None:
+	"""Sort the feature records of the `GSUB` and `GPOS` tables of an open font by feature tag.
+
+	(AI generated docstring)
+
+	Parameters
+	----------
+	ttFont : TTFont
+		Open font whose layout tables are to change.
+
+	Input Mutation
+	--------------
+	Each `FeatureList` is sorted by feature tag; records with the same tag keep their order. Every
+	feature index that points into a `FeatureList` follows its record: the indices of the language
+	systems and of the feature variations. The features, their lookups, and shaping do not change.
+	The font remains open and is not saved.
+	"""
+	for tableTag in ('GSUB', 'GPOS'):
+		if tableTag in ttFont:
+			table: otTables.GSUB | otTables.GPOS = ttFont[tableTag].table
+			featureRecords: list[otTables.FeatureRecord] = table.FeatureList.FeatureRecord
+			indicesSorted: list[int] = sorted(range(len(featureRecords)), key=lambda index: featureRecords[index].FeatureTag)
+			indexSortedFromIndex: dict[int, int] = dict(zip(indicesSorted, range(len(indicesSorted)), strict=True))
+			table.FeatureList.FeatureRecord = [featureRecords[index] for index in indicesSorted]
+
+			for scriptRecord in table.ScriptList.ScriptRecord:
+				for langSys in filter(None, [scriptRecord.Script.DefaultLangSys, *map(attrgetter('LangSys'), scriptRecord.Script.LangSysRecord)]):
+					langSys.FeatureIndex = sorted(map(indexSortedFromIndex.__getitem__, langSys.FeatureIndex))
+					# NOTE `0xFFFF` means the language system has no required feature.
+					if langSys.ReqFeatureIndex != 0xFFFF:
+						langSys.ReqFeatureIndex = indexSortedFromIndex[langSys.ReqFeatureIndex]
+
+			if getattr(table, 'FeatureVariations', None):
+				for featureVariationRecord in table.FeatureVariations.FeatureVariationRecord:
+					substitutionRecords: list[otTables.FeatureTableSubstitutionRecord] = featureVariationRecord.FeatureTableSubstitution.SubstitutionRecord
+					for substitutionRecord in substitutionRecords:
+						substitutionRecord.FeatureIndex = indexSortedFromIndex[substitutionRecord.FeatureIndex]
+					substitutionRecords.sort(key=attrgetter('FeatureIndex'))
