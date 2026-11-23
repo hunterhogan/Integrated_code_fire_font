@@ -18,6 +18,7 @@ dependencies = [
   "hunterMakesPy>=0.8.1",
   "more-itertools>=11.1.0",
   "tqdm>=4.67.3",
+  "types-tqdm",
   "uharfbuzz>=0.57.0",
   "z0z-tools>=3.2.4",
 ]
@@ -28,9 +29,6 @@ Donate = "https://www.patreon.com/integrated"
 Homepage = "https://github.com/hunterhogan/Integrated_code_fire_font"
 Issues = "https://github.com/hunterhogan/Integrated_code_fire_font/issues"
 Repository = "https://github.com/hunterhogan/Integrated_code_fire_font.git"
-
-[dependency-groups]
-dev = ["types-tqdm"]
 
 [build-system]
 requires = ["setuptools>=77.0.3"]

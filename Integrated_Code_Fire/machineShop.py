@@ -23,6 +23,7 @@ from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
+from humpy_cytoolz import keyfilter
 from Integrated_Code_Fire import headFlagsHinting, settingsPackage
 from Integrated_Code_Fire.archivist import archivistMakesUnicodesCJK
 from typing import TYPE_CHECKING
@@ -63,12 +64,19 @@ def machinistSubsetsCID(pathFilename: Path, unicodesWestern: Iterable[int], subs
 
 	Character Selection
 	-------------------
-	The subset requests code points only. The subset character map therefore omits every excluded
-	code point, even one whose glyph a retained code point shares.
+	The excluded code points are removed from the character map before subsetting, and the subset
+	requests the remaining code points. The subset therefore omits every excluded code point, even
+	one whose glyph a retained code point shares, and even one that a closure of the subsetter, such
+	as the bidi mirroring closure, would otherwise add.
 	"""
 	ttFont: TTFont = TTFont(pathFilename)
-	subsetter = subset.Subsetter(subsetOptions)
-	subsetter.populate(unicodes=archivistMakesUnicodesCJK(ttFont['cmap'].buildReversed(), unicodesWestern))
+	unicodesCJK: frozenset[int] = archivistMakesUnicodesCJK(ttFont['cmap'].buildReversed(), unicodesWestern)
+	# NOTE The bidi mirroring closure of `subset.Subsetter` adds the mirror of each requested code point that the font maps,
+	# such as U+2245 for U+224C. A code point that the font no longer maps cannot return.
+	for cmapSubtable in ttFont['cmap'].tables:
+		cmapSubtable.cmap = keyfilter(unicodesCJK.__contains__, cmapSubtable.cmap)
+	subsetter: subset.Subsetter = subset.Subsetter(subsetOptions)
+	subsetter.populate(unicodes=unicodesCJK)
 	subsetter.subset(ttFont)
 	if settingsPackage.unitsPerEm != 1000:
 		scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)

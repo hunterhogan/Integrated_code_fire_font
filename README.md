@@ -109,7 +109,6 @@ With western glyphs.
    ```
 
    On Windows PowerShell, use `py -3.14 -m venv .venv` and `. .\.venv\Scripts\Activate.ps1`.
-   The type stubs for development are in the `dev` dependency group: `pip install --group dev`.
 
 Compiling the source fonts also requires local checkouts of [Fira Code HH] and [Source Han Mono].
 By default, the build expects `FiraCode/FiraCode.glyphs` and the `source-han-mono` checkout under
