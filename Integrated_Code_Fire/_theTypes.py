@@ -28,15 +28,15 @@ class LocaleIn(NamedTuple):
 		Locale label used in build filenames, such as `"Japan"` or `"Simplified_Chinese"`.
 	IntegratedCode火 : str
 		Locale label shown in the installed font family name, such as `"日本"`.
-	SourceHanMono : str
+	AdobeHan : str
 		Source Han Mono locale code used in character maps, such as `"JP"`.
-	SourceHanMonoOTC : str
+	AdobeHanOTC : str
 		Source Han Mono locale code used in collection source filenames, such as `"J"`.
 	"""
 	ascii: str
 	IntegratedCode火: str
-	SourceHanMono: str
-	SourceHanMonoOTC: str
+	AdobeHan: str
+	AdobeHanOTC: str
 
 class WeightIn(NamedTuple):
 	"""Store matching weight labels for western fonts, CJK fonts, and Integrated Code 火.
@@ -57,11 +57,11 @@ class WeightIn(NamedTuple):
 		Weight label used in prepared western font filenames.
 	IntegratedCode火 : str
 		Weight label shown in Integrated Code 火 font names.
-	SourceHanMono : str
+	AdobeHan : str
 		Weight label used by the Source Han Mono source.
 	"""
 	FiraCode: str
 	fontFamilyCID: str
 	fontFamilyWestern: str
 	IntegratedCode火: str
-	SourceHanMono: str
+	AdobeHan: str

@@ -14,10 +14,11 @@ dependencies = [
   "fontbakery>=1.1.0",
   "fontmake[autohint]>=3.11.1",
   "fonttools>=4.61.1",
-  "glyphslib>=6.12.7",
+  "glyphslib>=6.15.0",
   "hunterMakesPy>=0.8.1",
   "more-itertools>=11.1.0",
   "tqdm>=4.67.3",
+  "types-tqdm",
   "uharfbuzz>=0.57.0",
   "z0z-tools>=3.2.4",
 ]
@@ -287,7 +288,7 @@ skip-magic-trailing-comma = true
 
 [tool.setuptools]
 packages = { find = {} }
-package-data = { Integrated_Code_Fire = ["*.cmd", "py.typed"], "Integrated_Code_Fire.dataCenter" = ["*.gids", "*.unicodes"] }
+package-data = { Integrated_Code_Fire = ["*.cmd", "py.typed"] }
 
 # === DO_NOT_EDIT: path-sync shared ===
 [tool.tombi.format.rules]

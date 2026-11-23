@@ -66,8 +66,7 @@ Integrated Code 火 brings together two branches of font development.
 Fira Code is my favorite code-centric font. I also publish compiled Fira Code fonts in
 [my fork][Fira Code HH] for people who want Fira Code on its own.
 
-<details>
-<summary>Other programming fonts</summary>
+<details><summary>Other programming fonts</summary>
 
 With Chinese, Japanese, and/or Korean glyphs.
 
@@ -84,19 +83,32 @@ With western glyphs.
 
 </details>
 
-<details>
-<summary>Build the font or contribute</summary>
+<details><summary>Build the font or contribute</summary>
 
 ### Set up the build environment
 
-The build tools require Python 3.14 or later. Clone this repository and install its dependencies
-with `uv sync`, then activate the project virtual environment before running the Python scripts.
-For PowerShell.
+1. Clone this repository into the same parent directory as your other font checkouts (see below).
+   If you have not cloned a repository before, GitHub explains how in
+   [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+2. Install [Python](https://www.python.org/downloads/) 3.14 or later. The virtual environment in the
+   next step must use Python 3.14 or later, or the installation stops.
+3. Create a virtual environment and install the dependencies, with VS Code or from a terminal.
 
-```powershell
-uv sync
-. .\.venv\Scripts\Activate.ps1
-```
+   **VS Code.** Open `.vscode/Integrated_Code_Fire.code-workspace` with **File > Open Workspace from
+   File...** and install the recommended extensions when VS Code offers them. Then run
+   **Python: Create Environment** from the Command Palette, choose **Venv** and Python 3.14, and
+   select `pyproject.toml` when VS Code asks which dependencies to install.
+
+   **Terminal.** From the repository directory, create and activate the environment, then install
+   the project and its dependencies.
+
+   ```bash
+   python3.14 -m venv .venv
+   source .venv/bin/activate
+   pip install -e .
+   ```
+
+   On Windows PowerShell, use `py -3.14 -m venv .venv` and `. .\.venv\Scripts\Activate.ps1`.
 
 Compiling the source fonts also requires local checkouts of [Fira Code HH] and [Source Han Mono].
 By default, the build expects `FiraCode/FiraCode.glyphs` and the `source-han-mono` checkout under
@@ -105,23 +117,30 @@ this project's parent directory. Font settings and source locations are in
 
 ### Build stages
 
-The assembly line separates character selection, font preparation, merging, and packaging.
-Run the stages needed for the inputs you are changing.
+The assembly line separates font preparation, merging, and packaging. Run the stages needed for
+the inputs you are changing.
 
-1. **Character selections.** Run `python Integrated_Code_Fire/archivist.py` to regenerate the
-   locale and style selections in `Integrated_Code_Fire/dataCenter`. The selections exclude
-   western characters and vertical glyph forms. Regeneration replaces these persistent inputs.
-2. **Source compilation and preparation.** Review the build switches in
+1. **Source compilation and preparation.** Review the build switches in
    [chopShop.py](Integrated_Code_Fire/chopShop.py), then run
-   `python Integrated_Code_Fire/chopShop.py`. Western fonts are prepared under
+   `python Integrated_Code_Fire/chopShop.py`. Western fonts are prepared and hinted under
    `warehouse/western` or `warehouse/scaled`; CJK subsets are prepared under `warehouse/CID`.
-3. **Merging and packaging.** Run `python Integrated_Code_Fire/go.py` with the prepared warehouse
+   Each CJK subset keeps the characters of its own character map except those excluded:
+   characters that the western fonts map, the Unicode blocks in `blocksExclude`, the characters
+   in `unicodesExclude`, and the vertical glyph forms in
+   [dataCenter/AdobeHan.py](Integrated_Code_Fire/dataCenter/AdobeHan.py). Change an
+   exclusion in [_theSSOT.py](Integrated_Code_Fire/_theSSOT.py).
+2. **Merging and packaging.** Run `python Integrated_Code_Fire/go.py` with the prepared warehouse
    inputs. The active configuration selects five locales and six upright weights. Merged fonts
    are written to `workbench/fonts`, locale ZIP archives are written to `assets`, and temporary
    workbench files are removed after packaging.
 
-Keep temporary font edits in `workbench`. Changes to the warehouse fonts or character selections
-become persistent inputs to later builds. Build outputs with matching filenames are replaced.
+Both stages check each font they write and print any problems; see
+[qualityControl.py](Integrated_Code_Fire/qualityControl.py). Run
+`python -m Integrated_Code_Fire.qualityControl` for the slower checks, which also compare the
+hinting options with the Fira Code checkout.
+
+Keep temporary font edits in `workbench`. Changes to the warehouse fonts become persistent inputs
+to later builds. Build outputs with matching filenames are replaced.
 
 ### Weight matching
 

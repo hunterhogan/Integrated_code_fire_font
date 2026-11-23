@@ -3,8 +3,8 @@
 (AI generated docstring)
 
 You can match locale and weight labels across source fonts, construct build filenames, and write
-Integrated Code 火 metadata. Character selection operations generate or read the `.gids` and
-`.unicodes` files used to retain CJK glyphs alongside the western font.
+Integrated Code 火 metadata. Character selection operations choose the characters that each CJK
+font contributes alongside the western font.
 
 Contents
 --------
@@ -23,38 +23,29 @@ Font-construction functions
 		Change metadata in an open font.
 	make_afdkoOptions
 		Select source files and locale options for CID font compilation.
-Rarely used functions
-	archivistGetsGlyphsUnicode
-		Read encoded Unicode code points from Glyphs source.
-	archivistGetsSubsetCharacters
-		Read stored CJK glyph and Unicode selections.
-	archivistMakesAllCharacterSubsets
-		Write character selections for each requested locale and style.
-	archivistMakesCharacterSubsets
-		Write glyph and Unicode selections from one PostScript character map.
+Character selection functions
+	archivistGetsUnicodes
+		Obtain the code points that a font maps.
+	archivistMakesRangeBlocks
+		Obtain the code points of a span of consecutive Unicode blocks.
+	archivistMakesUnicodesCJK
+		Select the code points that a CJK font contributes to a merged font.
 """
 from __future__ import annotations
 
-from fontTools import subset
-from fontTools.misc.psLib import PSInterpreter, unpack_item
 from fontTools.ttLib import newTable, TTFont
-from functools import partial, reduce
-from humpy_cytoolz import complement, compose, keyfilter, keymap, valfilter, valmap
-from hunterMakesPy.filesystemToolkit import writeStringToHere
+from fontTools.unicodedata import Blocks
+from humpy_cytoolz import complement, keyfilter
 from hunterMakesPy.semiotics import ansiColor, ansiColorReset
-from Integrated_Code_Fire import (
-	LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT, settingsPackage, WeightIn)
-from Integrated_Code_Fire.dataCenter.SourceHanMono import cidsVerticalOnly
-from itertools import batched, filterfalse, product as CartesianProduct
+from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
+from Integrated_Code_Fire.dataCenter.AdobeHan import cidsVerticalOnly
+from itertools import chain, starmap
 from typing import Literal, TYPE_CHECKING
-from Z0Z_tools import between吗
-import glyphsLib
 import sys
 
 if TYPE_CHECKING:
-	from collections.abc import Container, Iterable, Iterator
+	from collections.abc import Iterable, Mapping
 	from fontTools.ttLib.tables._n_a_m_e import NameRecord, table__n_a_m_e
-	from hunterMakesPy import identifierDotAttribute
 	from pathlib import Path
 
 #======== Font-construction functions ===============================================
@@ -71,11 +62,11 @@ def archivistGetsLocales() -> dict[str, LocaleIn]:
 		`"Taiwan"`. Each value contains the display label and both Source Han Mono locale codes.
 	"""
 	return {
-		'Hong_Kong': LocaleIn('Hong_Kong', '香港', SourceHanMono='HK', SourceHanMonoOTC='HC'),
-		'Japan': LocaleIn('Japan', '日本', SourceHanMono='JP', SourceHanMonoOTC='J'),
-		'Korea': LocaleIn('Korea', '한국인', SourceHanMono='KR', SourceHanMonoOTC='K'),
-		'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字', SourceHanMono='CN', SourceHanMonoOTC='SC'),
-		'Taiwan': LocaleIn('Taiwan', '台灣', SourceHanMono='TW', SourceHanMonoOTC='TC'),
+		'Hong_Kong': LocaleIn('Hong_Kong', '香港', AdobeHan='HK', AdobeHanOTC='HC'),
+		'Japan': LocaleIn('Japan', '日本', AdobeHan='JP', AdobeHanOTC='J'),
+		'Korea': LocaleIn('Korea', '한국인', AdobeHan='KR', AdobeHanOTC='K'),
+		'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字', AdobeHan='CN', AdobeHanOTC='SC'),
+		'Taiwan': LocaleIn('Taiwan', '台灣', AdobeHan='TW', AdobeHanOTC='TC'),
 	}
 
 def archivistGetsWeights() -> dict[str, WeightIn]:
@@ -92,13 +83,13 @@ def archivistGetsWeights() -> dict[str, WeightIn]:
 		`"ExtraLight"` entry has empty western and Integrated Code 火 labels.
 	"""
 	return {
-		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyWestern='SemiBold', fontFamilyCID='Bold', SourceHanMono='Bold'),
-		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyWestern='', fontFamilyCID='ExtraLight', SourceHanMono='ExtraLight'),
-		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyWestern='Bold', fontFamilyCID='Heavy', SourceHanMono='Heavy'),
-		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyWestern='Light', fontFamilyCID='Light', SourceHanMono='Light'),
-		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyWestern='Medium', fontFamilyCID='Medium', SourceHanMono='Medium'),
-		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyWestern='Retina', fontFamilyCID='Normal', SourceHanMono='Normal'),
-		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyWestern='Regular', fontFamilyCID='Regular', SourceHanMono='Regular'),
+		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyWestern='SemiBold', fontFamilyCID='Bold', AdobeHan='Bold'),
+		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyWestern='', fontFamilyCID='ExtraLight', AdobeHan='ExtraLight'),
+		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyWestern='Bold', fontFamilyCID='Heavy', AdobeHan='Heavy'),
+		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyWestern='Light', fontFamilyCID='Light', AdobeHan='Light'),
+		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyWestern='Medium', fontFamilyCID='Medium', AdobeHan='Medium'),
+		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyWestern='Retina', fontFamilyCID='Normal', AdobeHan='Normal'),
+		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyWestern='Regular', fontFamilyCID='Regular', AdobeHan='Regular'),
 	}
 
 def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None = None, style: str | None = None, weight: str | None = None, separator: str = '.') -> str:
@@ -278,9 +269,9 @@ def make_afdkoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', loca
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 	if fontFamilyCID == 'SourceHanMono':
-		aLocaleOTC: str = dictionaryLocales[locale].SourceHanMonoOTC
-		aLocale: str = dictionaryLocales[locale].SourceHanMono
-		aWeight: str = dictionaryWeights[weight].SourceHanMono
+		aLocaleOTC: str = dictionaryLocales[locale].AdobeHanOTC
+		aLocale: str = dictionaryLocales[locale].AdobeHan
+		aWeight: str = dictionaryWeights[weight].AdobeHan
 	else:
 		aLocaleOTC = dictionaryLocales[locale].ascii
 		aLocale = dictionaryLocales[locale].ascii
@@ -307,209 +298,74 @@ def make_afdkoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', loca
 
 	return tuple(options)
 
-#======== Rarely Used Functions ========
+#======== Character selection functions ========
 
-def archivistGetsSubsetCharacters(fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None) -> dict[identifierDotAttribute, dict[str, list[int]]]:
-	# TODO At the very least, store this data in Python structures.
-	"""Load stored CJK glyph and Unicode selections for the requested locales and styles.
-
-	(AI generated docstring)
-
-	Parameters
-	----------
-	fontFamilyCID : str = 'SourceHanMono'
-		Family prefix of the selection filenames in `dataCenter`.
-	theLocales : Iterable[str]
-		Locale keys. Omitted input, `None`, and empty collections use
-		`settingsPackage.theLocales`.
-	theStyles : Iterable[str | None]
-		Styles, with an element of `None` selecting upright style. Omitted input, `None`, and
-		empty collections use `settingsPackage.theStyles`.
-
-	Returns
-	-------
-	subsetCharacters : dict[identifierDotAttribute, dict[str, list[int]]]
-		Mapping from each family, locale, and style filename stem to `"gids"` and `"unicodes"`
-		lists of integers. Each selection applies to every weight of that locale and style.
-
-	See Also
-	--------
-	`archivistMakesAllCharacterSubsets`
-		Regenerate the stored selection files from source character maps.
-	"""
-	subsetCharacters: dict[identifierDotAttribute, dict[str, list[int]]] = {}
-
-	pathDatacenter: Path = settingsPackage.pathPackage / 'dataCenter'
-	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
-
-	for locale, style in CartesianProduct(theLocales or settingsPackage.theLocales, theStyles or settingsPackage.theStyles):
-		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
-		subsetCharacters[filenameStem] = {}
-
-		formatCharacterIDs: str = 'gids'
-		pathFilename: Path = pathDatacenter / f"{filenameStem}.{formatCharacterIDs}"
-		subsetCharacters[filenameStem][formatCharacterIDs] = subset.parse_gids(','.join(pathFilename.read_text('utf-8').splitlines()))
-
-		formatCharacterIDs: str = 'unicodes'
-		pathFilename: Path = pathDatacenter / f"{filenameStem}.{formatCharacterIDs}"
-		subsetCharacters[filenameStem][formatCharacterIDs] = subset.parse_unicodes(','.join(pathFilename.read_text('utf-8').splitlines()))
-
-	return subsetCharacters
-
-def archivistGetsGlyphsUnicode(pathFilename: Path) -> frozenset[int]:
-	"""Obtain the Unicode code points assigned to glyphs in a Glyphs source file.
+def archivistGetsUnicodes(pathFilename: Path) -> frozenset[int]:
+	"""Obtain the code points that a font maps.
 
 	(AI generated docstring)
 
 	Parameters
 	----------
 	pathFilename : Path
-		Glyphs source file, such as the configured Fira Code source.
+		Font to read.
 
 	Returns
 	-------
 	unicodes : frozenset[int]
-		Every encoded Unicode value assigned to the source glyphs, including multiple Unicode
-		values assigned to the same glyph.
-
-	See Also
-	--------
-	`archivistMakesAllCharacterSubsets`
-		Exclude these western characters when generating CJK selections.
+		Every code point in the Unicode subtables of the font's character map.
 	"""
-	return frozenset([int(unicode, 16) for glyph in glyphsLib.load(pathFilename).glyphs for unicode in glyph.unicodes])
+	with TTFont(pathFilename, lazy=True) as ttFont:
+		return frozenset(chain.from_iterable(ttFont['cmap'].buildReversed().values()))
 
-def archivistMakesCharacterSubsets(pathFilename: Path, pathWrite: Path, filenameStemWrite: str, unicodeExclude: Container[int] = frozenset(), gidsExclude: Container[str] = frozenset()) -> list[Path]:
-	"""Write CJK glyph and Unicode selections from one PostScript character map.
+def archivistMakesRangeBlocks(blockFirst: str, blockLast: str) -> range:
+	"""Obtain the code points of a span of consecutive Unicode blocks.
 
 	(AI generated docstring)
 
-	You can retain supplementary-plane characters by glyph identifier and retain selected
-	Basic Multilingual Plane characters by Unicode code point. The selections let the CJK font
-	supply characters alongside the western font.
-
 	Parameters
 	----------
-	pathFilename : Path
-		PostScript map associating Unicode values with decimal CID strings.
-	pathWrite : Path
-		Output directory for the two selection files.
-	filenameStemWrite : str
-		Shared output filename stem, normally identifying family, locale, and style.
-	unicodeExclude : Container[int] = frozenset()
-		Unicode code points to remove from the character map before making either selection.
-	gidsExclude : Container[str] = frozenset()
-		Decimal CID strings to remove from the character map before making either selection.
+	blockFirst : str
+		Name of the first Unicode block of the span, such as `"Basic Latin"`.
+	blockLast : str
+		Name of the last Unicode block of the span, such as `"Georgian"`.
 
 	Returns
 	-------
-	listPathFilenames : list[Path]
-		Paths to the `.gids` file followed by the `.unicodes` file.
-
-	Character Selection
-	-------------------
-	The `.gids` file contains numerically sorted identifiers for remaining code points above
-	U+FFFF. The `.unicodes` file contains code points within `settingsPackage.rangeInclude`,
-	excluding `settingsPackage.rangesExclude` and keys in `settingsPackage.cmapUpdates`.
-
-	File Replacement
-	----------------
-	The two selection files are written under `pathWrite`. Existing files with the same names
-	are replaced. Other files in the directory are retained.
-	"""
-	listPathFilenames: list[Path] = []
-
-	interpreter: PSInterpreter = PSInterpreter()
-	interpreter.interpret(pathFilename.read_bytes())
-	unicodeTOgid: dict[int, str] = keymap(compose(int.from_bytes, partial(bytes, encoding='latin-1'))
-		, valmap(str, dict(batched(map(unpack_item, interpreter.stack), 2, strict=True))))
-	interpreter.close()
-	unicodeTOgid = keyfilter(complement(unicodeExclude.__contains__)
-		, valfilter(complement(gidsExclude.__contains__), unicodeTOgid))
-
-	gids: list[str] = sorted({gid for unicode, gid in unicodeTOgid.items() if 0xFFFF < unicode}, key=int)
-	gids.append('')
-
-	suffix: str = 'gids'
-	listPathFilenames.append(writeStringToHere('\n'.join(gids), pathWrite / f"{filenameStemWrite}.{suffix}"))
-
-	unicodes: Iterator[str] = map(hex
-		, reduce(lambda codepoints, interval: filterfalse(between吗(*interval), codepoints)
-		, settingsPackage.rangesExclude
-		, filterfalse(settingsPackage.cmapUpdates.__contains__
-			, filter(between吗(*settingsPackage.rangeInclude), unicodeTOgid.keys())
-	)))
-
-	suffix: str = 'unicodes'
-	listPathFilenames.append(writeStringToHere('\n'.join(unicodes) + '\n', pathWrite / f"{filenameStemWrite}.{suffix}"))
-
-	return listPathFilenames
-
-def archivistMakesAllCharacterSubsets(pathMetadata: Path, fontFamilyCID: str = 'SourceHanMono', theLocales: Iterable[str] | None = None, theStyles: Iterable[str | None] | None = None, unicodeExclude: frozenset[int] = frozenset()) -> list[Path]:
-	"""Generate CJK character selection files for each requested locale and style.
-
-	(AI generated docstring)
-
-	You can refresh the selections stored in the package `dataCenter` directory. Vertical glyph
-	forms listed in `cidsVerticalOnly` are excluded from both selections.
-
-	Parameters
-	----------
-	pathMetadata : Path
-		Source Han Mono `Resources` directory containing the `utf32-*.map` character maps.
-	fontFamilyCID : str = 'SourceHanMono'
-		Family label used in output filenames. Input character map names follow Source Han Mono.
-	theLocales : Iterable[str]
-		Locale keys. Defaults to the locales in a fresh `PackageSettings`.
-	theStyles : Iterable[str | None]
-		Styles, with an element of `None` selecting upright style. Defaults to both upright and
-		italic styles in a fresh `PackageSettings`.
-	unicodeExclude : frozenset[int] = frozenset()
-		Unicode code points to omit, normally the characters provided by the western source.
-
-	Returns
-	-------
-	listPathFilenames : list[Path]
-		Generated `.gids` and `.unicodes` paths for every requested locale and style.
+	rangeBlocks : range
+		Every code point from the start of `blockFirst` through the end of `blockLast`.
 
 	See Also
 	--------
-	`archivistMakesCharacterSubsets`
-		Inspect the character selection rules applied to each map.
-
-	Selection Defaults
-	------------------
-	Omitting either selection, or supplying `None`, enables class defaults for each omitted or
-	empty selection. Nonempty supplied selections are retained. If both selections are supplied,
-	empty selections remain empty.
-
-	File Replacement
-	----------------
-	Matching selection files in the package `dataCenter` directory are replaced. These files are
-	persistent build inputs shared across weights.
+	`fontTools.unicodedata.Blocks`
+		The Unicode block names and their starting code points.
 	"""
-	if theLocales is None or theStyles is None:
-		settings: PackageSettings = PackageSettings(settingsPackage.identifierPackage)
-		theLocales = theLocales or settings.theLocales
-		theStyles = theStyles or settings.theStyles
+	return range(Blocks.RANGES[Blocks.VALUES.index(blockFirst)], Blocks.RANGES[Blocks.VALUES.index(blockLast) + 1])
 
-	listPathFilenames: list[Path] = []
+def archivistMakesUnicodesCJK(cmapReversed: Mapping[str, Iterable[int]], unicodesWestern: Iterable[int]) -> frozenset[int]:
+	"""Select the code points that a CJK font contributes to a merged font.
 
-	pathWrite: Path = settingsPackage.pathPackage / 'dataCenter'
+	(AI generated docstring)
 
-	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
-	# TODO Remove the hardcoding.
-	for locale, style in CartesianProduct(theLocales, theStyles):
-		if style:
-			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}-ital.map"
-		else:
-			pathFilename: Path = pathMetadata / f"utf32-{dictionaryLocales[locale].SourceHanMono.lower()}.map"
-		filenameStem: identifierDotAttribute = archivistMakesFilenameStem(fontFamilyCID, dictionaryLocales[locale].ascii, style)
-		listPathFilenames.extend(archivistMakesCharacterSubsets(pathFilename, pathWrite, filenameStem, unicodeExclude, cidsVerticalOnly))
+	Parameters
+	----------
+	cmapReversed : Mapping[str, Iterable[int]]
+		Glyph names of the CJK font mapped to the code points of each glyph, as from
+		`TTFont['cmap'].buildReversed()`.
+	unicodesWestern : Iterable[int]
+		Code points of the western fonts. The western font supplies these characters.
 
-	return listPathFilenames
+	Returns
+	-------
+	unicodesCJK : frozenset[int]
+		Code points of the CJK font, except code points that the western fonts map, code points in
+		`settingsPackage.blocksExclude` and `settingsPackage.unicodesExclude`, and code points of
+		glyphs in `cidsVerticalOnly`.
+	"""
+	unicodesExclude: frozenset[int] = frozenset(chain(unicodesWestern
+		, settingsPackage.unicodesExclude
+		, chain.from_iterable(starmap(archivistMakesRangeBlocks, settingsPackage.blocksExclude))))
+	glyphNamesVerticalOnly: frozenset[str] = frozenset(map('cid{:05d}'.format, cidsVerticalOnly))
+	return frozenset(chain.from_iterable(keyfilter(complement(glyphNamesVerticalOnly.__contains__), cmapReversed).values())) - unicodesExclude
 
-if __name__ == '__main__':
-	pathMetadata: Path = pathRootSourceHanMonoDEFAULT / 'Resources'
-	unicodeExclude: frozenset[int] = archivistGetsGlyphsUnicode(pathFilenameFiraCodeGlyphsDEFAULT)
-	archivistMakesAllCharacterSubsets(pathMetadata, unicodeExclude=unicodeExclude)
+# TODO What is the role of `archivistUpdatesFontFileMetadata` now?

@@ -12,7 +12,9 @@ Functions
 	machinistMergesTTFFonts
 		Combine prepared TrueType fonts into one open font.
 	machinistModifiesSideBearings
-		Change horizontal advance and side bearing values in an open font.
+		Center each CJK glyph in a full-width or half-width cell of an open font.
+	machinistSortsFeatureRecords
+		Sort the feature records of the layout tables of an open font by feature tag.
 	machinistSubsetsCID
 		Retain selected CJK characters and apply the configured scale and spacing.
 """
@@ -23,15 +25,22 @@ from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
-from Integrated_Code_Fire import settingsPackage
+from operator import attrgetter
+from humpy_cytoolz import keyfilter
+from Integrated_Code_Fire import headFlagsHinting, settingsPackage
+from Integrated_Code_Fire.archivist import archivistMakesUnicodesCJK
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from collections.abc import Iterable
+	from fontTools.cffLib import CharStrings
+	from fontTools.misc.psCharStrings import T2CharString
+	from fontTools.ttLib.tables import otTables
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
 
-def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int], subsetOptions: subset.Options) -> TTFont:
-	"""Retain selected CJK glyphs and prepare their em size and horizontal metrics.
+def machinistSubsetsCID(pathFilename: Path, unicodesWestern: Iterable[int], subsetOptions: subset.Options) -> TTFont:
+	"""Retain the CJK characters the merged font needs and prepare their em size and metrics.
 
 	(AI generated docstring)
 
@@ -39,10 +48,8 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 	----------
 	pathFilename : Path
 		CJK font with CFF outlines and the expected source dimensions.
-	gids : list[int]
-		Glyph identifiers to retain alongside the Unicode selections.
-	unicodes : list[int]
-		Unicode code points to retain alongside the glyph selections.
+	unicodesWestern : Iterable[int]
+		Code points of the western fonts, which the CJK font must not map.
 	subsetOptions : subset.Options
 		FontTools options controlling retained layout features, names, and tables.
 
@@ -54,47 +61,69 @@ def machinistSubsetsCID(pathFilename: Path, gids: list[int], unicodes: list[int]
 
 	See Also
 	--------
+	`Integrated_Code_Fire.archivist.archivistMakesUnicodesCJK`
+		Select the retained code points from the font's own character map.
 	`machinistModifiesSideBearings`
 		Inspect the horizontal spacing adjustment applied after subsetting.
+
+	Character Selection
+	-------------------
+	The excluded code points are removed from the character map before subsetting, and the subset
+	requests the remaining code points. The subset therefore omits every excluded code point, even
+	one whose glyph a retained code point shares, and even one that a closure of the subsetter, such
+	as the bidi mirroring closure, would otherwise add.
 	"""
 	ttFont: TTFont = TTFont(pathFilename)
-	subsetter = subset.Subsetter(subsetOptions)
-	subsetter.populate(gids=gids, unicodes=unicodes)
+	unicodesCJK: frozenset[int] = archivistMakesUnicodesCJK(ttFont['cmap'].buildReversed(), unicodesWestern)
+	# NOTE The bidi mirroring closure of `subset.Subsetter` adds the mirror of each requested code point that the font maps,
+	# such as U+2245 for U+224C. A code point that the font no longer maps cannot return.
+	for cmapSubtable in ttFont['cmap'].tables:
+		cmapSubtable.cmap = keyfilter(unicodesCJK.__contains__, cmapSubtable.cmap)
+	subsetter: subset.Subsetter = subset.Subsetter(subsetOptions)
+	subsetter.populate(unicodes=unicodesCJK)
 	subsetter.subset(ttFont)
 	if settingsPackage.unitsPerEm != 1000:
 		scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
-	machinistModifiesSideBearings(ttFont, settingsPackage.incrementSourceHanMono)
+	machinistModifiesSideBearings(ttFont, settingsPackage.width)
 	return ttFont
 
-def machinistModifiesSideBearings(ttFont: TTFont, modifyPerSide: int) -> None:
-	"""Change horizontal advance and side bearing values in an open CJK font.
+def machinistModifiesSideBearings(ttFont: TTFont, width: int) -> None:
+	"""Center each CJK glyph in a full-width or half-width cell of an open CFF font.
 
 	(AI generated docstring)
 
 	Parameters
 	----------
 	ttFont : TTFont
-		Open CJK font whose horizontal metrics are to change.
-	modifyPerSide : int
-		Font units to add to each side of a glyph. Negative values reduce spacing.
+		Open CJK font with CFF outlines whose horizontal metrics and outlines are to change.
+	width : int
+		Advance width of a full-width cell. A half-width cell is `width // 2`.
 
 	Input Mutation
 	--------------
-	The horizontal advance increases by twice the per-side adjustment, and the left side bearing
-	increases by the per-side adjustment. Glyphs with the configured
-	`settingsPackage.widthHalfSourceHanMono` advance receive half the per-side adjustment,
-	rounded down. Zero-width glyphs retain their metrics. The font remains open and is not saved.
+	Glyphs with an advance of one em receive the full-width cell; other glyphs with an advance
+	receive the half-width cell. Each outline moves horizontally by half the change in advance,
+	and the left side bearing moves with it. Zero-width glyphs retain their metrics and outlines.
+	The font remains open and is not saved.
 	"""
+	charStrings: CharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()
+	unitsPerEm: int = ttFont['head'].unitsPerEm
 	for glyphName, glyph in glyphSet.items():
 		if glyph.width != 0:
-			addend: int = modifyPerSide
-			if glyph.width == settingsPackage.widthHalfSourceHanMono:
-				addend //= 2
+			widthCell: int = width
+			if glyph.width < unitsPerEm:
+				widthCell //= 2
+			addend: int = (widthCell - glyph.width) // 2
 
-			ttFont['hmtx'][glyphName] = (glyph.width + (addend * 2), glyph.lsb + addend)
+			ttFont['hmtx'][glyphName] = (widthCell, glyph.lsb + addend)
 
-			glyph.draw(TransformPen(T2CharStringPen(glyph.width + (addend * 2), glyphSet), (1, 0, 0, 1, addend, 0)))
+			# NOTE In a CID-keyed font, each glyph has the `private` of its own font dictionary, and the new charstring needs it.
+			charString: T2CharString = charStrings[glyphName]
+			# NOTE `T2CharStringPen` writes its width as is, but a charstring stores its width as the difference from `nominalWidthX`.
+			pen: T2CharStringPen = T2CharStringPen(widthCell - charString.private.nominalWidthX, None)
+			glyph.draw(TransformPen(pen, (1, 0, 0, 1, addend, 0)))
+			charStrings[glyphName] = pen.getCharString(charString.private, charString.globalSubrs)
 
 def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 	"""Combine prepared TrueType font files into one open font.
@@ -113,9 +142,63 @@ def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 		Merged font containing glyphs and layout data from the inputs. The caller sets release
 		metadata, saves the font, and closes the font. Input files are retained.
 
+	Feature Records
+	---------------
+	`Merger` appends the feature records of each font, so `machinistSortsFeatureRecords` sorts them
+	by feature tag, as the OpenType specification recommends.
+
+	Hinting
+	-------
+	The merged font keeps the TrueType instructions of the first font only. `Merger` combines bits 2
+	and 3 of `head.flags` with AND and bit 4 with OR, so the merged font receives bits 2, 3, and 4
+	of the first font instead.
+
 	See Also
 	--------
 	`Integrated_Code_Fire.go.goMerge`
 		Merge the configured western and CJK combinations and save release font files.
 	"""
-	return Merger().merge(pathFilenamesFonts)
+	ttFont: TTFont = Merger().merge(pathFilenamesFonts)
+	with TTFont(pathFilenamesFonts[0], lazy=True) as ttFontFirst:
+		ttFont['head'].flags = (ttFont['head'].flags & ~headFlagsHinting) | (ttFontFirst['head'].flags & headFlagsHinting)
+	machinistSortsFeatureRecords(ttFont)
+	return ttFont
+
+def machinistSortsFeatureRecords(ttFont: TTFont) -> None:
+	"""Sort the feature records of the `GSUB` and `GPOS` tables of an open font by feature tag.
+
+	(AI generated docstring)
+
+	Parameters
+	----------
+	ttFont : TTFont
+		Open font whose layout tables are to change.
+
+	Input Mutation
+	--------------
+	Each `FeatureList` is sorted by feature tag; records with the same tag keep their order. Every
+	feature index that points into a `FeatureList` follows its record: the indices of the language
+	systems and of the feature variations. The features, their lookups, and shaping do not change.
+	The font remains open and is not saved.
+	"""
+	for tableTag in ('GSUB', 'GPOS'):
+		if tableTag in ttFont:
+			table: otTables.GSUB | otTables.GPOS = ttFont[tableTag].table
+			featureRecords: list[otTables.FeatureRecord] = table.FeatureList.FeatureRecord
+			indicesSorted: list[int] = sorted(range(len(featureRecords)), key=lambda index: featureRecords[index].FeatureTag)
+			indexSortedFromIndex: dict[int, int] = dict(zip(indicesSorted, range(len(indicesSorted)), strict=True))
+			table.FeatureList.FeatureRecord = [featureRecords[index] for index in indicesSorted]
+
+			for scriptRecord in table.ScriptList.ScriptRecord:
+				for langSys in filter(None, [scriptRecord.Script.DefaultLangSys, *map(attrgetter('LangSys'), scriptRecord.Script.LangSysRecord)]):
+					langSys.FeatureIndex = sorted(map(indexSortedFromIndex.__getitem__, langSys.FeatureIndex))
+					# NOTE `0xFFFF` means the language system has no required feature.
+					if langSys.ReqFeatureIndex != 0xFFFF:
+						langSys.ReqFeatureIndex = indexSortedFromIndex[langSys.ReqFeatureIndex]
+
+			if getattr(table, 'FeatureVariations', None):
+				for featureVariationRecord in table.FeatureVariations.FeatureVariationRecord:
+					substitutionRecords: list[otTables.FeatureTableSubstitutionRecord] = featureVariationRecord.FeatureTableSubstitution.SubstitutionRecord
+					for substitutionRecord in substitutionRecords:
+						substitutionRecord.FeatureIndex = indexSortedFromIndex[substitutionRecord.FeatureIndex]
+					substitutionRecords.sort(key=attrgetter('FeatureIndex'))
