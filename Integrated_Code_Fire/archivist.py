@@ -279,7 +279,7 @@ def make_afdkoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', loca
 		message: str = f"I received {fontFamilyCID = }. This is a reminder to check the flow from start to finish."
 		sys.stdout.write(f"{ansiColor.CyanOnMagenta}{message}{ansiColorReset}\n")
 
-	nameTable: table__n_a_m_e = newTable('name')  # pyright: ignore[reportAssignmentType] # ty: ignore[invalid-assignment]
+	nameTable: table__n_a_m_e = newTable('name')
 	nameTable.addMultilingualName({settingsPackage.languages[locale]: fontFamilyCID}, nameID=1, windows=False, mac=True)
 
 	options: list[str] = [

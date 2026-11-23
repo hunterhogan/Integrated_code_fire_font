@@ -36,7 +36,8 @@ from fontbakery.reporters.terminal import TerminalReporter
 from fontbakery.status import ERROR, FAIL, FATAL, INFO, PASS, WARN
 from fontTools.ttLib import TTFont
 from Integrated_Code_Fire import (
-	autohintOptionsDEFAULT, boxOfCheckIDsHinting, boxOfCheckIDsMerged, pathFilenameFiraCode_build_ttfDEFAULT, settingsPackage, textFiraCodeLigatures)
+	autohintOptionsDEFAULT, boxOfCheckIDsHinting, boxOfCheckIDsMerged, pathFilenameFiraCode_build_ttfDEFAULT, settingsPackage,
+	textFiraCodeLigatures)
 from Integrated_Code_Fire.archivist import archivistGetsUnicodes
 from Integrated_Code_Fire.logistics import valetGetsWesternFontPathFilename
 from itertools import compress

@@ -67,6 +67,7 @@ project-excludes = [
   ".venv",
   ".vAnalysis",
 ]
+site-packages-path = ["./typings"]
 # === OK_EDIT: path-sync shared ===
 
 # === DO_NOT_EDIT: path-sync shared ===

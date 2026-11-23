@@ -26,6 +26,7 @@ from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsWesternFo
 from Integrated_Code_Fire.machineShop import machinistMergesTTFFonts
 from Integrated_Code_Fire.qualityControl import inspectorGradesMerged
 from itertools import product as CartesianProduct
+from pathlib import Path
 from tqdm import tqdm
 from typing import TYPE_CHECKING
 import sys
@@ -34,7 +35,6 @@ import time
 if TYPE_CHECKING:
 	from collections.abc import Iterable
 	from fontTools.ttLib import TTFont
-	from pathlib import Path
 
 def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1) -> Iterable[Path]:
 	"""Save merged western and CJK fonts for the active locales, styles, and weights.
@@ -89,7 +89,6 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 
 	pathCID: Path = settingsPackage.pathWarehouse / 'CID'
 
-	listPathFilenames: Iterable[Path] = []
 	listClaimTickets: list[Future[Path]] = []
 
 	with ProcessPoolExecutor(workersMaximum) as concurrencyManager:
@@ -108,8 +107,10 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 				, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(settingsPackage.fontFamily.replace(' ', ''), localeIn.IntegratedCode火, style, weightIn.IntegratedCode火, '')}.{fontFormat}"
 			))
 
-		for claimTicket in tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc="Merging fonts"):
-			listPathFilenames.append(claimTicket.result())
+		listPathFilenames: list[Path] = list(map(
+			Future[Path].result
+			, tqdm(as_completed(listClaimTickets), total=len(listClaimTickets), desc="Merging fonts")
+		))
 
 	return listPathFilenames
 

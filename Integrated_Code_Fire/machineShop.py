@@ -25,19 +25,21 @@ from fontTools.merge import Merger
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
-from operator import attrgetter
 from humpy_cytoolz import keyfilter
+from hunterMakesPy import raiseIfNone
 from Integrated_Code_Fire import headFlagsHinting, settingsPackage
 from Integrated_Code_Fire.archivist import archivistMakesUnicodesCJK
+from operator import attrgetter
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
-	from fontTools.cffLib import CharStrings
+	from fontTools.cffLib import CharStrings, PrivateDict
 	from fontTools.misc.psCharStrings import T2CharString
 	from fontTools.ttLib.tables import otTables
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
+	from typing import Literal
 
 def machinistSubsetsCID(pathFilename: Path, unicodesWestern: Iterable[int], subsetOptions: subset.Options) -> TTFont:
 	"""Retain the CJK characters the merged font needs and prepare their em size and metrics.
@@ -120,10 +122,11 @@ def machinistModifiesSideBearings(ttFont: TTFont, width: int) -> None:
 
 			# NOTE In a CID-keyed font, each glyph has the `private` of its own font dictionary, and the new charstring needs it.
 			charString: T2CharString = charStrings[glyphName]
+			private: PrivateDict = raiseIfNone(charString.private)
 			# NOTE `T2CharStringPen` writes its width as is, but a charstring stores its width as the difference from `nominalWidthX`.
-			pen: T2CharStringPen = T2CharStringPen(widthCell - charString.private.nominalWidthX, None)
+			pen: T2CharStringPen = T2CharStringPen(widthCell - raiseIfNone(private.nominalWidthX), None)
 			glyph.draw(TransformPen(pen, (1, 0, 0, 1, addend, 0)))
-			charStrings[glyphName] = pen.getCharString(charString.private, charString.globalSubrs)
+			charStrings[glyphName] = pen.getCharString(private, charString.globalSubrs)
 
 def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 	"""Combine prepared TrueType font files into one open font.
@@ -181,7 +184,8 @@ def machinistSortsFeatureRecords(ttFont: TTFont) -> None:
 	systems and of the feature variations. The features, their lookups, and shaping do not change.
 	The font remains open and is not saved.
 	"""
-	for tableTag in ('GSUB', 'GPOS'):
+	tableTags: tuple[Literal['GSUB', 'GPOS'], ...] = ('GSUB', 'GPOS')
+	for tableTag in tableTags:
 		if tableTag in ttFont:
 			table: otTables.GSUB | otTables.GPOS = ttFont[tableTag].table
 			featureRecords: list[otTables.FeatureRecord] = table.FeatureList.FeatureRecord
@@ -196,8 +200,9 @@ def machinistSortsFeatureRecords(ttFont: TTFont) -> None:
 					if langSys.ReqFeatureIndex != 0xFFFF:
 						langSys.ReqFeatureIndex = indexSortedFromIndex[langSys.ReqFeatureIndex]
 
-			if getattr(table, 'FeatureVariations', None):
-				for featureVariationRecord in table.FeatureVariations.FeatureVariationRecord:
+			featureVariations: otTables.FeatureVariations | None = getattr(table, 'FeatureVariations', None)
+			if featureVariations is not None:
+				for featureVariationRecord in featureVariations.FeatureVariationRecord:
 					substitutionRecords: list[otTables.FeatureTableSubstitutionRecord] = featureVariationRecord.FeatureTableSubstitution.SubstitutionRecord
 					for substitutionRecord in substitutionRecords:
 						substitutionRecord.FeatureIndex = indexSortedFromIndex[substitutionRecord.FeatureIndex]

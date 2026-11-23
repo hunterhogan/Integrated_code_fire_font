@@ -93,7 +93,7 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], autohintOptions: User
 	"""
 	_workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
-	listPathFilenames: Iterable[Path] = []
+	listPathFilenames: list[Path] = []
 
 	if settingsPackage.unitsPerEm == 2000:
 		pathWrite: Path = settingsPackage.pathWarehouse / 'western'
@@ -351,7 +351,7 @@ if __name__ == "__main__":
 	listPathFilenamesTTFont: Iterable[Path] = frozenset()
 
 	if doGlyphs:
-		pathTTFont: Path | None = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, 1, [fontFormat])
+		pathTTFont = smithyCastsFromGlyphs(pathFilenameFiraCodeGlyphsDEFAULT, 1, [fontFormat])
 		listPathFilenamesTTFont = pathTTFont.glob(f"*.{fontFormat}")
 		prepareGlyphs(listPathFilenamesTTFont, autohintOptionsDEFAULT, CPUlimit=CPUlimit)
 	else:
