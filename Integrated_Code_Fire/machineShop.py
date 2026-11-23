@@ -24,11 +24,13 @@ from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import scaleUpem, TTFont
 from Integrated_Code_Fire import headFlagsHinting, settingsPackage
-from Integrated_Code_Fire.archivist import archivistMakesUnicodesHan
+from Integrated_Code_Fire.archivist import archivistMakesUnicodesCJK
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from collections.abc import Iterable
+	from fontTools.cffLib import CharStrings
+	from fontTools.misc.psCharStrings import T2CharString
 	from fontTools.ttLib.ttGlyphSet import _TTGlyphSet
 	from pathlib import Path
 
@@ -54,7 +56,7 @@ def machinistSubsetsCID(pathFilename: Path, unicodesWestern: Iterable[int], subs
 
 	See Also
 	--------
-	`Integrated_Code_Fire.archivist.archivistMakesUnicodesHan`
+	`Integrated_Code_Fire.archivist.archivistMakesUnicodesCJK`
 		Select the retained code points from the font's own character map.
 	`machinistModifiesSideBearings`
 		Inspect the horizontal spacing adjustment applied after subsetting.
@@ -66,7 +68,7 @@ def machinistSubsetsCID(pathFilename: Path, unicodesWestern: Iterable[int], subs
 	"""
 	ttFont: TTFont = TTFont(pathFilename)
 	subsetter = subset.Subsetter(subsetOptions)
-	subsetter.populate(unicodes=archivistMakesUnicodesHan(ttFont['cmap'].buildReversed(), unicodesWestern))
+	subsetter.populate(unicodes=archivistMakesUnicodesCJK(ttFont['cmap'].buildReversed(), unicodesWestern))
 	subsetter.subset(ttFont)
 	if settingsPackage.unitsPerEm != 1000:
 		scaleUpem.scale_upem(ttFont, settingsPackage.unitsPerEm)
@@ -92,20 +94,24 @@ def machinistModifiesSideBearings(ttFont: TTFont, width: int) -> None:
 	and the left side bearing moves with it. Zero-width glyphs retain their metrics and outlines.
 	The font remains open and is not saved.
 	"""
-	charStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings
+	charStrings: CharStrings = ttFont['CFF '].cff.topDictIndex[0].CharStrings
 	glyphSet: _TTGlyphSet = ttFont.getGlyphSet()
+	unitsPerEm: int = ttFont['head'].unitsPerEm
 	for glyphName, glyph in glyphSet.items():
 		if glyph.width != 0:
 			widthCell: int = width
-			if glyph.width < ttFont['head'].unitsPerEm:
+			if glyph.width < unitsPerEm:
 				widthCell //= 2
 			addend: int = (widthCell - glyph.width) // 2
 
 			ttFont['hmtx'][glyphName] = (widthCell, glyph.lsb + addend)
 
-			pen: T2CharStringPen = T2CharStringPen(widthCell - charStrings[glyphName].private.nominalWidthX, glyphSet)
+			# NOTE In a CID-keyed font, each glyph has the `private` of its own font dictionary, and the new charstring needs it.
+			charString: T2CharString = charStrings[glyphName]
+			# NOTE `T2CharStringPen` writes its width as is, but a charstring stores its width as the difference from `nominalWidthX`.
+			pen: T2CharStringPen = T2CharStringPen(widthCell - charString.private.nominalWidthX, None)
 			glyph.draw(TransformPen(pen, (1, 0, 0, 1, addend, 0)))
-			charStrings[glyphName] = pen.getCharString(charStrings[glyphName].private, charStrings[glyphName].globalSubrs)
+			charStrings[glyphName] = pen.getCharString(charString.private, charString.globalSubrs)
 
 def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 	"""Combine prepared TrueType font files into one open font.
@@ -126,9 +132,9 @@ def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 
 	Hinting
 	-------
-	The merged font keeps the TrueType instructions of the first font only. `Merger` combines the
-	instruction bits of `head.flags` with AND, so the merged font receives the instruction bits of
-	the first font instead.
+	The merged font keeps the TrueType instructions of the first font only. `Merger` combines bits 2
+	and 3 of `head.flags` with AND and bit 4 with OR, so the merged font receives bits 2, 3, and 4
+	of the first font instead.
 
 	See Also
 	--------
@@ -136,5 +142,6 @@ def machinistMergesTTFFonts(*pathFilenamesFonts: Path) -> TTFont:
 		Merge the configured western and CJK combinations and save release font files.
 	"""
 	ttFont: TTFont = Merger().merge(pathFilenamesFonts)
-	ttFont['head'].flags |= TTFont(pathFilenamesFonts[0], lazy=True)['head'].flags & headFlagsHinting
+	with TTFont(pathFilenamesFonts[0], lazy=True) as ttFontFirst:
+		ttFont['head'].flags = (ttFont['head'].flags & ~headFlagsHinting) | (ttFontFirst['head'].flags & headFlagsHinting)
 	return ttFont

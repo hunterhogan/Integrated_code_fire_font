@@ -53,13 +53,13 @@ Settings
 		Locate the expected Fira Code TrueType build script.
 	pathFilenameFiraCodeGlyphsDEFAULT
 		Locate the expected Fira Code Glyphs source file.
-	pathRootSourceHanMonoDEFAULT
+	pathRootAdobeHanDEFAULT
 		Locate the expected Source Han Mono source checkout.
 	settingsPackage
 		Provide the active configuration shared by the build operations.
 	subsetOptionsDEFAULT
 		Provide the shared CJK subsetting options.
-	textShaping
+	textFiraCodeLigatures
 		Provide programming text whose shaping in merged fonts must equal its shaping in Fira Code.
 """
 from __future__ import annotations
@@ -71,5 +71,5 @@ from Integrated_Code_Fire._theSSOT import (
 	autohintOptionsDEFAULT as autohintOptionsDEFAULT, boxOfCheckIDsHinting as boxOfCheckIDsHinting, boxOfCheckIDsMerged as boxOfCheckIDsMerged,
 	headFlagsHinting as headFlagsHinting, headFlagsIntegerPPEM as headFlagsIntegerPPEM, PackageSettings as PackageSettings,
 	pathFilenameFiraCode_build_ttfDEFAULT as pathFilenameFiraCode_build_ttfDEFAULT,
-	pathFilenameFiraCodeGlyphsDEFAULT as pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT as pathRootSourceHanMonoDEFAULT,
-	settingsPackage as settingsPackage, subsetOptionsDEFAULT as subsetOptionsDEFAULT, textShaping as textShaping)
+	pathFilenameFiraCodeGlyphsDEFAULT as pathFilenameFiraCodeGlyphsDEFAULT, pathRootAdobeHanDEFAULT as pathRootAdobeHanDEFAULT,
+	settingsPackage as settingsPackage, subsetOptionsDEFAULT as subsetOptionsDEFAULT, textFiraCodeLigatures as textFiraCodeLigatures)

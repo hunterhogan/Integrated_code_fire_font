@@ -28,7 +28,7 @@ Character selection functions
 		Obtain the code points that a font maps.
 	archivistMakesRangeBlocks
 		Obtain the code points of a span of consecutive Unicode blocks.
-	archivistMakesUnicodesHan
+	archivistMakesUnicodesCJK
 		Select the code points that a CJK font contributes to a merged font.
 """
 from __future__ import annotations
@@ -38,7 +38,7 @@ from fontTools.unicodedata import Blocks
 from humpy_cytoolz import complement, keyfilter
 from hunterMakesPy.semiotics import ansiColor, ansiColorReset
 from Integrated_Code_Fire import LocaleIn, settingsPackage, WeightIn
-from Integrated_Code_Fire.dataCenter.SourceHanMono import cidsVerticalOnly
+from Integrated_Code_Fire.dataCenter.AdobeHan import cidsVerticalOnly
 from itertools import chain, starmap
 from typing import Literal, TYPE_CHECKING
 import sys
@@ -62,11 +62,11 @@ def archivistGetsLocales() -> dict[str, LocaleIn]:
 		`"Taiwan"`. Each value contains the display label and both Source Han Mono locale codes.
 	"""
 	return {
-		'Hong_Kong': LocaleIn('Hong_Kong', '香港', SourceHanMono='HK', SourceHanMonoOTC='HC'),
-		'Japan': LocaleIn('Japan', '日本', SourceHanMono='JP', SourceHanMonoOTC='J'),
-		'Korea': LocaleIn('Korea', '한국인', SourceHanMono='KR', SourceHanMonoOTC='K'),
-		'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字', SourceHanMono='CN', SourceHanMonoOTC='SC'),
-		'Taiwan': LocaleIn('Taiwan', '台灣', SourceHanMono='TW', SourceHanMonoOTC='TC'),
+		'Hong_Kong': LocaleIn('Hong_Kong', '香港', AdobeHan='HK', AdobeHanOTC='HC'),
+		'Japan': LocaleIn('Japan', '日本', AdobeHan='JP', AdobeHanOTC='J'),
+		'Korea': LocaleIn('Korea', '한국인', AdobeHan='KR', AdobeHanOTC='K'),
+		'Simplified_Chinese': LocaleIn('Simplified_Chinese', '简化字', AdobeHan='CN', AdobeHanOTC='SC'),
+		'Taiwan': LocaleIn('Taiwan', '台灣', AdobeHan='TW', AdobeHanOTC='TC'),
 	}
 
 def archivistGetsWeights() -> dict[str, WeightIn]:
@@ -83,13 +83,13 @@ def archivistGetsWeights() -> dict[str, WeightIn]:
 		`"ExtraLight"` entry has empty western and Integrated Code 火 labels.
 	"""
 	return {
-		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyWestern='SemiBold', fontFamilyCID='Bold', SourceHanMono='Bold'),
-		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyWestern='', fontFamilyCID='ExtraLight', SourceHanMono='ExtraLight'),
-		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyWestern='Bold', fontFamilyCID='Heavy', SourceHanMono='Heavy'),
-		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyWestern='Light', fontFamilyCID='Light', SourceHanMono='Light'),
-		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyWestern='Medium', fontFamilyCID='Medium', SourceHanMono='Medium'),
-		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyWestern='Retina', fontFamilyCID='Normal', SourceHanMono='Normal'),
-		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyWestern='Regular', fontFamilyCID='Regular', SourceHanMono='Regular'),
+		'SemiBold': WeightIn(IntegratedCode火='SemiBold', FiraCode='SemiBold', fontFamilyWestern='SemiBold', fontFamilyCID='Bold', AdobeHan='Bold'),
+		'ExtraLight': WeightIn(IntegratedCode火='', FiraCode='', fontFamilyWestern='', fontFamilyCID='ExtraLight', AdobeHan='ExtraLight'),
+		'Bold': WeightIn(IntegratedCode火='Bold', FiraCode='Bold', fontFamilyWestern='Bold', fontFamilyCID='Heavy', AdobeHan='Heavy'),
+		'Light': WeightIn(IntegratedCode火='Light', FiraCode='Light', fontFamilyWestern='Light', fontFamilyCID='Light', AdobeHan='Light'),
+		'Medium': WeightIn(IntegratedCode火='Medium', FiraCode='Medium', fontFamilyWestern='Medium', fontFamilyCID='Medium', AdobeHan='Medium'),
+		'Retina': WeightIn(IntegratedCode火='Retina', FiraCode='Retina', fontFamilyWestern='Retina', fontFamilyCID='Normal', AdobeHan='Normal'),
+		'Regular': WeightIn(IntegratedCode火='Regular', FiraCode='Regular', fontFamilyWestern='Regular', fontFamilyCID='Regular', AdobeHan='Regular'),
 	}
 
 def archivistMakesFilenameStem(fontFamily: str | None = None, locale: str | None = None, style: str | None = None, weight: str | None = None, separator: str = '.') -> str:
@@ -128,9 +128,8 @@ def archivistMakesNameIDMetadata(weight: str, filenameFontFamily: str, fontFamil
 	weight : str
 		Weight label displayed in the font subfamily and full name.
 	filenameFontFamily : str
-		Family identifier used in the unique identifier and PostScript name. Supply only ASCII
-		letters and digits, because the PostScript name permits no other characters in practice;
-		only spaces in `weight` are removed here.
+		Family identifier used in the unique identifier and PostScript name. Supply the intended
+		spelling without spaces; only spaces in `weight` are removed here.
 	fontFamily : str
 		Installed family name, including the locale label.
 
@@ -270,9 +269,9 @@ def make_afdkoOptions(pathRoot: Path, fontFamilyCID: str = 'SourceHanMono', loca
 	dictionaryLocales: dict[str, LocaleIn] = archivistGetsLocales()
 	dictionaryWeights: dict[str, WeightIn] = archivistGetsWeights()
 	if fontFamilyCID == 'SourceHanMono':
-		aLocaleOTC: str = dictionaryLocales[locale].SourceHanMonoOTC
-		aLocale: str = dictionaryLocales[locale].SourceHanMono
-		aWeight: str = dictionaryWeights[weight].SourceHanMono
+		aLocaleOTC: str = dictionaryLocales[locale].AdobeHanOTC
+		aLocale: str = dictionaryLocales[locale].AdobeHan
+		aWeight: str = dictionaryWeights[weight].AdobeHan
 	else:
 		aLocaleOTC = dictionaryLocales[locale].ascii
 		aLocale = dictionaryLocales[locale].ascii
@@ -343,7 +342,7 @@ def archivistMakesRangeBlocks(blockFirst: str, blockLast: str) -> range:
 	"""
 	return range(Blocks.RANGES[Blocks.VALUES.index(blockFirst)], Blocks.RANGES[Blocks.VALUES.index(blockLast) + 1])
 
-def archivistMakesUnicodesHan(cmapReversed: Mapping[str, Iterable[int]], unicodesWestern: Iterable[int]) -> frozenset[int]:
+def archivistMakesUnicodesCJK(cmapReversed: Mapping[str, Iterable[int]], unicodesWestern: Iterable[int]) -> frozenset[int]:
 	"""Select the code points that a CJK font contributes to a merged font.
 
 	(AI generated docstring)
@@ -358,14 +357,14 @@ def archivistMakesUnicodesHan(cmapReversed: Mapping[str, Iterable[int]], unicode
 
 	Returns
 	-------
-	unicodesHan : frozenset[int]
+	unicodesCJK : frozenset[int]
 		Code points of the CJK font, except code points that the western fonts map, code points in
-		`settingsPackage.rangesExclude` and `settingsPackage.unicodesExclude`, and code points of
+		`settingsPackage.blocksExclude` and `settingsPackage.unicodesExclude`, and code points of
 		glyphs in `cidsVerticalOnly`.
 	"""
 	unicodesExclude: frozenset[int] = frozenset(chain(unicodesWestern
 		, settingsPackage.unicodesExclude
-		, chain.from_iterable(starmap(archivistMakesRangeBlocks, settingsPackage.rangesExclude))))
+		, chain.from_iterable(starmap(archivistMakesRangeBlocks, settingsPackage.blocksExclude))))
 	glyphNamesVerticalOnly: frozenset[str] = frozenset(map('cid{:05d}'.format, cidsVerticalOnly))
 	return frozenset(chain.from_iterable(keyfilter(complement(glyphNamesVerticalOnly.__contains__), cmapReversed).values())) - unicodesExclude
 

@@ -24,7 +24,7 @@ from Integrated_Code_Fire.archivist import (
 	archivistGetsLocales, archivistGetsWeights, archivistMakesFilenameStem, archivistMakesNameIDMetadata, archivistUpdatesMetadata)
 from Integrated_Code_Fire.logistics import packerMakesAssets, valetGetsWesternFontPathFilename, valetRemovesFiles, valetRemovesWorkbench
 from Integrated_Code_Fire.machineShop import machinistMergesTTFFonts
-from Integrated_Code_Fire.qualityControl import checkMerged
+from Integrated_Code_Fire.qualityControl import inspectorGradesMerged
 from itertools import product as CartesianProduct
 from tqdm import tqdm
 from typing import TYPE_CHECKING
@@ -104,7 +104,7 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 				_mergeFont
 				, dictionaryFontsWestern[weightIn.fontFamilyWestern]
 				, pathCID / f"{archivistMakesFilenameStem(None, localeIn.ascii, style, weightIn.fontFamilyCID)}.{fontFormat}"
-				, archivistMakesNameIDMetadata(weightIn.IntegratedCode火, archivistMakesFilenameStem(settingsPackage.fontFamilyASCII, localeIn.ascii, separator='').replace(' ', '').replace('_', ''), fontFamily)
+				, archivistMakesNameIDMetadata(weightIn.IntegratedCode火, fontFamily.replace(' ', ''), fontFamily)
 				, settingsPackage.pathWorkbenchFonts / f"{archivistMakesFilenameStem(settingsPackage.fontFamily.replace(' ', ''), localeIn.IntegratedCode火, style, weightIn.IntegratedCode火, '')}.{fontFormat}"
 			))
 
@@ -113,7 +113,7 @@ def goMerge(fontFormat: str = 'ttf', *, CPUlimit: bool | float | int | None = 1)
 
 	return listPathFilenames
 
-def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
+def _mergeFont(pathFilenameWestern: Path, pathFilenameCJK: Path, nameIDmetadata: dict[int, str], pathFilenameWrite: Path) -> Path:
 	"""I use this worker to save one merged western and CJK font with release metadata.
 
 	(AI generated docstring)
@@ -122,7 +122,7 @@ def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata:
 	----------
 	pathFilenameWestern : Path
 		Prepared western font with TrueType outlines.
-	pathFilenameHan : Path
+	pathFilenameCJK : Path
 		Prepared CJK subset with TrueType outlines and matching em size.
 	nameIDmetadata : dict[int, str]
 		Font name identifiers mapped to their release text.
@@ -140,10 +140,10 @@ def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata:
 
 	Quality Control
 	---------------
-	`Integrated_Code_Fire.qualityControl.checkMerged` checks the saved font and writes its findings
-	to standard output. The findings do not stop the build.
+	`Integrated_Code_Fire.qualityControl.inspectorGradesMerged` grades the saved font and writes its
+	findings to standard output. The findings do not stop the build.
 	"""
-	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameWestern, pathFilenameHan)
+	ttFont: TTFont = machinistMergesTTFFonts(pathFilenameWestern, pathFilenameCJK)
 
 	archivistUpdatesMetadata(ttFont, nameIDmetadata)
 
@@ -151,7 +151,7 @@ def _mergeFont(pathFilenameWestern: Path, pathFilenameHan: Path, nameIDmetadata:
 	ttFont.save(pathFilenameWrite)
 	ttFont.close()
 
-	checkMerged(pathFilenameWrite, pathFilenameWestern, pathFilenameHan)
+	inspectorGradesMerged(pathFilenameWrite, pathFilenameWestern, pathFilenameCJK)
 
 	return pathFilenameWrite
 
@@ -188,7 +188,8 @@ def goAssets(listPathFilenames: Iterable[Path], *, CPUlimit: bool | float | int 
 	valetRemovesWorkbench()
 
 if __name__ == '__main__':
-	CPUlimit: int = 1
+	# NOTE `goMerge` makes 30 fonts, so 15 workers finish them in two rounds.
+	CPUlimit: int = 15
 
 	timeStart: float = time.perf_counter()
 

@@ -17,6 +17,8 @@ Settings
 		Provide the `ttfautohint` options applied to prepared western fonts.
 	autohintOptionsHARDCODED
 		Supply the `ttfautohint` options that Fira Code uses.
+	blocksExcludeHARDCODED
+		Supply spans of Unicode blocks omitted from CJK character selections.
 	boxOfCheckIDsHinting
 		Select the FontBakery checks for hinted western fonts.
 	boxOfCheckIDsHintingHARDCODED
@@ -39,27 +41,25 @@ Settings
 		Supply bit 3 of `head.flags`.
 	languagesHARDCODED
 		Map locale labels to language tags for font metadata.
-	pathFilenameFiraCodeGlyphsDEFAULT
-		Locate `FiraCode/FiraCode.glyphs` under the repository parent.
 	pathFilenameFiraCode_build_ttfDEFAULT
 		Locate `FiraCode/script/build_ttf.sh` under the repository parent.
+	pathFilenameFiraCodeGlyphsDEFAULT
+		Locate `FiraCode/FiraCode.glyphs` under the repository parent.
+	pathRootAdobeHanDEFAULT
+		Locate the `source-han-mono` source checkout.
 	pathRootRepositories
 		Select the parent directory used to locate font source checkouts.
 	pathRootRepositoriesDEFAULT
 		Use `/clones` on host `"duda"` and the project parent elsewhere.
-	pathRootSourceHanMonoDEFAULT
-		Locate the `source-han-mono` source checkout.
-	rangesExcludeHARDCODED
-		Supply spans of Unicode blocks omitted from CJK character selections.
 	settingsPackage
 		Provide the active font configuration, including the one-cell `⋯` mapping.
 	subsetOptionsDEFAULT
 		Provide the shared subsetting options used by the build entry point.
 	subsetOptionsHARDCODED
 		Configure retained layout features and discarded font tables and names.
-	textShaping
+	textFiraCodeLigatures
 		Provide programming text whose shaping in merged fonts must equal its shaping in Fira Code.
-	textShapingHARDCODED
+	textFiraCodeLigaturesHARDCODED
 		Supply ligature and contextual-alternate sequences from Fira Code.
 	unicodesExcludeHARDCODED
 		Supply individual code points omitted from CJK character selections.
@@ -92,7 +92,7 @@ fontVersionHARDCODED: float = 0.016
 # TODO version update? ^^^^^^^^^^^^
 
 # NOTE Each pair names the first and the last Unicode block of a span of consecutive blocks.
-rangesExcludeHARDCODED: tuple[tuple[str, str], ...] = (
+blocksExcludeHARDCODED: tuple[tuple[str, str], ...] = (
 	('Basic Latin', 'Georgian'),
 	('Ethiopic', 'Arrows'),
 	('Miscellaneous Technical', 'Supplemental Punctuation'),
@@ -119,10 +119,11 @@ subsetOptionsHARDCODED: subset.Options = subset.Options(
 )
 
 boxOfCheckIDsHintingHARDCODED: tuple[str, ...] = ('integer_ppem_if_hinted', 'smart_dropout')
+# NOTE The PostScript and unique names contain `火` and the locale label, as installed fonts expect, so the
+# checks `name/char_restrictions` and `opentype/postscript_name`, which require ASCII, are not selected.
 boxOfCheckIDsMergedHARDCODED: tuple[str, ...] = (
 	'integer_ppem_if_hinted',
 	'mandatory_glyphs',
-	'name/char_restrictions',
 	'name/family_and_style_max_length',
 	'name/trailing_spaces',
 	'opentype/font_version',
@@ -131,7 +132,6 @@ boxOfCheckIDsMergedHARDCODED: tuple[str, ...] = (
 	'opentype/maxadvancewidth',
 	'opentype/name/empty_records',
 	'opentype/name/match_familyname_fullfont',
-	'opentype/postscript_name',
 	'ots',
 	'required_tables',
 	'smart_dropout',
@@ -140,7 +140,7 @@ boxOfCheckIDsMergedHARDCODED: tuple[str, ...] = (
 )
 
 # NOTE Sequences from the Fira Code README ligature showcase.
-textShapingHARDCODED: str = (
+textFiraCodeLigaturesHARDCODED: str = (
 	'-> => == === != !== <= >= <=> <!-- --> |> <| ||> www ** *** /* */ // /// :: ::: := =:= ..= .. ... ?. ?? ;; '
 	'0xFF 1:2 a*b #{ #[ #( #? #_ ]# {| |} [| |] </ /> </> <> ~~> ~> ~- -~ ~@ <~> <~~ <<- <<= >>= >>- ++ +++ '
 	'|||> <||| ||= |= ^= $> <$> <*> <+> <|> && ||'
@@ -163,6 +163,11 @@ class PackageSettings(humpy_PackageSettings):
 	----------
 	achVendID : str = '1INT'
 		Font vendor identifier written to the `OS/2` table.
+	blocksExclude : tuple[tuple[str, str], ...]
+		Spans of consecutive Unicode blocks that the CJK font does not contribute. Each pair names
+		the first and the last block of a span. The defaults span Basic Latin through Georgian,
+		Ethiopic through Arrows, Miscellaneous Technical through Supplemental Punctuation, and
+		Alphabetic Presentation Forms.
 	cmapUpdates : dict[int, str] = {}
 		Unicode code points mapped to existing western glyph names during preparation. Each new
 		configuration receives its own dictionary. The active configuration maps U+22EF to
@@ -174,11 +179,6 @@ class PackageSettings(humpy_PackageSettings):
 		`fontVersion` instead of the error sentinel.
 	languages : dict[str, str]
 		Independent copy of `languagesHARDCODED`, mapping each locale to a language tag.
-	rangesExclude : tuple[tuple[str, str], ...]
-		Spans of consecutive Unicode blocks that the CJK font does not contribute. Each pair names
-		the first and the last block of a span. The defaults span Basic Latin through Georgian,
-		Ethiopic through Arrows, Miscellaneous Technical through Supplemental Punctuation, and
-		Alphabetic Presentation Forms.
 	theLocales : frozenset[str]
 		Locale labels. Defaults to `"Hong_Kong"`, `"Japan"`, `"Korea"`, `"Simplified_Chinese"`,
 		and `"Taiwan"`.
@@ -210,11 +210,11 @@ class PackageSettings(humpy_PackageSettings):
 		Staged-font directory, `pathWorkbench / 'fonts'`.
 	"""
 	achVendID: Final[str] = '1INT'
+	blocksExclude: tuple[tuple[str, str], ...] = blocksExcludeHARDCODED
 	cmapUpdates: dict[int, str] = dataclasses.field(default_factory=dict[int, str])
 	fontFamily: Final[str] = 'Integrated Code 火'
 	fontVersion: float = errorL33T
 	languages: dict[str, str] = dataclasses.field(default_factory=languagesHARDCODED.copy)
-	rangesExclude: tuple[tuple[str, str], ...] = rangesExcludeHARDCODED
 	theLocales: frozenset[str] = frozenset(['Hong_Kong', 'Japan', 'Korea', 'Simplified_Chinese', 'Taiwan'])
 	theStyles: frozenset[str | None] = frozenset(['Italic', None])
 	theWeights: frozenset[str] = frozenset(['Bold', 'ExtraLight', 'SemiBold', 'Light', 'Medium', 'Retina', 'Regular'])
@@ -274,14 +274,14 @@ else:
 
 pathRootRepositories: Path = pathRootRepositoriesDEFAULT
 
-pathFilenameFiraCodeGlyphsDEFAULT: Path = pathRootRepositories / 'FiraCode' / 'FiraCode.glyphs'
 pathFilenameFiraCode_build_ttfDEFAULT: Path = pathRootRepositories / 'FiraCode' / 'script' / 'build_ttf.sh'
-pathRootSourceHanMonoDEFAULT: Path = pathRootRepositories / "source-han-mono"
+pathFilenameFiraCodeGlyphsDEFAULT: Path = pathRootRepositories / 'FiraCode' / 'FiraCode.glyphs'
+pathRootAdobeHanDEFAULT: Path = pathRootRepositories / "source-han-mono"
 
 autohintOptionsDEFAULT: UserOptions = autohintOptionsHARDCODED
 boxOfCheckIDsHinting: tuple[str, ...] = boxOfCheckIDsHintingHARDCODED
 boxOfCheckIDsMerged: tuple[str, ...] = boxOfCheckIDsMergedHARDCODED
-textShaping: str = textShapingHARDCODED
 headFlagsHinting: int = headFlagsHintingHARDCODED
 headFlagsIntegerPPEM: int = headFlagsIntegerPPEMHARDCODED
 subsetOptionsDEFAULT: subset.Options = subsetOptionsHARDCODED
+textFiraCodeLigatures: str = textFiraCodeLigaturesHARDCODED

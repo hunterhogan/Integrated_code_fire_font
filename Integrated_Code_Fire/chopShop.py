@@ -23,14 +23,14 @@ from concurrent.futures import as_completed, Future, ProcessPoolExecutor
 from fontTools.ttLib import scaleUpem, TTFont
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from Integrated_Code_Fire import (
-	autohintOptionsDEFAULT, headFlagsIntegerPPEM, LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootSourceHanMonoDEFAULT,
+	autohintOptionsDEFAULT, headFlagsIntegerPPEM, LocaleIn, PackageSettings, pathFilenameFiraCodeGlyphsDEFAULT, pathRootAdobeHanDEFAULT,
 	settingsPackage, subsetOptionsDEFAULT, WeightIn)
 from Integrated_Code_Fire.archivist import archivistGetsLocales, archivistGetsUnicodes, archivistGetsWeights, archivistMakesFilenameStem
 from Integrated_Code_Fire.foundry import smithyCasts_afdko, smithyCastsFromGlyphs
 from Integrated_Code_Fire.logistics import (
 	valetCopiesToWorkbench, valetGetsWesternFontPathFilename, valetRemovesFiles, valetRemovesWorkbench)
 from Integrated_Code_Fire.machineShop import machinistSubsetsCID
-from Integrated_Code_Fire.qualityControl import checkAdvanceWidths, checkHan, checkWestern
+from Integrated_Code_Fire.qualityControl import inspectorGradesAdvanceWidths, inspectorGradesCJK, inspectorGradesWestern
 from itertools import chain, product as CartesianProduct
 from more_itertools import consume
 from operator import attrgetter, methodcaller
@@ -88,8 +88,8 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], autohintOptions: User
 
 	Quality Control
 	---------------
-	`Integrated_Code_Fire.qualityControl.checkWestern` checks each saved font and writes its
-	findings to standard output. The findings do not stop the build.
+	`Integrated_Code_Fire.qualityControl.inspectorGradesWestern` grades each saved font and writes
+	its findings to standard output. The findings do not stop the build.
 	"""
 	_workersMaximum: int = defineConcurrencyLimit(limit=CPUlimit)
 
@@ -111,7 +111,7 @@ def prepareGlyphs(listPathFilenamesTTFont: Iterable[Path], autohintOptions: User
 		pathFilenameWrite: Path = pathWrite / f"{weight}{pathFilename.suffix}"
 		ttFont.save(pathFilenameWrite)
 		ttfautohint(**(autohintOptions | {'in_file': pathFilenameWrite, 'out_file': pathFilenameWrite}))
-		checkWestern(pathFilenameWrite)
+		inspectorGradesWestern(pathFilenameWrite)
 		listPathFilenames.append(pathFilenameWrite)
 
 	return frozenset(listPathFilenames)
@@ -179,7 +179,7 @@ def subsetCID(subsetOptions: subset.Options, fontFamilyCID: str = 'SourceHanMono
 	(AI generated docstring)
 
 	You can prepare the CJK contribution to merged fonts. Each subset retains the characters that
-	`Integrated_Code_Fire.archivist.archivistMakesUnicodesHan` selects from the font's own character
+	`Integrated_Code_Fire.archivist.archivistMakesUnicodesCJK` selects from the font's own character
 	map. The input fonts must already be staged in `settingsPackage.pathWorkbenchFonts`, and the
 	prepared western fonts of the active weights must already be in the warehouse, because the CJK
 	subsets omit every character that the western fonts map.
@@ -293,14 +293,14 @@ def _cidTOttf(pathFilenameCID: Path, unicodesWestern: frozenset[int], subsetOpti
 
 	Quality Control
 	---------------
-	`Integrated_Code_Fire.qualityControl.checkHan` checks the saved font and writes its findings to
-	standard output. The findings do not stop the build.
+	`Integrated_Code_Fire.qualityControl.inspectorGradesCJK` grades the saved font and writes its
+	findings to standard output. The findings do not stop the build.
 	"""
 	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, unicodesWestern, subsetOptions)
 	otf_to_ttf(fontCID)
 	fontCID.save(pathFilenameWrite)
 	fontCID.close()
-	checkHan(pathFilenameWrite)
+	inspectorGradesCJK(pathFilenameWrite)
 	return pathFilenameWrite
 
 def _cid(pathFilenameCID: Path, unicodesWestern: frozenset[int], subsetOptions: subset.Options, pathFilenameWrite: Path) -> Path:
@@ -330,13 +330,13 @@ def _cid(pathFilenameCID: Path, unicodesWestern: frozenset[int], subsetOptions: 
 
 	Quality Control
 	---------------
-	`Integrated_Code_Fire.qualityControl.checkAdvanceWidths` checks the saved font and writes its
-	findings to standard output. The findings do not stop the build.
+	`Integrated_Code_Fire.qualityControl.inspectorGradesAdvanceWidths` grades the saved font and
+	writes its findings to standard output. The findings do not stop the build.
 	"""
 	fontCID: TTFont = machinistSubsetsCID(pathFilenameCID, unicodesWestern, subsetOptions)
 	fontCID.save(pathFilenameWrite)
 	fontCID.close()
-	checkAdvanceWidths(pathFilenameWrite, settingsPackage.width)
+	inspectorGradesAdvanceWidths(pathFilenameWrite, settingsPackage.width)
 	return pathFilenameWrite
 
 if __name__ == "__main__":
@@ -358,7 +358,7 @@ if __name__ == "__main__":
 		pathTTFont = None
 
 	if doCID:
-		listPathFilenamesCID: frozenset[Path] = castCID(pathRootSourceHanMonoDEFAULT, theStyles=[None], CPUlimit=CPUlimit)
+		listPathFilenamesCID: frozenset[Path] = castCID(pathRootAdobeHanDEFAULT, theStyles=[None], CPUlimit=CPUlimit)
 	else:
 		listPathFilenamesCID = frozenset(Path('/apps/Integrated_Code_Fire/workbench/SourceHanMono').glob('*.otf'))
 

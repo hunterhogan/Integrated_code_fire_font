@@ -1,31 +1,31 @@
-"""Check prepared, subset, and merged fonts.
+"""Grade prepared, subset, and merged fonts.
 
 (AI generated docstring)
 
-The build calls `checkWestern`, `checkHan`, and `checkMerged` after it saves each font, so problems
-appear while the build runs. Each check writes its findings to standard output and returns the
-most severe FontBakery status. The module entry point runs the checks that are slow, that need the
-Fira Code source checkout, or that only inform.
+The build calls `inspectorGradesWestern`, `inspectorGradesCJK`, and `inspectorGradesMerged` after
+it saves each font, so problems appear while the build runs. Each grade writes its findings to
+standard output and returns the most severe FontBakery status. The module entry point runs the
+checks that are slow, that need the Fira Code source checkout, or that only inform.
 
 Contents
 --------
 Functions
-	checkAdvanceWidths
-		Find advance widths that do not fit the one-cell and two-cell grid.
-	checkFontBakery
-		Run selected FontBakery checks on one font.
-	checkHan
-		Check one prepared CJK font with TrueType outlines.
-	checkMerged
-		Check one merged font against its western and CJK sources.
-	checkShaping
+	inspectorComparesShaping
 		Compare the HarfBuzz shaping of text in a font and in its source font.
-	checkSideBearings
+	inspectorGradesAdvanceWidths
+		Find advance widths that do not fit the one-cell and two-cell grid.
+	inspectorGradesCJK
+		Grade one prepared CJK font with TrueType outlines.
+	inspectorGradesMerged
+		Grade one merged font against its western and CJK sources.
+	inspectorGradesSideBearings
 		Find TrueType glyphs whose left side bearing differs from the outline.
-	checkWestern
-		Check one prepared western font.
-	parseAutohintArguments
+	inspectorGradesWestern
+		Grade one prepared western font.
+	inspectorParsesAutohintArguments
 		Obtain the `ttfautohint` option arguments from a Fira Code build script.
+	inspectorRunsFontBakery
+		Run selected FontBakery checks on fonts.
 """
 from __future__ import annotations
 
@@ -35,12 +35,11 @@ from fontbakery.fonts_profile import get_module, profile_factory, setup_context
 from fontbakery.reporters.terminal import TerminalReporter
 from fontbakery.status import ERROR, FAIL, FATAL, INFO, PASS, WARN
 from fontTools.ttLib import TTFont
-from functools import partial
 from Integrated_Code_Fire import (
-	autohintOptionsDEFAULT, boxOfCheckIDsHinting, boxOfCheckIDsMerged, pathFilenameFiraCode_build_ttfDEFAULT, settingsPackage, textShaping)
+	autohintOptionsDEFAULT, boxOfCheckIDsHinting, boxOfCheckIDsMerged, pathFilenameFiraCode_build_ttfDEFAULT, settingsPackage, textFiraCodeLigatures)
 from Integrated_Code_Fire.archivist import archivistGetsUnicodes
 from Integrated_Code_Fire.logistics import valetGetsWesternFontPathFilename
-from itertools import compress, repeat
+from itertools import compress
 from operator import attrgetter, itemgetter, methodcaller, ne
 from ttfautohint.options import format_kwargs
 from typing import TYPE_CHECKING
@@ -49,19 +48,20 @@ import sys
 import uharfbuzz
 
 if TYPE_CHECKING:
-	from collections.abc import Sequence
+	from collections.abc import Iterable, Sequence
 	from fontbakery.status import Status
 	from pathlib import Path
 
-def checkFontBakery(pathFilename: Path, boxOfCheckIDs: Sequence[str] | None, *, succinct: bool = True) -> Status:
-	"""Run selected FontBakery checks on one font.
+def inspectorRunsFontBakery(listPathFilenames: Iterable[Path], boxOfCheckIDs: Sequence[str] | None, *, succinct: bool = True) -> Status:
+	"""Run selected FontBakery checks on fonts.
 
 	(AI generated docstring)
 
 	Parameters
 	----------
-	pathFilename : Path
-		Font to check.
+	listPathFilenames : Iterable[Path]
+		Fonts to check in one FontBakery run. Checks of one font run once per font; FontBakery
+		also runs its family checks across all of the fonts.
 	boxOfCheckIDs : Sequence[str] | None
 		FontBakery check identifiers from the universal profile, or `None` for every check in the
 		profile.
@@ -76,13 +76,13 @@ def checkFontBakery(pathFilename: Path, boxOfCheckIDs: Sequence[str] | None, *, 
 		of `INFO` or worse to standard output.
 	"""
 	checkRunner: CheckRunner = CheckRunner(profile_factory(get_module('fontbakery.profiles.universal'))
-		, setup_context([str(pathFilename)])
+		, setup_context(list(map(str, listPathFilenames)))
 		, Configuration(explicit_checks=boxOfCheckIDs))
 	terminalReporter: TerminalReporter = TerminalReporter(runner=checkRunner, loglevels=[INFO, WARN, FAIL, FATAL, ERROR], succinct=succinct, print_progress=False)
 	checkRunner.run([terminalReporter])
 	return terminalReporter.worst_check_status or PASS
 
-def checkAdvanceWidths(pathFilename: Path, width: int) -> Status:
+def inspectorGradesAdvanceWidths(pathFilename: Path, width: int) -> Status:
 	"""Find advance widths that do not fit the one-cell and two-cell grid.
 
 	(AI generated docstring)
@@ -108,7 +108,7 @@ def checkAdvanceWidths(pathFilename: Path, width: int) -> Status:
 		return FAIL
 	return PASS
 
-def checkSideBearings(pathFilename: Path) -> Status:
+def inspectorGradesSideBearings(pathFilename: Path) -> Status:
 	"""Find TrueType glyphs whose left side bearing differs from the outline.
 
 	(AI generated docstring)
@@ -137,6 +137,16 @@ def checkSideBearings(pathFilename: Path) -> Status:
 	return PASS
 
 def _shapeText(pathFilename: Path, text: str) -> list[tuple[str, tuple[int, int, int, int]]]:
+	"""I use this helper to shape `text` as one run with HarfBuzz default features.
+
+	(AI generated docstring)
+
+	Returns
+	-------
+	glyphsShaped : list[tuple[str, tuple[int, int, int, int]]]
+		One `(glyph name, (x offset, y offset, x advance, y advance))` pair per shaped glyph, in
+		buffer order. Glyph names, not glyph IDs, because merging renumbers glyphs.
+	"""
 	font: uharfbuzz.Font = uharfbuzz.Font(uharfbuzz.Face(uharfbuzz.Blob.from_file_path(str(pathFilename))))
 	buffer: uharfbuzz.Buffer = uharfbuzz.Buffer()
 	buffer.add_str(text)
@@ -144,7 +154,7 @@ def _shapeText(pathFilename: Path, text: str) -> list[tuple[str, tuple[int, int,
 	uharfbuzz.shape(font, buffer)
 	return list(zip(map(font.glyph_to_string, map(attrgetter('codepoint'), buffer.glyph_infos)), map(attrgetter('position'), buffer.glyph_positions), strict=True))
 
-def checkShaping(pathFilename: Path, pathFilenameSource: Path, text: str) -> Status:
+def inspectorComparesShaping(pathFilename: Path, pathFilenameSource: Path, text: str) -> Status:
 	"""Compare the HarfBuzz shaping of text in a font and in its source font.
 
 	(AI generated docstring)
@@ -173,8 +183,8 @@ def checkShaping(pathFilename: Path, pathFilenameSource: Path, text: str) -> Sta
 		return FAIL
 	return PASS
 
-def checkWestern(pathFilename: Path) -> Status:
-	"""Check one prepared western font.
+def inspectorGradesWestern(pathFilename: Path) -> Status:
+	"""Grade one prepared western font.
 
 	(AI generated docstring)
 
@@ -189,10 +199,13 @@ def checkWestern(pathFilename: Path) -> Status:
 		The most severe status of the hinting checks in `boxOfCheckIDsHinting`, the advance width
 		grid, and the side bearings.
 	"""
-	return max(checkFontBakery(pathFilename, boxOfCheckIDsHinting), checkAdvanceWidths(pathFilename, settingsPackage.width), checkSideBearings(pathFilename))
+	return max(inspectorRunsFontBakery([pathFilename], boxOfCheckIDsHinting)
+		, inspectorGradesAdvanceWidths(pathFilename, settingsPackage.width)
+		, inspectorGradesSideBearings(pathFilename)
+	)
 
-def checkHan(pathFilename: Path) -> Status:
-	"""Check one prepared CJK font with TrueType outlines.
+def inspectorGradesCJK(pathFilename: Path) -> Status:
+	"""Grade one prepared CJK font with TrueType outlines.
 
 	(AI generated docstring)
 
@@ -206,10 +219,10 @@ def checkHan(pathFilename: Path) -> Status:
 	status : Status
 		The most severe status of the advance width grid and the side bearings.
 	"""
-	return max(checkAdvanceWidths(pathFilename, settingsPackage.width), checkSideBearings(pathFilename))
+	return max(inspectorGradesAdvanceWidths(pathFilename, settingsPackage.width), inspectorGradesSideBearings(pathFilename))
 
-def checkMerged(pathFilename: Path, pathFilenameWestern: Path, pathFilenameHan: Path) -> Status:
-	"""Check one merged font against its western and CJK sources.
+def inspectorGradesMerged(pathFilename: Path, pathFilenameWestern: Path, pathFilenameCJK: Path) -> Status:
+	"""Grade one merged font against its western and CJK sources.
 
 	(AI generated docstring)
 
@@ -219,7 +232,7 @@ def checkMerged(pathFilename: Path, pathFilenameWestern: Path, pathFilenameHan: 
 		Merged font with release metadata.
 	pathFilenameWestern : Path
 		Prepared western font, the first font of the merge.
-	pathFilenameHan : Path
+	pathFilenameCJK : Path
 		Prepared CJK subset, the second font of the merge.
 
 	Returns
@@ -227,26 +240,26 @@ def checkMerged(pathFilename: Path, pathFilenameWestern: Path, pathFilenameHan: 
 	status : Status
 		The most severe status of the FontBakery checks in `boxOfCheckIDsMerged`, the advance
 		width grid, the side bearings, and two shaping comparisons. The western comparison shapes
-		`textShaping` and every character of the western font. The CJK comparison shapes every
-		character that only the CJK font contributes.
+		`textFiraCodeLigatures` and every character of the western font. The CJK comparison shapes
+		every character that only the CJK font contributes.
 	"""
 	unicodesWestern: frozenset[int] = archivistGetsUnicodes(pathFilenameWestern)
-	unicodesHan: frozenset[int] = archivistGetsUnicodes(pathFilenameHan)
-	return max(checkFontBakery(pathFilename, boxOfCheckIDsMerged)
-		, checkAdvanceWidths(pathFilename, settingsPackage.width)
-		, checkSideBearings(pathFilename)
-		, checkShaping(pathFilename, pathFilenameWestern, textShaping + ''.join(map(chr, unicodesWestern)))
-		, checkShaping(pathFilename, pathFilenameHan, ''.join(map(chr, unicodesHan - unicodesWestern)))
+	unicodesCJK: frozenset[int] = archivistGetsUnicodes(pathFilenameCJK)
+	return max(inspectorRunsFontBakery([pathFilename], boxOfCheckIDsMerged)
+		, inspectorGradesAdvanceWidths(pathFilename, settingsPackage.width)
+		, inspectorGradesSideBearings(pathFilename)
+		, inspectorComparesShaping(pathFilename, pathFilenameWestern, textFiraCodeLigatures + ''.join(map(chr, unicodesWestern)))
+		, inspectorComparesShaping(pathFilename, pathFilenameCJK, ''.join(map(chr, unicodesCJK - unicodesWestern)))
 	)
 
-def parseAutohintArguments(build_ttf: str) -> list[str]:
+def inspectorParsesAutohintArguments(textBuild_ttf: str) -> list[str]:
 	"""Obtain the `ttfautohint` option arguments from a Fira Code build script.
 
 	(AI generated docstring)
 
 	Parameters
 	----------
-	build_ttf : str
+	textBuild_ttf : str
 		Text of Fira Code `script/build_ttf.sh`.
 
 	Returns
@@ -255,7 +268,7 @@ def parseAutohintArguments(build_ttf: str) -> list[str]:
 		Arguments of the first line that begins with `ttfautohint `, without the command and the
 		input and output file arguments that end the line.
 	"""
-	return shlex.split(next(filter(methodcaller('startswith', 'ttfautohint '), map(str.strip, build_ttf.splitlines()))))[1:-2]
+	return shlex.split(next(filter(methodcaller('startswith', 'ttfautohint '), map(str.strip, textBuild_ttf.splitlines()))))[1:-2]
 
 if __name__ == '__main__':
 	fontFormat: str = 'ttf'
@@ -269,12 +282,11 @@ if __name__ == '__main__':
 	doUniversal: bool = False
 
 	listPathFilenamesWestern: list[Path] = [*valetGetsWesternFontPathFilename(fontFormat).values()]
-	listPathFilenamesUniversal: list[Path] = [*listPathFilenamesWestern, *settingsPackage.pathWorkbenchFonts.glob(f"*.{fontFormat}")]
 
 	listStatus: list[Status] = [PASS]
 
 	if doAutohintArguments:
-		autohintArgumentsFiraCode: list[str] = parseAutohintArguments(pathFilenameFiraCode_build_ttfDEFAULT.read_text(encoding='utf-8'))
+		autohintArgumentsFiraCode: list[str] = inspectorParsesAutohintArguments(pathFilenameFiraCode_build_ttfDEFAULT.read_text(encoding='utf-8'))
 		autohintArguments: list[str] = format_kwargs(**autohintOptionsDEFAULT)
 		if frozenset(autohintArgumentsFiraCode) != frozenset(autohintArguments):
 			message: str = f"I received `{autohintArguments = }` from `autohintOptionsDEFAULT`, but Fira Code `build_ttf.sh` uses `{autohintArgumentsFiraCode = }`."
@@ -282,9 +294,11 @@ if __name__ == '__main__':
 			listStatus.append(FAIL)
 
 	if doHintingImpact:
-		listStatus.extend(map(partial(checkFontBakery, succinct=False), listPathFilenamesWestern, repeat(['hinting_impact']), strict=False))
+		listStatus.append(inspectorRunsFontBakery(listPathFilenamesWestern, ['hinting_impact'], succinct=False))
 
 	if doUniversal:
-		listStatus.extend(map(checkFontBakery, listPathFilenamesUniversal, repeat(None), strict=False))
+		# Two runs, so the family checks compare the western fonts with each other and the merged fonts with each other.
+		listStatus.extend([inspectorRunsFontBakery(listPathFilenamesWestern, None)
+			, inspectorRunsFontBakery(settingsPackage.pathWorkbenchFonts.glob(f"*.{fontFormat}"), None)])
 
 	sys.exit(int(FAIL <= max(listStatus)))

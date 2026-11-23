@@ -87,13 +87,29 @@ With western glyphs.
 
 ### Set up the build environment
 
-1. Clone this repository (link to GitHub how to)
-2. Python 3.14 or later if this is not redundant information
-3. Install
-   1. VS Code workspace file
-   2. or
-      1. venv
-      2. pip install
+1. Clone this repository into the same parent directory as your other font checkouts (see below).
+   If you have not cloned a repository before, GitHub explains how in
+   [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+2. Install [Python](https://www.python.org/downloads/) 3.14 or later. The virtual environment in the
+   next step must use Python 3.14 or later, or the installation stops.
+3. Create a virtual environment and install the dependencies, with VS Code or from a terminal.
+
+   **VS Code.** Open `.vscode/Integrated_Code_Fire.code-workspace` with **File > Open Workspace from
+   File...** and install the recommended extensions when VS Code offers them. Then run
+   **Python: Create Environment** from the Command Palette, choose **Venv** and Python 3.14, and
+   select `pyproject.toml` when VS Code asks which dependencies to install.
+
+   **Terminal.** From the repository directory, create and activate the environment, then install
+   the project and its dependencies.
+
+   ```bash
+   python3.14 -m venv .venv
+   source .venv/bin/activate
+   pip install -e .
+   ```
+
+   On Windows PowerShell, use `py -3.14 -m venv .venv` and `. .\.venv\Scripts\Activate.ps1`.
+   The type stubs for development are in the `dev` dependency group: `pip install --group dev`.
 
 Compiling the source fonts also requires local checkouts of [Fira Code HH] and [Source Han Mono].
 By default, the build expects `FiraCode/FiraCode.glyphs` and the `source-han-mono` checkout under
@@ -110,9 +126,9 @@ the inputs you are changing.
    `python Integrated_Code_Fire/chopShop.py`. Western fonts are prepared and hinted under
    `warehouse/western` or `warehouse/scaled`; CJK subsets are prepared under `warehouse/CID`.
    Each CJK subset keeps the characters of its own character map except those excluded:
-   characters that the western fonts map, the Unicode blocks in `rangesExclude`, the characters
+   characters that the western fonts map, the Unicode blocks in `blocksExclude`, the characters
    in `unicodesExclude`, and the vertical glyph forms in
-   [dataCenter/SourceHanMono.py](Integrated_Code_Fire/dataCenter/SourceHanMono.py). Change an
+   [dataCenter/AdobeHan.py](Integrated_Code_Fire/dataCenter/AdobeHan.py). Change an
    exclusion in [_theSSOT.py](Integrated_Code_Fire/_theSSOT.py).
 2. **Merging and packaging.** Run `python Integrated_Code_Fire/go.py` with the prepared warehouse
    inputs. The active configuration selects five locales and six upright weights. Merged fonts
